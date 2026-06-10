@@ -1,0 +1,125 @@
+name: Liella! 7th LoveLive! ~Fly! MUSIC WORLD♪~
+name_en: "Liella! 7th LoveLive! ~Fly! MUSIC WORLD♪~"
+kind: concert
+series:
+  - Liella!
+categories:
+  - concert
+  - tour
+performers:
+  - Liyuu
+  - 岬なこ
+  - 鈴原希実
+  - 坂倉さくら
+  - 伊達さゆり
+  - 薮島朱音
+  - 大熊和奏
+  - 結那
+  - ペイトン尚未
+  - 青山なぎさ
+  - 絵森彩
+performances:
+  - date: 2026-02-07
+    city: Kanagawa
+    label: Day 1
+    venue: 横浜アリーナ
+    venue_address: 神奈川県横浜市港北区
+    doors: "16:00"
+    starts: "17:00"
+  - date: 2026-02-08
+    city: Kanagawa
+    label: Day 2
+    venue: 横浜アリーナ
+    venue_address: 神奈川県横浜市港北区
+    doors: "15:00"
+    starts: "16:00"
+  - date: 2026-02-28
+    city: Aichi
+    label: Day 1
+    venue: Aichi Sky Expo Hall A
+    venue_address: 愛知県常滑市
+    doors: "16:00"
+    starts: "17:00"
+  - date: 2026-03-01
+    city: Aichi
+    label: Day 2
+    venue: Aichi Sky Expo Hall A
+    venue_address: 愛知県常滑市
+    doors: "15:00"
+    starts: "16:00"
+eventernote_url: https://ramen.events/liella-7th-live/
+official_url: https://www.lovelive-anime.jp/yuigaoka/live/live_detail.php?p=7thlive
+notes: 7thツアー（神奈川・愛知）。抽選は公演地ごと。出典 ramen.events。
+rounds:
+  - name: "Lottery #1: Superstar!! Fan Disc CD"
+    type: cd-lottery
+    leg: Kanagawa
+    apply_open: 2025-10-29T12:00:00
+    apply_deadline: 2025-12-07T23:59:00
+    results_date: 2025-12-13T13:00:00
+    payment_deadline: 2025-12-16T21:00:00
+  - name: "Lottery #2: Liella! CLUB 2025"
+    type: fanclub
+    leg: Kanagawa
+    apply_open: 2025-12-13T12:00:00
+    apply_deadline: 2025-12-22T18:00:00
+    results_date: 2025-12-27T13:00:00
+    payment_deadline: 2025-12-30T21:00:00
+  - name: "Lottery #3: Official Advance Lottery"
+    type: presale
+    leg: Kanagawa
+    apply_open: 2025-12-27T12:00:00
+    apply_deadline: 2026-01-06T23:59:00
+    results_date: 2026-01-10T13:00:00
+    payment_deadline: 2026-01-12T21:00:00
+    apply_url: https://eplus.jp/liella7th/
+  - name: "Lottery #4: Official Advance Lottery (Round 2)"
+    type: presale
+    leg: Kanagawa
+    apply_open: 2026-01-10T12:00:00
+    apply_deadline: 2026-01-18T23:59:00
+    results_date: 2026-01-23T13:00:00
+    apply_url: https://eplus.jp/liella7th/
+  - name: "First-Come-First-Served / Same-Day"
+    type: general
+    leg: Kanagawa
+    apply_open: 2026-01-24T12:00:00
+    apply_deadline: 2026-02-06T23:59:00
+    apply_url: https://eplus.jp/liella7th/
+    notes: 先着順。前日23:59まで（当日券は公演当日0:00から）。
+  - name: "Lottery #1: OPEN THE G☆TE!!! CD"
+    type: cd-lottery
+    leg: Aichi
+    apply_open: 2025-11-05T12:00:00
+    apply_deadline: 2025-12-21T23:59:00
+    results_date: 2025-12-27T13:00:00
+    payment_deadline: 2025-12-30T21:00:00
+  - name: "Lottery #2: Liella! CLUB 2025"
+    type: fanclub
+    leg: Aichi
+    apply_open: 2025-12-22T12:00:00
+    apply_deadline: 2026-01-05T18:00:00
+    results_date: 2026-01-10T13:00:00
+    payment_deadline: 2026-01-13T21:00:00
+  - name: "Lottery #3: Official Advance Lottery"
+    type: presale
+    leg: Aichi
+    apply_open: 2026-01-10T12:00:00
+    apply_deadline: 2026-01-25T23:59:00
+    results_date: 2026-01-31T13:00:00
+    payment_deadline: 2026-02-03T21:00:00
+    apply_url: https://eplus.jp/liella7th/
+  - name: "Lottery #4: Official Advance Lottery (Round 2)"
+    type: presale
+    leg: Aichi
+    apply_open: 2026-01-31T12:00:00
+    apply_deadline: 2026-02-08T23:59:00
+    results_date: 2026-02-13T13:00:00
+    apply_url: https://eplus.jp/liella7th/
+  - name: "First-Come-First-Served"
+    type: general
+    leg: Aichi
+    apply_open: 2026-02-14T12:00:00
+    apply_deadline: 2026-02-27T23:59:00
+    apply_url: https://eplus.jp/liella7th/
+    notes: 先着順。前日23:59まで。

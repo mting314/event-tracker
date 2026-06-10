@@ -1,0 +1,83 @@
+name: LoveLive! Series 15th Anniversary ラブライブ！フェス
+name_en: "LoveLive! Series 15th Anniversary Love Live! Fest"
+kind: festival
+series:
+  - μ's
+  - Aqours
+  - Nijigasaki
+  - "Liella!"
+  - Hasunosora
+  - "Ikizulive!"
+categories:
+  - concert
+  - festival
+performances:
+  - date: 2026-11-14
+    label: Day 1
+    venue: バンテリンドーム ナゴヤ
+    venue_address: 愛知県名古屋市東区
+    doors: "14:30"
+    starts: "16:30"
+  - date: 2026-11-15
+    label: Day 2
+    venue: バンテリンドーム ナゴヤ
+    venue_address: 愛知県名古屋市東区
+    doors: "13:30"
+    starts: "15:30"
+eventernote_url: https://ramen.events/love-live-fest-15th-anniversary/
+official_url: https://www.lovelive-anime.jp/special/live/live_detail.php?p=15th_lovelivefest
+notes: 15周年記念フェス。全シリーズ合同（μ's/Aqours/虹ヶ咲/Liella!/蓮ノ空/イキヅライブ! + ゲスト）。シリーズ別先行は対象シリーズの商品封入申込券で申込。出典 ramen.events + 公式。
+rounds:
+  - name: ラブライブ！先行
+    type: presale
+    leg: μ's
+    apply_open: 2026-05-08T12:00:00
+    apply_deadline: 2026-06-14T23:59:00
+    results_date: 2026-06-20T13:00:00
+    payment_deadline: 2026-06-23T21:00:00
+  - name: "ラブライブ！サンシャイン!!先行"
+    type: presale
+    leg: Aqours
+    apply_open: 2026-05-08T12:00:00
+    apply_deadline: 2026-06-14T23:59:00
+    results_date: 2026-06-20T13:00:00
+    payment_deadline: 2026-06-23T21:00:00
+  - name: ラブライブ！虹ヶ咲学園スクールアイドル同好会先行
+    type: presale
+    leg: Nijigasaki
+    apply_open: 2026-05-15T12:00:00
+    apply_deadline: 2026-06-14T23:59:00
+    results_date: 2026-06-20T13:00:00
+    payment_deadline: 2026-06-23T21:00:00
+  - name: "ラブライブ！スーパースター!!先行"
+    type: presale
+    leg: "Liella!"
+    apply_open: 2026-07-08T12:00:00
+    apply_deadline: 2026-07-20T23:59:00
+    results_date: 2026-07-25T13:00:00
+    payment_deadline: 2026-07-28T21:00:00
+  - name: ラブライブ！蓮ノ空女学院スクールアイドルクラブ先行
+    type: presale
+    leg: Hasunosora
+    apply_open: 2026-05-08T12:00:00
+    apply_deadline: 2026-07-20T23:59:00
+    results_date: 2026-07-25T13:00:00
+    payment_deadline: 2026-07-28T21:00:00
+  - name: "イキヅライブ！ LOVELIVE! BLUEBIRD先行"
+    type: presale
+    leg: "Ikizulive!"
+    apply_open: 2026-06-20T12:00:00
+    apply_deadline: 2026-07-20T23:59:00
+    results_date: 2026-07-25T13:00:00
+    payment_deadline: 2026-07-28T21:00:00
+  - name: 1次抽選
+    type: upgrade
+    apply_open: 2026-08-15T12:00:00
+    apply_deadline: 2026-09-13T23:59:00
+    results_date: 2026-09-19T13:00:00
+    payment_deadline: 2026-09-22T21:00:00
+  - name: 2次抽選
+    type: upgrade
+    apply_open: 2026-09-19T12:00:00
+    apply_deadline: 2026-09-23T23:59:00
+    results_date: 2026-10-02T13:00:00

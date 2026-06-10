@@ -1,0 +1,62 @@
+name: Liella! Sports Festival
+name_en: Liella! Sports Festival
+kind: event
+series:
+  - Liella!
+categories:
+  - event
+  - sports-festival
+performers:
+  - Liyuu
+  - 岬なこ
+  - 鈴原希実
+  - 坂倉さくら
+  - 伊達さゆり
+  - 薮島朱音
+  - 大熊和奏
+  - 結那
+  - ペイトン尚未
+  - 青山なぎさ
+  - 絵森彩
+performances:
+  - date: 2026-09-05
+    label: Day 1 (Day Session)
+    venue: 東京体育館
+    venue_address: 東京都渋谷区千駄ヶ谷
+    doors: "13:00"
+    starts: "14:00"
+  - date: 2026-09-05
+    label: Day 1 (Night Session)
+    venue: 東京体育館
+    venue_address: 東京都渋谷区千駄ヶ谷
+    doors: "17:30"
+    starts: "18:30"
+  - date: 2026-09-06
+    label: Day 2 (Day Session)
+    venue: 東京体育館
+    venue_address: 東京都渋谷区千駄ヶ谷
+    doors: "13:00"
+    starts: "14:00"
+  - date: 2026-09-06
+    label: Day 2 (Night Session)
+    venue: 東京体育館
+    venue_address: 東京都渋谷区千駄ヶ谷
+    doors: "17:30"
+    starts: "18:30"
+eventernote_url: https://ramen.events/liella-sports-festival/
+official_url: https://www.lovelive-anime.jp/yuigaoka/live/live_detail.php?p=taiikusai
+notes: 結ヶ丘の体育祭イベント。Nijigasaki/Aqoursよりゲスト出演。出典 ramen.events。
+rounds:
+  - name: "Lottery #1: Liella! CLUB 2026"
+    type: fanclub
+    apply_open: 2026-05-16T12:00:00
+    apply_deadline: 2026-06-01T18:00:00
+    results_date: 2026-06-06T13:00:00
+    payment_deadline: 2026-06-09T21:00:00
+  - name: "Lottery #2: Official Advance Lottery"
+    type: presale
+    apply_open: 2026-06-01T18:00:00
+    apply_deadline: 2026-06-14T23:59:00
+    results_date: 2026-06-18T13:00:00
+    payment_deadline: 2026-06-21T21:00:00
+    apply_url: https://eplus.jp/liella-taiikusai/

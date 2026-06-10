@@ -1,0 +1,64 @@
+name: Guilty Kiss × Saint Snow TWO-MAN LIVE "VS"
+name_en: Guilty Kiss × Saint Snow TWO-MAN LIVE "VS"
+kind: concert
+series:
+  - Aqours
+  - Guilty Kiss
+  - Saint Snow
+categories:
+  - concert
+  - two-man
+performers:
+  - 逢田梨香子
+  - 小林愛香
+  - 鈴木愛奈
+  - 田野アサミ
+  - 佐藤日向
+performances:
+  - date: 2026-07-04
+    label: Day 1
+    venue: ぴあアリーナMM
+    venue_address: 神奈川県横浜市西区みなとみらい
+    doors: "16:00"
+    starts: "17:00"
+  - date: 2026-07-05
+    label: Day 2
+    venue: ぴあアリーナMM
+    venue_address: 神奈川県横浜市西区みなとみらい
+    doors: "15:00"
+    starts: "16:00"
+eventernote_url: https://ramen.events/gkss/
+official_url: https://www.lovelive-anime.jp/uranohoshi/live/live_detail.php?p=GKSS_TWO-MAN
+notes: Aqoursユニット Guilty Kiss と Saint Snow による対バンライブ。出典 ramen.events。
+rounds:
+  - name: "Lottery #1: WAKE:WOKE / BURN:BORN CD"
+    type: cd-lottery
+    apply_open: 2026-03-11T12:00:00
+    apply_deadline: 2026-03-29T23:59:00
+    results_date: 2026-04-03T13:00:00
+    payment_deadline: 2026-04-06T21:00:00
+  - name: "Lottery #2: Pre-order Advance Lottery"
+    type: presale
+    apply_open: 2026-04-11T12:00:00
+    apply_deadline: 2026-05-10T23:59:00
+    results_date: 2026-05-16T13:00:00
+    payment_deadline: 2026-05-19T21:00:00
+    apply_url: https://eplus.jp/gkss/
+  - name: "Lottery #3: Open Lottery"
+    type: general
+    apply_open: 2026-05-16T12:00:00
+    apply_deadline: 2026-05-31T23:59:00
+    results_date: 2026-06-06T13:00:00
+    payment_deadline: 2026-06-09T21:00:00
+    apply_url: https://eplus.jp/gkss/
+  - name: "Lottery #4: Open Lottery (Round 2)"
+    type: general
+    apply_open: 2026-06-06T12:00:00
+    apply_deadline: 2026-06-14T23:59:00
+    results_date: 2026-06-19T13:00:00
+    apply_url: https://eplus.jp/gkss/
+  - name: "Upgrade Lottery (requires Lottery #1 win)"
+    type: upgrade
+    apply_open: 2026-04-11T12:00:00
+    apply_deadline: 2026-05-06T23:59:00
+    results_date: 2026-05-13T13:00:00
