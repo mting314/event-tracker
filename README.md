@@ -136,6 +136,9 @@ bot picks up Vertex credentials automatically; elsewhere set
 `GOOGLE_APPLICATION_CREDENTIALS` to a mounted service-account key (or drop the `llm`
 extra — `/add` still works via the deterministic adapters).
 
+Slash commands: set **`DISCORD_GUILD_ID`** to a server id for **instant** per-guild
+command sync (great for testing); leave it unset for global commands (≈1h to appear).
+
 > Cloud Run isn't ideal here: a Discord **gateway** bot needs an always-on outbound
 > connection and durable local disk, which a request-driven, stateless service fights.
 

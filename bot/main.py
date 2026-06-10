@@ -42,6 +42,7 @@ JST = timezone(timedelta(hours=9))
 EVENTS_SOURCE = os.environ.get("EVENTS_SOURCE")
 SITE_URL = os.environ.get("SITE_URL", "").rstrip("/")
 CHECK_INTERVAL_MIN = int(os.environ.get("CHECK_INTERVAL_MIN", "15"))
+GUILD_ID = os.environ.get("DISCORD_GUILD_ID")  # set for instant per-guild command sync
 
 db = DB(os.environ.get("DB_PATH") or DEFAULT_DB)
 intents = discord.Intents.default()
@@ -300,7 +301,12 @@ async def _deliver(uid: str, text: str, dm_enabled: bool, channels: list[str]):
 @client.event
 async def on_ready():
     refresh_events()
-    await tree.sync()
+    if GUILD_ID:  # instant: commands appear immediately in this guild (no ~1h global wait)
+        guild = discord.Object(id=int(GUILD_ID))
+        tree.copy_global_to(guild=guild)
+        await tree.sync(guild=guild)
+    else:  # global sync — propagates to all servers within ~1h
+        await tree.sync()
     if not scheduler.is_running():
         scheduler.start()
     print(f"Logged in as {client.user} · {len(_events_cache)} events loaded")
