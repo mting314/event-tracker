@@ -83,7 +83,24 @@ async def test_testreminder_dms_the_caller(interaction):
 
 
 async def test_testreminder_handles_blocked_dms(interaction):
-    interaction.user.send = AsyncMock(side_effect=discord.Forbidden(MagicMock(status=403), "blocked"))
+    interaction.user.send = AsyncMock(
+        side_effect=discord.Forbidden(MagicMock(status=403), "blocked")
+    )
     await bm.testreminder.callback(interaction)
     body = interaction.followup.send.call_args[0][0]
     assert "Couldn't DM" in body
+
+
+async def test_heartbeat_pings_when_url_set():
+    with (
+        patch.object(bm, "HEALTHCHECK_URL", "https://hc.example/ping"),
+        patch.object(bm.requests, "get") as get,
+    ):
+        await bm._heartbeat()
+    get.assert_called_once()
+
+
+async def test_heartbeat_noop_without_url():
+    with patch.object(bm, "HEALTHCHECK_URL", None), patch.object(bm.requests, "get") as get:
+        await bm._heartbeat()
+    get.assert_not_called()

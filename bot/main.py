@@ -23,6 +23,7 @@ from urllib.parse import quote
 
 import certifi
 import discord
+import requests
 from discord import app_commands
 from discord.ext import tasks
 
@@ -62,6 +63,7 @@ EVENTS_SOURCE = os.environ.get("EVENTS_SOURCE")
 SITE_URL = os.environ.get("SITE_URL", "").rstrip("/")
 CHECK_INTERVAL_MIN = int(os.environ.get("CHECK_INTERVAL_MIN", "15"))
 GUILD_ID = os.environ.get("DISCORD_GUILD_ID")  # set for instant per-guild command sync
+HEALTHCHECK_URL = os.environ.get("HEALTHCHECK_URL")  # dead-man's-switch ping each tick
 
 db = DB(os.environ.get("DB_PATH") or DEFAULT_DB)
 intents = discord.Intents.default()
@@ -327,6 +329,18 @@ async def scheduler():
                 channels,
             )
             db.mark_event_notified(uid, ev["id"])
+    await _heartbeat()  # signal "tick completed" to an uptime monitor
+
+
+async def _heartbeat():
+    """Ping HEALTHCHECK_URL after a successful tick (dead-man's switch). If pings
+    stop (bot stuck / container or VM down), the monitor alerts. No-op if unset."""
+    if not HEALTHCHECK_URL:
+        return
+    try:
+        await asyncio.to_thread(requests.get, HEALTHCHECK_URL, timeout=10)
+    except Exception as exc:  # noqa: BLE001 - never let monitoring break the loop
+        print(f"⚠️ heartbeat failed: {exc}")
 
 
 async def _deliver(uid: str, text: str, dm_enabled: bool, channels: list[str]):
