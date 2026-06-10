@@ -13,6 +13,7 @@ RUN uv sync --frozen --no-dev --extra bot --extra llm
 
 # SQLite lives on a mounted volume so subscriptions survive restarts/redeploys.
 ENV DB_PATH=/data/tracker.db
+ENV PYTHONUNBUFFERED=1  # flush print()/logs straight to `docker logs`
 VOLUME ["/data"]
 
 # Reads config from env: DISCORD_TOKEN (required), EVENTS_SOURCE, SITE_URL,
