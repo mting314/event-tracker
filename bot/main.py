@@ -136,24 +136,26 @@ async def add(interaction: discord.Interaction, url: str, llm: bool = False):
     slug = slugify(data.get("name") or "", dates)
     yaml_text = to_event_yaml(data)
     src = "LLM (Vertex)" if res.used_llm else f"`{res.adapter}`"
-    lines = [
+    content = "\n".join([
         f"**{data.get('name', '(no name)')}**",
         f"via {src} · {len(data.get('performances', []))} performances · "
         f"{len(data.get('rounds', []))} rounds → `events/{slug}.yaml`",
         "Review the attached draft, then commit it (lottery dates are best-effort — verify).",
-    ]
+    ])
     if GITHUB_REPO:
-        link = (
-            f"https://github.com/{GITHUB_REPO}/new/{GITHUB_BRANCH}"
-            f"?filename=events/{slug}.yaml&value={quote(yaml_text)}"
-        )
-        lines.append(
-            f"[→ Open a PR with this draft]({link})"
-            if len(link) < 7800
-            else "_(too long for a PR link — use the attached file)_"
-        )
+        base = f"https://github.com/{GITHUB_REPO}/new/{GITHUB_BRANCH}?filename=events/{slug}.yaml"
+        prefilled = f"{base}&value={quote(yaml_text)}"
+        link_md = f"\n[→ Open a prefilled PR]({prefilled})"
+        # Discord caps `content` at 2000 chars; the markdown link counts the full URL,
+        # so only inline the (huge) prefilled link when it fits — else a short link.
+        if len(prefilled) < 8000 and len(content) + len(link_md) <= 1900:
+            content += link_md
+        else:
+            content += f"\n[→ New file on GitHub]({base}) — paste in the attached YAML."
+    if len(content) > 1990:
+        content = content[:1990] + "…"
     file = discord.File(io.BytesIO(yaml_text.encode("utf-8")), filename=f"{slug}.yaml")
-    await interaction.followup.send("\n".join(lines), file=file, ephemeral=True)
+    await interaction.followup.send(content, file=file, ephemeral=True)
 
 
 subscribe = app_commands.Group(name="subscribe", description="Subscribe to events or series")

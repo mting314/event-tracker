@@ -56,7 +56,36 @@ async def test_add_includes_pr_link_when_repo_set(interaction):
     ):
         await bm.add.callback(interaction, url="https://x/1")
     body = interaction.followup.send.call_args[0][0]
-    assert "github.com/me/event-tracker/new/" in body and "Open a PR" in body
+    assert "github.com/me/event-tracker/new/" in body and "prefilled PR" in body
+
+
+async def test_add_keeps_content_under_discord_2000_limit(interaction):
+    # A big event whose prefilled-PR link would blow Discord's 2000-char content cap.
+    big = Ingested(
+        data={
+            "name": "Big Tour",
+            "performances": [{"date": f"2026-09-{d:02d}"} for d in range(1, 13)],
+            "rounds": [
+                {
+                    "name": f"Round {i} 先行抽選ロングネーム",
+                    "apply_deadline": "2026-06-21T23:59:00",
+                    "apply_url": f"https://eplus.jp/some/quite/long/path/round-{i}",
+                }
+                for i in range(40)
+            ],
+        },
+        adapter="llm",
+        used_llm=True,
+    )
+    with (
+        patch.object(bm, "GITHUB_REPO", "me/event-tracker"),
+        patch.object(bm, "ingest_url", return_value=big),
+    ):
+        await bm.add.callback(interaction, url="https://x/big")
+    args, kwargs = interaction.followup.send.call_args
+    assert len(args[0]) <= 2000  # within Discord's limit
+    assert "New file on GitHub" in args[0]  # fell back to the short link
+    assert isinstance(kwargs["file"], discord.File)  # full YAML still attached
 
 
 async def test_add_reports_llm_fallback(interaction):
