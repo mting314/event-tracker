@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Catalog · LL Lottery Tracker{% endblock %}
+{% block content %}
+<h1>Event catalog</h1>
+{% set kinds = events|map(attribute='kind')|select|unique|list %}
+<div class="filters">
+  <input type="search" id="q" placeholder="Search name, artist, series, venue, performer…" autofocus>
+  <select id="kind">
+    <option value="">All kinds</option>
+    {% for k in kinds %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
+  </select>
+  <label><input type="checkbox" id="open-only"> has open round</label>
+</div>
+
+<table class="catalog" id="catalog">
+  <thead>
+    <tr><th>Event</th><th>Series / Artist</th><th>Kind</th><th>Venue</th><th>Dates</th><th>Rounds</th></tr>
+  </thead>
+  <tbody>
+    {% for ev in events %}
+    <tr class="evrow"
+        data-haystack="{{ (ev.name ~ ' ' ~ (ev.name_en or '') ~ ' ' ~ (ev.artist or '') ~ ' ' ~ (ev.series|join(' ')) ~ ' ' ~ (ev.venues|join(' ')) ~ ' ' ~ (ev.performers|join(' ')))|lower }}"
+        data-kind="{{ ev.kind or '' }}"
+        data-deadlines="{% for r in ev.rounds %}{{ r.apply_deadline or '' }},{% endfor %}">
+      <td><a href="{{ base }}event/{{ ev.id }}.html">{{ ev.name }}</a>
+        {% if ev.name_en %}<div class="sub">{{ ev.name_en }}</div>{% endif %}</td>
+      <td>{% for s in ev.series %}<span class="tag">{{ s }}</span>{% endfor %}{% if ev.artist %}<span class="sub">{{ ev.artist }}</span>{% endif %}</td>
+      <td>{% if ev.kind %}<span class="kind-badge">{{ ev.kind }}</span>{% endif %}</td>
+      <td>{% if ev.venues %}{{ ev.venues[0] }}{% if ev.venues|length > 1 %} <span class="sub">+{{ ev.venues|length - 1 }}</span>{% endif %}{% else %}—{% endif %}</td>
+      <td>{% if ev.event_dates %}<span class="nowrap">{{ ev.event_dates[0][:10] }}{% if ev.event_dates|length > 1 %} – {{ ev.event_dates[-1][:10] }}{% endif %}</span>{% endif %}</td>
+      <td>{{ ev.rounds|length }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p class="empty" id="catalog-empty" hidden>No matching events.</p>
+{% endblock %}
+{% block scripts %}<script>initCatalog();</script>{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ event.name }} · LL Lottery Tracker{% endblock %}
+{% block content %}
+<article class="event-detail">
+  <p class="crumb"><a href="{{ base }}catalog.html">← Catalog</a></p>
+  <h1>{{ event.name }}</h1>
+  {% if event.name_en %}<p class="sub">{{ event.name_en }}</p>{% endif %}
+
+  {% if event.kind %}<span class="kind-badge">{{ event.kind }}</span>{% endif %}
+
+  <div class="meta-grid">
+    {% if event.artist %}<div><dt>Artist</dt><dd>{{ event.artist }}</dd></div>{% endif %}
+    {% if event.series %}<div><dt>Series</dt><dd>{% for s in event.series %}<span class="tag">{{ s }}</span>{% endfor %}</dd></div>{% endif %}
+    {% if event.event_dates %}<div><dt>Dates</dt><dd>{{ event.event_dates[0] }}{% if event.event_dates|length > 1 %} – {{ event.event_dates[-1] }}{% endif %}</dd></div>{% endif %}
+    {% if event.performers %}<div><dt>Cast</dt><dd>{{ event.performers|join('、') }}</dd></div>{% endif %}
+  </div>
+
+  {% if event.performances %}
+  <h2>Performances</h2>
+  <table class="performances">
+    <thead><tr><th>Date</th><th>Leg</th><th>Venue</th><th>Doors / Starts</th></tr></thead>
+    <tbody>
+      {% for p in event.performances %}
+      <tr>
+        <td class="nowrap">{{ p.date }}{% if p.label %}<div class="sub">{{ p.label }}</div>{% endif %}</td>
+        <td>{{ p.city or '—' }}</td>
+        <td>{{ p.venue or '—' }}{% if p.venue_address %}<div class="sub">{{ p.venue_address }}</div>{% endif %}</td>
+        <td class="nowrap">{% if p.doors or p.starts %}{{ p.doors or '?' }} / {{ p.starts or '?' }}{% else %}—{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <p class="links">
+    {% if event.eventernote_url %}<a href="{{ event.eventernote_url }}" target="_blank" rel="noopener">eventernote ↗</a>{% endif %}
+    {% if event.official_url %}<a href="{{ event.official_url }}" target="_blank" rel="noopener">official site ↗</a>{% endif %}
+    <a href="{{ base }}add.html?edit={{ event.id }}">✎ edit this event</a>
+  </p>
+  {% if event.notes %}<p class="notes">{{ event.notes }}</p>{% endif %}
+
+  <h2>Lottery rounds</h2>
+  <table class="rounds">
+    <thead>
+      <tr><th>Round</th><th>Leg</th>{% for f, meta in date_types.items() %}<th>{{ meta[0] }}</th>{% endfor %}<th></th></tr>
+    </thead>
+    <tbody>
+      {% for r in event.rounds %}
+      <tr>
+        <td><strong>{{ r.name }}</strong>{% if r.type %}<div class="sub">{{ r.type }}</div>{% endif %}</td>
+        <td>{% if r.leg %}<span class="tag">{{ r.leg }}</span>{% else %}<span class="muted">all</span>{% endif %}</td>
+        {% for f, meta in date_types.items() %}
+        {% set dt = r[f] %}
+        <td>{% if dt %}<time class="dt countdown-cell" datetime="{{ dt.isoformat() }}">{{ dt.isoformat()|jst_fmt }}</time>{% else %}<span class="muted">—</span>{% endif %}</td>
+        {% endfor %}
+        <td>
+          {% if r.apply_url %}<a class="apply" href="{{ r.apply_url }}" target="_blank" rel="noopener">Apply ↗</a>{% endif %}
+          {% if r.apply_deadline %}<a class="ics" href="#" data-title="{{ event.name }} — {{ r.name }}{% if r.leg %} ({{ r.leg }}){% endif %} 締切" data-iso="{{ r.apply_deadline.isoformat() }}">📅 .ics</a>{% endif %}
+        </td>
+      </tr>
+      {% if r.notes %}<tr class="round-notes"><td colspan="{{ date_types|length + 3 }}">{{ r.notes }}</td></tr>{% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+</article>
+{% endblock %}
+{% block scripts %}<script>initEventDetail();</script>{% endblock %}
