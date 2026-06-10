@@ -14,6 +14,7 @@ dependencies = [
 [project.optional-dependencies]
 bot = [
     "discord.py>=2.3",
+    "python-dotenv>=1.0",  # load config from .env for local runs
 ]
 llm = [
     # Provider-swappable LLM fallback. [google] pulls the Vertex AI (Gemini) backend;

@@ -38,6 +38,13 @@ from .reminders import (
 )
 from .sync import all_series, load_events, search_events
 
+try:  # load .env for local runs (containers inject env directly); optional dep
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
 JST = timezone(timedelta(hours=9))
 EVENTS_SOURCE = os.environ.get("EVENTS_SOURCE")
 SITE_URL = os.environ.get("SITE_URL", "").rstrip("/")
