@@ -91,10 +91,12 @@ uv run --extra bot python -m bot.main
 `/subscriptions`, `/upcoming`, `/settings` (lead times like `3d,1d,2h` + DM
 toggle), `/setchannel` (admin), `/testreminder` (admin — DMs you a sample reminder
 to verify delivery), and **`/add <url>`** — ingest any event page
-(official / FC / live-house) via the hybrid pipeline and reply with a draft YAML
-file + a prefilled "Open a PR" link (set `GITHUB_REPO`). Heavy work runs off the
-event loop (`asyncio.to_thread`); needs the `llm`/`bot` extras + GCP creds for the
-LLM fallback.
+(official / FC / live-house) via the hybrid pipeline and show a **review embed**
+(name, performances, lottery rounds) with **Confirm / Cancel** buttons. On Confirm
+the draft is schema-validated and the bot **opens a PR** (needs `GITHUB_TOKEN`;
+without it, returns a new-file link). The full YAML is always attached. Heavy work
+runs off the event loop (`asyncio.to_thread`); needs the `llm`/`bot` extras + GCP
+creds for the LLM fallback.
 
 **Reminders:** the scheduler checks every `CHECK_INTERVAL_MIN` minutes and fires
 on apply-open, deadline, results, and payment dates. Default lead times are 3d /

@@ -20,7 +20,6 @@ import io
 import logging
 import os
 from datetime import datetime, timedelta, timezone
-from urllib.parse import quote
 
 import certifi
 import discord
@@ -113,8 +112,109 @@ async def search(interaction: discord.Interaction, query: str):
     await interaction.response.send_message("\n".join(lines), ephemeral=True)
 
 
-GITHUB_REPO = os.environ.get("GITHUB_REPO")  # owner/repo, for the "Open a PR" link
+GITHUB_REPO = os.environ.get("GITHUB_REPO")  # owner/repo
 GITHUB_BRANCH = os.environ.get("GITHUB_BRANCH", "main")
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")  # PAT (contents+PR write) -> bot opens PRs
+
+
+def _fmt_dt(iso: str | None) -> str:
+    return iso.replace("T", " ")[:16] if iso else "—"
+
+
+def build_event_embed(data: dict, slug: str, src: str) -> discord.Embed:
+    """A review embed of the scraped event (truncated to Discord's field limits)."""
+    emb = discord.Embed(
+        title=(data.get("name") or "(no name)")[:256],
+        description=data.get("name_en"),
+        url=data.get("source_url") or None,
+        color=0xFF5FA2,
+    )
+    meta = " · ".join(
+        x for x in [data.get("kind"), data.get("artist"), ", ".join(data.get("series", []))] if x
+    )
+    if meta:
+        emb.add_field(name="What", value=meta[:1024], inline=False)
+    perfs = data.get("performances", [])
+    if perfs:
+        lines = [
+            f"`{p.get('date', '?')}` {(p.get('city') or '')} {(p.get('venue') or '')}".strip()
+            for p in perfs[:8]
+        ]
+        if len(perfs) > 8:
+            lines.append(f"…and {len(perfs) - 8} more")
+        emb.add_field(name=f"Performances ({len(perfs)})", value="\n".join(lines)[:1024], inline=False)
+    rounds = data.get("rounds", [])
+    if rounds:
+        lines = [
+            f"`{_fmt_dt(r.get('apply_deadline'))}` {(r.get('leg') + ': ' if r.get('leg') else '')}"
+            f"{r.get('name', '?')}"[:120]
+            for r in rounds[:10]
+        ]
+        if len(rounds) > 10:
+            lines.append(f"…and {len(rounds) - 10} more")
+        emb.add_field(name=f"Lottery rounds ({len(rounds)})", value="\n".join(lines)[:1024], inline=False)
+    emb.set_footer(text=f"via {src} · events/{slug}.yaml · ⚠ verify dates before confirming")
+    return emb
+
+
+async def _confirm_add(slug: str, yaml_text: str) -> str:
+    """Validate the draft and create the PR (or fall back to a link). Returns a status."""
+    import yaml as _yaml
+
+    from schema.models import Event
+
+    try:
+        raw = _yaml.safe_load(yaml_text) or {}
+        raw["id"] = slug
+        Event.model_validate(raw)
+    except Exception as exc:  # noqa: BLE001
+        return f"⚠️ Draft failed validation, not added:\n```{str(exc)[:400]}```"
+
+    if GITHUB_REPO and GITHUB_TOKEN:
+        from . import gh
+
+        try:
+            url = await asyncio.to_thread(
+                gh.create_event_pr, GITHUB_REPO, GITHUB_BRANCH, GITHUB_TOKEN, slug, yaml_text
+            )
+            return f"✅ PR opened — review & merge: {url}"
+        except Exception as exc:  # noqa: BLE001
+            log.exception("/add PR creation failed slug=%s", slug)
+            return f"⚠️ PR creation failed: {exc}\nUse the attached YAML to add it manually."
+    if GITHUB_REPO:
+        link = f"https://github.com/{GITHUB_REPO}/new/{GITHUB_BRANCH}?filename=events/{slug}.yaml"
+        return f"No `GITHUB_TOKEN` set — open it yourself: {link} (paste the attached YAML)."
+    return "Validated ✓ — commit the attached YAML to `events/`."
+
+
+class AddConfirmView(discord.ui.View):
+    def __init__(self, author_id: int, slug: str, yaml_text: str):
+        super().__init__(timeout=180)
+        self.author_id = author_id
+        self.slug = slug
+        self.yaml_text = yaml_text
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.author_id:
+            await interaction.response.send_message("Only the requester can confirm.", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="Confirm & open PR", style=discord.ButtonStyle.success, emoji="✅")
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        msg = await _confirm_add(self.slug, self.yaml_text)
+        for child in self.children:
+            child.disabled = True
+        await interaction.edit_original_response(content=msg, view=self)
+        self.stop()
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary, emoji="✖")
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        for child in self.children:
+            child.disabled = True
+        await interaction.response.edit_message(content="Cancelled — nothing added.", view=self)
+        self.stop()
 
 
 @tree.command(description="Draft an event from any URL (official, FC, live-house, …)")
@@ -135,27 +235,14 @@ async def add(interaction: discord.Interaction, url: str, llm: bool = False):
     dates = [p["date"] for p in data.get("performances", []) if p.get("date")]
     slug = slugify(data.get("name") or "", dates)
     yaml_text = to_event_yaml(data)
-    src = "LLM (Vertex)" if res.used_llm else f"`{res.adapter}`"
-    content = "\n".join([
-        f"**{data.get('name', '(no name)')}**",
-        f"via {src} · {len(data.get('performances', []))} performances · "
-        f"{len(data.get('rounds', []))} rounds → `events/{slug}.yaml`",
-        "Review the attached draft, then commit it (lottery dates are best-effort — verify).",
-    ])
-    if GITHUB_REPO:
-        base = f"https://github.com/{GITHUB_REPO}/new/{GITHUB_BRANCH}?filename=events/{slug}.yaml"
-        prefilled = f"{base}&value={quote(yaml_text)}"
-        link_md = f"\n[→ Open a prefilled PR]({prefilled})"
-        # Discord caps `content` at 2000 chars; the markdown link counts the full URL,
-        # so only inline the (huge) prefilled link when it fits — else a short link.
-        if len(prefilled) < 8000 and len(content) + len(link_md) <= 1900:
-            content += link_md
-        else:
-            content += f"\n[→ New file on GitHub]({base}) — paste in the attached YAML."
-    if len(content) > 1990:
-        content = content[:1990] + "…"
+    src = "LLM (Vertex)" if res.used_llm else res.adapter
+    embed = build_event_embed(data, slug, src)
+    view = AddConfirmView(interaction.user.id, slug, yaml_text)
     file = discord.File(io.BytesIO(yaml_text.encode("utf-8")), filename=f"{slug}.yaml")
-    await interaction.followup.send(content, file=file, ephemeral=True)
+    await interaction.followup.send(
+        "Review the scraped event, then **Confirm** to open a PR:",
+        embed=embed, view=view, file=file, ephemeral=True,
+    )
 
 
 subscribe = app_commands.Group(name="subscribe", description="Subscribe to events or series")

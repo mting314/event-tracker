@@ -36,62 +36,85 @@ def _ingested(used_llm=False, adapter="generic"):
     )
 
 
-async def test_add_defers_and_posts_draft_file(interaction):
-    with patch.object(bm, "ingest_url", return_value=_ingested()):
-        await bm.add.callback(interaction, url="https://lustqueen.info/news/detail/81252")
-
-    interaction.response.defer.assert_awaited_once()
-    interaction.followup.send.assert_awaited_once()
-    args, kwargs = interaction.followup.send.call_args
-    assert kwargs["ephemeral"] is True
-    assert isinstance(kwargs["file"], discord.File)  # YAML attached
-    assert kwargs["file"].filename.endswith(".yaml")
-    assert "Test 公演" in args[0] and "generic" in args[0]  # summary text
-
-
-async def test_add_includes_pr_link_when_repo_set(interaction):
-    with (
-        patch.object(bm, "GITHUB_REPO", "me/event-tracker"),
-        patch.object(bm, "ingest_url", return_value=_ingested()),
-    ):
-        await bm.add.callback(interaction, url="https://x/1")
-    body = interaction.followup.send.call_args[0][0]
-    assert "github.com/me/event-tracker/new/" in body and "prefilled PR" in body
-
-
-async def test_add_keeps_content_under_discord_2000_limit(interaction):
-    # A big event whose prefilled-PR link would blow Discord's 2000-char content cap.
-    big = Ingested(
+def _big_event(n_rounds=40, n_perfs=12):
+    return Ingested(
         data={
-            "name": "Big Tour",
-            "performances": [{"date": f"2026-09-{d:02d}"} for d in range(1, 13)],
+            "name": "Big Tour " + "ロングネーム" * 10,
+            "name_en": "Big Tour",
+            "performances": [
+                {"date": f"2026-09-{(d % 28) + 1:02d}", "city": "City", "venue": "Venue 会場名"}
+                for d in range(n_perfs)
+            ],
             "rounds": [
                 {
                     "name": f"Round {i} 先行抽選ロングネーム",
+                    "leg": "Kanagawa",
                     "apply_deadline": "2026-06-21T23:59:00",
-                    "apply_url": f"https://eplus.jp/some/quite/long/path/round-{i}",
                 }
-                for i in range(40)
+                for i in range(n_rounds)
             ],
         },
         adapter="llm",
         used_llm=True,
     )
-    with (
-        patch.object(bm, "GITHUB_REPO", "me/event-tracker"),
-        patch.object(bm, "ingest_url", return_value=big),
-    ):
-        await bm.add.callback(interaction, url="https://x/big")
+
+
+async def test_add_posts_embed_view_and_file(interaction):
+    with patch.object(bm, "ingest_url", return_value=_ingested()):
+        await bm.add.callback(interaction, url="https://lustqueen.info/news/detail/81252")
+
+    interaction.response.defer.assert_awaited_once()
     args, kwargs = interaction.followup.send.call_args
-    assert len(args[0]) <= 2000  # within Discord's limit
-    assert "New file on GitHub" in args[0]  # fell back to the short link
-    assert isinstance(kwargs["file"], discord.File)  # full YAML still attached
+    assert kwargs["ephemeral"] is True
+    assert isinstance(kwargs["file"], discord.File) and kwargs["file"].filename.endswith(".yaml")
+    assert isinstance(kwargs["view"], bm.AddConfirmView)
+    emb = kwargs["embed"]
+    assert isinstance(emb, discord.Embed) and emb.title == "Test 公演"
+    assert len(args[0]) <= 2000
 
 
-async def test_add_reports_llm_fallback(interaction):
+async def test_embed_reports_llm_source_in_footer(interaction):
     with patch.object(bm, "ingest_url", return_value=_ingested(used_llm=True, adapter="llm")):
         await bm.add.callback(interaction, url="https://x/2")
-    assert "LLM (Vertex)" in interaction.followup.send.call_args[0][0]
+    emb = interaction.followup.send.call_args.kwargs["embed"]
+    assert "LLM (Vertex)" in emb.footer.text
+
+
+async def test_embed_fields_within_discord_limits(interaction):
+    with patch.object(bm, "ingest_url", return_value=_big_event()):
+        await bm.add.callback(interaction, url="https://x/big")
+    emb = interaction.followup.send.call_args.kwargs["embed"]
+    assert len(emb.title) <= 256
+    assert all(len(f.value) <= 1024 for f in emb.fields)
+
+
+async def test_confirm_opens_pr_for_valid_draft():
+    from scrape.util import to_event_yaml
+
+    yaml_text = to_event_yaml(_ingested().data)
+    with (
+        patch.object(bm, "GITHUB_REPO", "me/event-tracker"),
+        patch.object(bm, "GITHUB_TOKEN", "tok"),
+        patch("bot.gh.create_event_pr", return_value="https://github.com/me/event-tracker/pull/9"),
+    ):
+        msg = await bm._confirm_add("2026-test", yaml_text)
+    assert "PR opened" in msg and "/pull/9" in msg
+
+
+async def test_confirm_rejects_invalid_draft():
+    bad = "name: Bad\nrounds:\n  - name: no-dates\n    type: presale\n"  # round w/o any date
+    with patch.object(bm, "GITHUB_REPO", "me/event-tracker"), patch.object(bm, "GITHUB_TOKEN", "tok"):
+        msg = await bm._confirm_add("2026-bad", bad)
+    assert "failed validation" in msg
+
+
+async def test_confirm_without_token_returns_link():
+    from scrape.util import to_event_yaml
+
+    yaml_text = to_event_yaml(_ingested().data)
+    with patch.object(bm, "GITHUB_REPO", "me/event-tracker"), patch.object(bm, "GITHUB_TOKEN", None):
+        msg = await bm._confirm_add("2026-test", yaml_text)
+    assert "open it yourself" in msg and "github.com/me/event-tracker/new/" in msg
 
 
 async def test_add_handles_ingest_failure_gracefully(interaction):
