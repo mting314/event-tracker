@@ -1,0 +1,13 @@
+# Run the Discord bot as a container (e.g. on a GCE VM with Docker).
+#   cp .env.example .env   # fill in DISCORD_TOKEN etc.
+#   docker compose up -d --build
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - tracker-data:/data # persists bot/tracker.db (DB_PATH=/data/tracker.db)
+
+volumes:
+  tracker-data:

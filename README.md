@@ -101,12 +101,43 @@ on apply-open, deadline, results, and payment dates. Default lead times are 3d /
 suppression via the `sent_reminders` table). Subscriptions live in SQLite, keyed
 by Discord user id (multi-user ready).
 
-### Deploy (cloud host + SQLite)
+### Deploy (Docker on GCP)
 
-Run the bot as a worker on Railway / Fly.io / a VPS (the `Procfile` runs
-`uv run --extra bot python -m bot.main`). Point `EVENTS_SOURCE` at the published `events.json` so the
-bot stays decoupled from the repo. **Mount a persistent volume for `DB_PATH`** so
-subscriptions and sent-reminder state survive restarts.
+The bot ships as a container (`Dockerfile`) with a volume for SQLite
+(`docker-compose.yml`). It reads config from `.env` and points `EVENTS_SOURCE` at
+the published `events.json`, so it's decoupled from the repo.
+
+**Create the Discord app** (Developer Portal → New Application → Bot → copy token;
+invite with `applications.commands` + `bot` scopes), then put the token in `.env`.
+
+**Recommended: a small Compute Engine VM** (durable disk for SQLite + automatic
+Vertex credentials from the VM's service account — no key file for `/add`'s LLM):
+
+```bash
+# one-time: a VM whose service account can call Vertex
+gcloud compute instances create ll-bot \
+  --machine-type e2-small --boot-disk-size 20GB \
+  --scopes cloud-platform                       # ADC -> Vertex AI
+gcloud projects add-iam-policy-binding "$GOOGLE_CLOUD_PROJECT" \
+  --member "serviceAccount:$(gcloud compute instances describe ll-bot \
+     --format='value(serviceAccounts[0].email)')" \
+  --role roles/aiplatform.user
+
+# on the VM: install Docker, then
+git clone https://github.com/mting314/event-tracker && cd event-tracker
+cp .env.example .env && nano .env               # DISCORD_TOKEN, GOOGLE_CLOUD_PROJECT, …
+docker compose up -d --build
+docker compose logs -f bot                       # "Logged in as …"
+```
+
+The container's `DB_PATH=/data/tracker.db` is backed by the `tracker-data` volume,
+so subscriptions and sent-reminder state survive restarts/redeploys. On a GCE VM the
+bot picks up Vertex credentials automatically; elsewhere set
+`GOOGLE_APPLICATION_CREDENTIALS` to a mounted service-account key (or drop the `llm`
+extra — `/add` still works via the deterministic adapters).
+
+> Cloud Run isn't ideal here: a Discord **gateway** bot needs an always-on outbound
+> connection and durable local disk, which a request-driven, stateless service fights.
 
 ## Development
 
