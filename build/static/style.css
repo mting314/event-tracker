@@ -12,6 +12,8 @@
   --event: #5fa8ff;
 }
 * { box-sizing: border-box; }
+/* Ensure the `hidden` attribute always wins over display rules like .feed-item{display:flex} */
+[hidden] { display: none !important; }
 body {
   margin: 0;
   font-family: system-ui, "Hiragino Sans", "Noto Sans JP", sans-serif;
@@ -96,8 +98,9 @@ tbody tr:hover { background: var(--panel); }
 .cal-controls button { background: var(--panel-2); color: var(--text); border: none; border-radius: 6px; padding: .3rem .8rem; cursor: pointer; }
 #cal-label { font-weight: 600; min-width: 9rem; text-align: center; }
 .legend { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .5rem; }
-.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: #2c2f55; border: 1px solid #2c2f55; }
-.cal-cell { background: var(--bg); min-height: 86px; padding: .25rem; font-size: .75rem; }
+.calendar-wrap { overflow-x: auto; max-width: 100%; }  /* fixed width -> scroll, not page overflow */
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: #2c2f55; border: 1px solid #2c2f55; min-width: 760px; }
+.cal-cell { background: var(--bg); min-width: 0; min-height: 86px; padding: .25rem; font-size: .75rem; }
 .cal-cell.dow { background: var(--panel); text-align: center; color: var(--muted); min-height: 0; font-weight: 600; }
 .cal-cell.other { opacity: .4; }
 .cal-daynum { color: var(--muted); }

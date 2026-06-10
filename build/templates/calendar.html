@@ -14,6 +14,8 @@
   <span class="badge payment">入金 Payment</span>
   <span class="badge event">公演 Event day</span>
 </div>
-<div id="calendar-grid" class="calendar-grid"></div>
+<div class="calendar-wrap">
+  <div id="calendar-grid" class="calendar-grid"></div>
+</div>
 {% endblock %}
 {% block scripts %}<script>initCalendar('{{ base }}data/events.json');</script>{% endblock %}
