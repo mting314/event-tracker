@@ -1,0 +1,35 @@
+# Watchlist for the watcher (scrape/watch.py). Each source is polled, parsed, and
+# diffed against events/*.yaml — reporting new events, new rounds, and changed
+# deadlines, and writing drafts to drafts/.
+#
+# `id`       links a source to an existing event for diffing (no match -> NEW EVENT).
+# `adapter`  how to parse it: auto (default — domain dispatch + LLM fallback),
+#            official, generic, eventernote, or llm.
+
+sources:
+  - id: 2026-liella-7th
+    url: https://www.lovelive-anime.jp/yuigaoka/live/live_detail.php?p=7thlive
+    adapter: official
+  - id: 2026-hasunosora-6th-live-dream
+    url: https://www.lovelive-anime.jp/hasunosora/live-event/live_detail.php?p=6thBGP
+    adapter: official
+  - id: 2026-gkss-vs-two-man
+    url: https://www.lovelive-anime.jp/uranohoshi/live/live_detail.php?p=GKSS_TWO-MAN
+    adapter: official
+  - id: 2026-ikizulive-2nd-live
+    url: https://www.lovelive-anime.jp/lovehigh/live/live_detail.php?_id=2ndLIVE
+    adapter: official
+  - id: 2026-liella-sports-festival
+    url: https://www.lovelive-anime.jp/yuigaoka/live/live_detail.php?p=taiikusai
+    adapter: official
+  - id: 2026-lovelive-fest-15th
+    url: https://www.lovelive-anime.jp/special/live/live_detail.php?p=15th_lovelivefest
+    adapter: official
+
+  # Non-Love-Live sources work too — use `generic` (or `auto`/`llm`):
+  # - id: 2026-lustqueen-sept
+  #   url: https://lustqueen.info/news/detail/81252
+  #   adapter: generic
+
+# ramen.events English RSS — discovery index (see scrape/ramen.py).
+ramen_rss: https://ramen.events/rss/
