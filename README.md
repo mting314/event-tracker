@@ -247,7 +247,7 @@ Swap providers with `LLM_MODEL` (no code change):
 
 | `LLM_MODEL` | Backend | Needs |
 |-------------|---------|-------|
-| `gemini-2.5-pro` *(default, bare = Vertex)* | Vertex AI | GCP ADC |
+| `gemini-2.5-flash` *(default, bare = Vertex)* | Vertex AI | GCP ADC |
 | `google-cloud:gemini-2.0-flash` | Vertex AI (cheaper) | GCP ADC |
 | `anthropic:claude-sonnet-4-5` | Anthropic | `ANTHROPIC_API_KEY` + `uv sync --extra llm` w/ `pydantic-ai-slim[anthropic]` |
 | `openai:gpt-4o` | OpenAI | `OPENAI_API_KEY` + `pydantic-ai-slim[openai]` |

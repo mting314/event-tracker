@@ -27,8 +27,9 @@ from pydantic import BaseModel
 
 from .generic import HEADERS
 
-DEFAULT_MODEL = "gemini-2.5-pro"
+DEFAULT_MODEL = "gemini-2.5-flash"  # ~2x faster than -pro for this extraction
 MAX_CHARS = 12000
+REQUEST_TIMEOUT = 90  # seconds — fail fast instead of hanging if Vertex stalls
 
 SYSTEM = (
     "You extract structured event + ticket-lottery data from a web page for a Love "
@@ -153,8 +154,8 @@ def _agent():
         _model(),
         output_type=ExtractedEvent,
         system_prompt=SYSTEM,
-        model_settings={"temperature": 0},
-        retries=2,
+        model_settings={"temperature": 0, "timeout": REQUEST_TIMEOUT},
+        retries=1,
     )
 
 
