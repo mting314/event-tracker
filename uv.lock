@@ -539,6 +539,7 @@ bot = [
     { name = "certifi" },
     { name = "discord-py" },
     { name = "python-dotenv" },
+    { name = "truststore" },
 ]
 dev = [
     { name = "pre-commit" },
@@ -565,6 +566,7 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "requests", specifier = ">=2.31" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9" },
+    { name = "truststore", marker = "extra == 'bot'", specifier = ">=0.9" },
 ]
 provides-extras = ["bot", "llm", "dev"]
 

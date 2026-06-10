@@ -46,10 +46,15 @@ try:  # load .env for local runs (containers inject env directly); optional dep
 except ImportError:
     pass
 
-# aiohttp/discord.py verify TLS via OpenSSL's default store, which often can't find
-# a CA bundle (macOS, minimal images) -> SSLCertVerificationError. Point it at
-# certifi (what requests already uses) before any connection is made.
-os.environ.setdefault("SSL_CERT_FILE", certifi.where())
+# Verify TLS using the OS trust store so it works behind corporate TLS interception
+# / proxies (managed laptops present Discord's cert signed by an internal root CA that
+# certifi's public bundle doesn't have). Fall back to certifi if truststore is absent.
+try:
+    import truststore
+
+    truststore.inject_into_ssl()
+except Exception:  # noqa: BLE001 - fall back to a public CA bundle
+    os.environ.setdefault("SSL_CERT_FILE", certifi.where())
 
 JST = timezone(timedelta(hours=9))
 EVENTS_SOURCE = os.environ.get("EVENTS_SOURCE")

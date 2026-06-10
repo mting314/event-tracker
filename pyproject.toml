@@ -15,7 +15,8 @@ dependencies = [
 bot = [
     "discord.py>=2.3",
     "python-dotenv>=1.0",  # load config from .env for local runs
-    "certifi>=2024.0",     # CA bundle so aiohttp/discord.py verify TLS
+    "certifi>=2024.0",     # fallback CA bundle
+    "truststore>=0.9",     # verify TLS via the OS trust store (handles corporate proxies)
 ]
 llm = [
     # Provider-swappable LLM fallback. [google] pulls the Vertex AI (Gemini) backend;
