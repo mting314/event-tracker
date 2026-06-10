@@ -89,7 +89,8 @@ uv run --extra bot python -m bot.main
 
 **Commands:** `/search`, `/subscribe event|series`, `/unsubscribe`,
 `/subscriptions`, `/upcoming`, `/settings` (lead times like `3d,1d,2h` + DM
-toggle), `/setchannel` (admin), and **`/add <url>`** — ingest any event page
+toggle), `/setchannel` (admin), `/testreminder` (admin — DMs you a sample reminder
+to verify delivery), and **`/add <url>`** — ingest any event page
 (official / FC / live-house) via the hybrid pipeline and reply with a draft YAML
 file + a prefilled "Open a PR" link (set `GITHUB_REPO`). Heavy work runs off the
 event loop (`asyncio.to_thread`); needs the `llm`/`bot` extras + GCP creds for the

@@ -72,3 +72,18 @@ async def test_add_handles_ingest_failure_gracefully(interaction):
     body = interaction.followup.send.call_args[0][0]
     assert "Couldn't ingest" in body and "boom" in body
     assert interaction.followup.send.call_args.kwargs["ephemeral"] is True
+
+
+async def test_testreminder_dms_the_caller(interaction):
+    interaction.user.send = AsyncMock()
+    await bm.testreminder.callback(interaction)
+    interaction.user.send.assert_awaited_once()
+    assert "Test reminder" in interaction.user.send.call_args[0][0]
+    assert "DM" in interaction.followup.send.call_args[0][0]
+
+
+async def test_testreminder_handles_blocked_dms(interaction):
+    interaction.user.send = AsyncMock(side_effect=discord.Forbidden(MagicMock(status=403), "blocked"))
+    await bm.testreminder.callback(interaction)
+    body = interaction.followup.send.call_args[0][0]
+    assert "Couldn't DM" in body

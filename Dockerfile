@@ -6,9 +6,14 @@ FROM python:3.12-slim
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
-COPY . .
 
-# Install exactly what's in uv.lock (bot + LLM extras; no dev tooling).
+# Install deps first (cached unless pyproject/uv.lock change) — keeps code-only
+# rebuilds fast and light (matters on small VMs).
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project --extra bot --extra llm
+
+# Then the app code + install the project itself.
+COPY . .
 RUN uv sync --frozen --no-dev --extra bot --extra llm
 
 # SQLite lives on a mounted volume so subscriptions survive restarts/redeploys.

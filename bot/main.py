@@ -32,6 +32,7 @@ from scrape.util import slugify, to_event_yaml
 from .db import DB, DEFAULT_DB
 from .reminders import (
     DEFAULT_LEAD_SECONDS,
+    DueReminder,
     due_for_user,
     format_reminder,
     humanize,
@@ -265,6 +266,34 @@ async def setchannel(interaction: discord.Interaction):
     await interaction.response.send_message(
         "✅ This channel will receive reminders.", ephemeral=True
     )
+
+
+@tree.command(description="(Admin) DM yourself a sample reminder to verify delivery")
+@app_commands.default_permissions(manage_guild=True)
+async def testreminder(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True, thinking=True)
+    sample = DueReminder(
+        user_id=str(interaction.user.id),
+        event_id="test-event",
+        event_name="Test Event 🎫",
+        round_name="Sample Round",
+        date_type="apply_deadline",
+        target=datetime.now(JST) + timedelta(days=3),
+        lead=3 * 86400,
+        occ_key="test",
+    )
+    text = "✅ **Test reminder** — DMs from this bot are working!\n\n" + format_reminder(sample)
+    try:
+        await interaction.user.send(text)
+        await interaction.followup.send("Sent you a DM ✅", ephemeral=True)
+    except discord.Forbidden:
+        await interaction.followup.send(
+            "⚠️ Couldn't DM you. Enable **Privacy Settings → Direct Messages from "
+            "server members** for this server, then retry.",
+            ephemeral=True,
+        )
+    except Exception as exc:  # noqa: BLE001
+        await interaction.followup.send(f"⚠️ DM failed: {exc}", ephemeral=True)
 
 
 # ---------------- scheduler ----------------
