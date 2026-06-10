@@ -21,6 +21,7 @@ import os
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
 
+import certifi
 import discord
 from discord import app_commands
 from discord.ext import tasks
@@ -44,6 +45,11 @@ try:  # load .env for local runs (containers inject env directly); optional dep
     load_dotenv()
 except ImportError:
     pass
+
+# aiohttp/discord.py verify TLS via OpenSSL's default store, which often can't find
+# a CA bundle (macOS, minimal images) -> SSLCertVerificationError. Point it at
+# certifi (what requests already uses) before any connection is made.
+os.environ.setdefault("SSL_CERT_FILE", certifi.where())
 
 JST = timezone(timedelta(hours=9))
 EVENTS_SOURCE = os.environ.get("EVENTS_SOURCE")

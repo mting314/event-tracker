@@ -536,6 +536,7 @@ dependencies = [
 
 [package.optional-dependencies]
 bot = [
+    { name = "certifi" },
     { name = "discord-py" },
     { name = "python-dotenv" },
 ]
@@ -552,6 +553,7 @@ llm = [
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.12" },
+    { name = "certifi", marker = "extra == 'bot'", specifier = ">=2024.0" },
     { name = "discord-py", marker = "extra == 'bot'", specifier = ">=2.3" },
     { name = "jinja2", specifier = ">=3.1" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.5" },
