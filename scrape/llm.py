@@ -19,13 +19,17 @@ this module imports fine without the SDK or credentials (tests inject an agent).
 
 from __future__ import annotations
 
+import logging
 import os
 import re
+import time
 
 from bs4 import BeautifulSoup
 from pydantic import BaseModel
 
 from .generic import HEADERS
+
+log = logging.getLogger(__name__)
 
 DEFAULT_MODEL = "gemini-2.5-flash"  # ~2x faster than -pro for this extraction
 MAX_CHARS = 12000
@@ -162,15 +166,26 @@ def _agent():
 def extract_event(text: str, url: str | None = None, title: str = "", agent=None) -> dict:
     """Run extraction. `agent` is injectable for tests (must expose .run_sync)."""
     agent = agent or _agent()
-    result = agent.run_sync(build_prompt(title, text, url))
+    model = os.environ.get("LLM_MODEL", DEFAULT_MODEL)
+    log.info("llm: model=%s, %d chars — calling…", model, len(text))
+    t = time.perf_counter()
+    try:
+        result = agent.run_sync(build_prompt(title, text, url))
+    except Exception:
+        log.exception("llm: call FAILED after %.1fs (model=%s)", time.perf_counter() - t, model)
+        raise
+    log.info("llm: call ok in %.1fs", time.perf_counter() - t)
     return _to_event_dict(result.output, url)
 
 
 def scrape(url: str, agent=None) -> dict:
     import requests
 
+    log.info("llm: fetching %s", url)
+    t = time.perf_counter()
     r = requests.get(url, headers=HEADERS, timeout=25)
     r.raise_for_status()
     r.encoding = r.apparent_encoding or r.encoding
     title, text = page_text(r.text)
+    log.info("llm: fetched %s in %.1fs (%d chars)", url, time.perf_counter() - t, len(text))
     return extract_event(text, url, title, agent=agent)

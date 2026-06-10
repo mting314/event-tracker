@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import asyncio
 import io
+import logging
 import os
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
@@ -64,6 +65,7 @@ SITE_URL = os.environ.get("SITE_URL", "").rstrip("/")
 CHECK_INTERVAL_MIN = int(os.environ.get("CHECK_INTERVAL_MIN", "15"))
 GUILD_ID = os.environ.get("DISCORD_GUILD_ID")  # set for instant per-guild command sync
 HEALTHCHECK_URL = os.environ.get("HEALTHCHECK_URL")  # dead-man's-switch ping each tick
+log = logging.getLogger("bot")
 
 db = DB(os.environ.get("DB_PATH") or DEFAULT_DB)
 intents = discord.Intents.default()
@@ -119,11 +121,15 @@ GITHUB_BRANCH = os.environ.get("GITHUB_BRANCH", "main")
 @app_commands.describe(url="event page URL", llm="force LLM (Vertex) extraction")
 async def add(interaction: discord.Interaction, url: str, llm: bool = False):
     await interaction.response.defer(ephemeral=True, thinking=True)
+    log.info("/add user=%s url=%s force_llm=%s", interaction.user, url, llm)
     try:  # fetch + parse off the event loop (blocking I/O + optional LLM)
         res = await asyncio.to_thread(ingest_url, url, True, llm)
     except Exception as exc:  # noqa: BLE001
+        log.exception("/add failed url=%s", url)
         await interaction.followup.send(f"⚠️ Couldn't ingest that URL: {exc}", ephemeral=True)
         return
+    log.info("/add done url=%s adapter=%s used_llm=%s rounds=%d", url, res.adapter, res.used_llm,
+             len(res.data.get("rounds", [])))
 
     data = res.data
     dates = [p["date"] for p in data.get("performances", []) if p.get("date")]
@@ -377,7 +383,8 @@ def main():
     token = os.environ.get("DISCORD_TOKEN")
     if not token:
         raise SystemExit("set DISCORD_TOKEN")
-    client.run(token)
+    # root_logger=True so our scrape/ingest/llm INFO logs surface (not just discord's)
+    client.run(token, root_logger=True)
 
 
 if __name__ == "__main__":

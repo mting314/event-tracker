@@ -7,8 +7,12 @@ nothing. Adapters and the LLM are imported lazily so importing this module is ch
 
 from __future__ import annotations
 
+import logging
+import time
 from dataclasses import dataclass
 from urllib.parse import urlparse
+
+log = logging.getLogger(__name__)
 
 
 def pick_scraper(url: str):
@@ -42,14 +46,28 @@ def ingest_url(url: str, allow_llm: bool = True, force_llm: bool = False) -> Ing
     if force_llm:
         from . import llm
 
-        return Ingested(llm.scrape(url), "llm", True)
+        log.info("ingest %s: forced LLM", url)
+        t = time.perf_counter()
+        data = llm.scrape(url)
+        log.info("ingest %s: LLM done in %.1fs (%d rounds)", url, time.perf_counter() - t,
+                 len(data.get("rounds", [])))
+        return Ingested(data, "llm", True)
 
     scraper = pick_scraper(url)
     adapter = scraper.__module__.rsplit(".", 1)[-1]
+    log.info("ingest %s: adapter=%s", url, adapter)
+    t = time.perf_counter()
     data = scraper(url)
+    log.info("ingest %s: %s parsed in %.1fs (%d rounds, %d perfs)", url, adapter,
+             time.perf_counter() - t, len(data.get("rounds", [])), len(data.get("performances", [])))
 
     if empty(data) and allow_llm:
         from . import llm
 
-        return Ingested(llm.scrape(url), "llm", True)
+        log.info("ingest %s: empty via %s -> LLM fallback", url, adapter)
+        t = time.perf_counter()
+        data = llm.scrape(url)
+        log.info("ingest %s: LLM done in %.1fs (%d rounds)", url, time.perf_counter() - t,
+                 len(data.get("rounds", [])))
+        return Ingested(data, "llm", True)
     return Ingested(data, adapter, False)
