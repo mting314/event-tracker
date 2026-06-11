@@ -149,8 +149,13 @@ GITHUB_BRANCH = os.environ.get("GITHUB_BRANCH", "main")
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")  # PAT (contents+PR write) -> bot opens PRs
 
 
-def _fmt_dt(iso: str | None) -> str:
-    return iso.replace("T", " ")[:16] if iso else "—"
+def _fmt_dt(value) -> str:
+    """Format a round date for the embed. Accepts an ISO string OR a date/datetime
+    (the generic adapter yields datetimes, the LLM path yields ISO strings)."""
+    if not value:
+        return "—"
+    s = value.isoformat() if hasattr(value, "isoformat") else str(value)
+    return s.replace("T", " ")[:16]
 
 
 def build_event_embed(data: dict, slug: str, src: str) -> discord.Embed:
@@ -344,20 +349,26 @@ async def add(interaction: discord.Interaction, url: str, llm: bool = False):
         len(res.data.get("rounds", [])),
     )
 
-    data = res.data
-    dates = [p["date"] for p in data.get("performances", []) if p.get("date")]
-    slug = slugify(data.get("name") or "", dates)
-    yaml_text = to_event_yaml(data)
-    src = "LLM (Vertex)" if res.used_llm else res.adapter
-    embed = build_event_embed(data, slug, src)
-    view = AddConfirmView(interaction.user.id, slug, yaml_text)
-    file = discord.File(io.BytesIO(yaml_text.encode("utf-8")), filename=f"{slug}.yaml")
-    await interaction.edit_original_response(
-        content=f"✅ Parsed via **{src}** — review, then **Confirm** to save (or Edit first):",
-        embed=embed,
-        view=view,
-        attachments=[file],
-    )
+    try:
+        data = res.data
+        dates = [p["date"] for p in data.get("performances", []) if p.get("date")]
+        slug = slugify(data.get("name") or "", dates)
+        yaml_text = to_event_yaml(data)
+        src = "LLM (Vertex)" if res.used_llm else res.adapter
+        embed = build_event_embed(data, slug, src)
+        view = AddConfirmView(interaction.user.id, slug, yaml_text)
+        file = discord.File(io.BytesIO(yaml_text.encode("utf-8")), filename=f"{slug}.yaml")
+        await interaction.edit_original_response(
+            content=f"✅ Parsed via **{src}** — review, then **Confirm** to save (or Edit first):",
+            embed=embed,
+            view=view,
+            attachments=[file],
+        )
+    except Exception as exc:  # noqa: BLE001 - never leave the spinner hanging
+        log.exception("/add render failed url=%s", url)
+        await interaction.edit_original_response(
+            content=f"⚠️ Parsed the page but couldn't build the preview: {exc}"
+        )
 
 
 async def _delete_event(slug: str) -> str:

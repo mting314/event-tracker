@@ -99,6 +99,37 @@ async def test_embed_fields_within_discord_limits(interaction):
     assert all(len(f.value) <= 1024 for f in emb.fields)
 
 
+def test_fmt_dt_accepts_str_and_datetime():
+    from datetime import date, datetime
+
+    assert bm._fmt_dt("2026-06-21T23:59:00") == "2026-06-21 23:59"
+    assert bm._fmt_dt(datetime(2026, 6, 21, 23, 59)) == "2026-06-21 23:59"
+    assert bm._fmt_dt(date(2026, 6, 21)) == "2026-06-21"
+    assert bm._fmt_dt(None) == "—"
+
+
+def test_embed_handles_generic_adapter_datetimes():
+    """Generic adapter yields datetime objects for round dates (not ISO strings);
+    the embed must render them without crashing (regression for the /add hang)."""
+    from datetime import datetime
+
+    data = {
+        "name": "Lust Queen 公演",
+        "performances": [{"date": "2026-09-07", "venue": "Shangri-La"}],
+        "rounds": [
+            {
+                "name": "FC先行",
+                "type": "presale",
+                "apply_open": datetime(2026, 6, 5, 12, 0),
+                "apply_deadline": datetime(2026, 6, 21, 23, 59),
+            }
+        ],
+    }
+    emb = bm.build_event_embed(data, "2026-x", "generic")  # must not raise
+    rounds = next(f for f in emb.fields if f.name.startswith("Lottery rounds"))
+    assert "2026-06-21 23:59" in rounds.value
+
+
 def test_embed_distinguishes_same_venue_performances():
     data = {
         "name": "Unit Fan Meeting",
