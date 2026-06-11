@@ -165,9 +165,9 @@ async def test_heartbeat_noop_without_url():
 
 
 def test_validate_draft_ok_and_bad():
-    from scrape.util import to_event_yaml
-
     from pydantic import ValidationError
+
+    from scrape.util import to_event_yaml
 
     raw = bm._validate_draft("2026-x", to_event_yaml(_ingested().data))
     assert raw["id"] == "2026-x" and raw["name"] == "Test 公演"
