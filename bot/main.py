@@ -34,6 +34,7 @@ from .db import DB, DEFAULT_DB
 from .reminders import (
     DEFAULT_LEAD_SECONDS,
     DueReminder,
+    discord_ts,
     due_for_user,
     format_reminder,
     humanize,
@@ -92,6 +93,17 @@ def event_name(eid: str) -> str:
         if e["id"] == eid:
             return e["name"]
     return eid
+
+
+def event_official_link(ev: dict) -> str:
+    """Best external link for an event: official page, else eventernote, else the
+    ingest source, else the site's own event page."""
+    return (
+        ev.get("official_url")
+        or ev.get("eventernote_url")
+        or ev.get("source_url")
+        or event_link(ev["id"])
+    )
 
 
 def parse_lead_spec(spec: str) -> list[int]:
@@ -520,7 +532,8 @@ async def upcoming(interaction: discord.Interaction):
         )
         return
     lines = [
-        f"• {t.strftime('%m-%d %H:%M')} — **{ev['name']}** {rnd['name']} ({DATE_LABELS[dt].split()[0]})"
+        f"• {discord_ts(t, 'f')} ({discord_ts(t, 'R')}) — "
+        f"**{ev['name']}** {rnd['name']} ({DATE_LABELS[dt].split()[0]})"
         for t, ev, rnd, dt in rows[:15]
     ]
     await interaction.response.send_message("Upcoming:\n" + "\n".join(lines), ephemeral=True)
@@ -549,10 +562,12 @@ async def deadlines(interaction: discord.Interaction, event_id: str):
     for target, rnd, dtype in rows:
         leg = f" · {rnd['leg']}" if rnd.get("leg") else ""
         label = DATE_LABELS[dtype].split()[0]
-        lines.append(f"• {target.strftime('%Y-%m-%d %H:%M')} — {rnd['name']}{leg} ({label})")
+        lines.append(
+            f"• {discord_ts(target, 'f')} ({discord_ts(target, 'R')}) — "
+            f"{rnd['name']}{leg} ({label})"
+        )
     body = f"**{ev['name']}** — upcoming dates:\n" + "\n".join(lines)
-    if SITE_URL:
-        body += f"\n{event_link(ev['id'])}"
+    body += f"\n{event_official_link(ev)}"
     await interaction.response.send_message(body, ephemeral=True)
 
 

@@ -22,6 +22,12 @@ DATE_LABELS = {
 }
 
 
+def discord_ts(dt: datetime, style: str = "f") -> str:
+    """Render a datetime as a Discord dynamic timestamp (shown in each viewer's
+    local timezone). Styles: f=date+time, F=full, R=relative ("in 3 days")."""
+    return f"<t:{int(dt.timestamp())}:{style}>"
+
+
 def occ_key(event_id: str, round_name: str, date_type: str, lead: int, leg: str = "") -> str:
     return f"{event_id}|{round_name}|{leg}|{date_type}|{lead}"
 
@@ -112,8 +118,10 @@ def due_for_user(events, subs, lead_times, now, was_sent) -> list[DueReminder]:
 
 def format_reminder(r: DueReminder) -> str:
     label = DATE_LABELS.get(r.date_type, r.date_type)
-    when = r.target.strftime("%Y-%m-%d %H:%M JST")
-    return f"⏰ **{r.event_name}** — {r.round_name}\n{label} in ~{humanize(r.lead)} · {when}"
+    return (
+        f"⏰ **{r.event_name}** — {r.round_name}\n"
+        f"{label} {discord_ts(r.target, 'R')} · {discord_ts(r.target, 'F')}"
+    )
 
 
 def new_events_for_user(events, subs, was_notified) -> list[dict]:

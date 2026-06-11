@@ -225,6 +225,7 @@ async def test_deadlines_lists_future_dates_only(interaction):
         "id": "2026-x",
         "name": "X Tour",
         "series": [],
+        "official_url": "https://example.com/x-tour",
         "rounds": [
             {"name": "Past FC", "apply_deadline": "2020-01-01T23:59:00+09:00"},
             {"name": "FC先行", "leg": "Tokyo", "apply_deadline": "2030-06-21T23:59:00+09:00"},
@@ -234,8 +235,33 @@ async def test_deadlines_lists_future_dates_only(interaction):
         await bm.deadlines.callback(interaction, event_id="2026-x")
     body = interaction.response.send_message.call_args[0][0]
     assert "X Tour" in body
-    assert "FC先行 · Tokyo" in body and "2030-06-21" in body
+    assert "FC先行 · Tokyo" in body
+    assert "<t:1908284340:f>" in body  # 2030-06-21T23:59:00+09:00 as a Discord timestamp
     assert "Past FC" not in body  # past dates filtered out
+    assert "https://example.com/x-tour" in body  # links to the official page, not the site html
+
+
+def test_event_official_link_prefers_official_then_falls_back():
+    assert (
+        bm.event_official_link(
+            {"id": "x", "official_url": "https://off", "eventernote_url": "https://en"}
+        )
+        == "https://off"
+    )
+    assert bm.event_official_link({"id": "x", "eventernote_url": "https://en"}) == "https://en"
+    assert bm.event_official_link({"id": "x", "source_url": "https://src"}) == "https://src"
+    with patch.object(bm, "SITE_URL", "https://site"):
+        assert bm.event_official_link({"id": "2026-x"}) == "https://site/event/2026-x.html"
+
+
+def test_discord_ts_renders_dynamic_timestamp():
+    from datetime import datetime
+
+    from bot.reminders import discord_ts
+
+    dt = datetime.fromisoformat("2030-06-21T23:59:00+09:00")
+    assert discord_ts(dt, "R") == "<t:1908284340:R>"
+    assert discord_ts(dt) == "<t:1908284340:f>"
 
 
 async def test_deadlines_unknown_event(interaction):
