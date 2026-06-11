@@ -240,6 +240,7 @@ function collectEvent(form) {
     series: csv('series'), categories: csv('categories'), performers: lines('performers'),
     performances,
     eventernote_url: g('eventernote_url') || null, official_url: g('official_url') || null,
+    source_url: g('source_url') || null,
     notes: g('notes') || null, rounds };
 }
 
@@ -280,6 +281,7 @@ function buildYaml(ev) {
   }
   if (ev.eventernote_url) L.push(`eventernote_url: ${ev.eventernote_url}`);
   if (ev.official_url) L.push(`official_url: ${ev.official_url}`);
+  if (ev.source_url) L.push(`source_url: ${ev.source_url}`);
   if (ev.notes) L.push(`notes: ${yamlScalar(ev.notes)}`);
   if (ev.rounds.length) {
     L.push('rounds:');
@@ -427,13 +429,18 @@ function initAddForm(eventsUrl) {
     fetch(eventsUrl).then((r) => r.json()).then(({ events }) => {
       const ev = events.find((e) => e.id === editId);
       if (!ev) return;
-      document.getElementById('form-title').textContent = 'Edit event';
+      document.getElementById('form-title').textContent = `Edit event: ${ev.id}`;
       const set = (n, v) => { if (v != null) form.querySelector(`[name="${n}"]`).value = v; };
       set('id', ev.id); set('name', ev.name); set('name_en', ev.name_en);
       set('artist', ev.artist); set('kind', ev.kind);
       set('series', (ev.series || []).join(', ')); set('categories', (ev.categories || []).join(', '));
       set('performers', (ev.performers || []).join('\n'));
-      set('eventernote_url', ev.eventernote_url); set('official_url', ev.official_url); set('notes', ev.notes);
+      set('eventernote_url', ev.eventernote_url); set('official_url', ev.official_url);
+      set('source_url', ev.source_url); set('notes', ev.notes);
+      // lock the slug so editing updates this file (changing it would fork a new one)
+      const idInput = form.querySelector('[name="id"]');
+      idInput.readOnly = true;
+      idInput.title = 'Locked while editing — this is the file being updated';
       (ev.performances || []).forEach(addPerf);
       (ev.rounds || []).forEach(addRound);
     });
