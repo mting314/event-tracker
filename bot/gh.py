@@ -13,7 +13,9 @@ import requests
 API = "https://api.github.com"
 
 
-def create_event_pr(repo: str, base: str, token: str, slug: str, yaml_text: str) -> str:
+def create_event_pr(
+    repo: str, base: str, token: str, slug: str, yaml_text: str, body: str | None = None
+) -> str:
     """Create branch + commit events/<slug>.yaml + open a PR; return its URL."""
     h = {
         "Authorization": f"Bearer {token}",
@@ -30,7 +32,9 @@ def create_event_pr(repo: str, base: str, token: str, slug: str, yaml_text: str)
 
     # create the branch (ok if it already exists)
     rb = requests.post(
-        f"{API}/repos/{repo}/git/refs", headers=h, timeout=20,
+        f"{API}/repos/{repo}/git/refs",
+        headers=h,
+        timeout=20,
         json={"ref": f"refs/heads/{branch}", "sha": sha},
     )
     if rb.status_code not in (201, 422):
@@ -38,7 +42,9 @@ def create_event_pr(repo: str, base: str, token: str, slug: str, yaml_text: str)
 
     # commit the file on that branch
     rc = requests.put(
-        f"{API}/repos/{repo}/contents/events/{slug}.yaml", headers=h, timeout=20,
+        f"{API}/repos/{repo}/contents/events/{slug}.yaml",
+        headers=h,
+        timeout=20,
         json={
             "message": f"add event: {slug}",
             "branch": branch,
@@ -49,19 +55,24 @@ def create_event_pr(repo: str, base: str, token: str, slug: str, yaml_text: str)
 
     # open the PR (reuse an existing one if already open for this branch)
     rp = requests.post(
-        f"{API}/repos/{repo}/pulls", headers=h, timeout=20,
+        f"{API}/repos/{repo}/pulls",
+        headers=h,
+        timeout=20,
         json={
             "title": f"Add event: {slug}",
             "head": branch,
             "base": base,
-            "body": "Drafted via the Discord bot `/add` command. Verify the lottery dates before merging.",
+            "body": body
+            or "Drafted via the Discord bot `/add` command. Verify dates before merging.",
         },
     )
     if rp.status_code == 201:
         return rp.json()["html_url"]
     if rp.status_code == 422:  # PR already exists for this head
         existing = requests.get(
-            f"{API}/repos/{repo}/pulls", headers=h, timeout=20,
+            f"{API}/repos/{repo}/pulls",
+            headers=h,
+            timeout=20,
             params={"head": f"{owner}:{branch}", "state": "open"},
         ).json()
         if existing:

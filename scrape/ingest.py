@@ -49,8 +49,12 @@ def ingest_url(url: str, allow_llm: bool = True, force_llm: bool = False) -> Ing
         log.info("ingest %s: forced LLM", url)
         t = time.perf_counter()
         data = llm.scrape(url)
-        log.info("ingest %s: LLM done in %.1fs (%d rounds)", url, time.perf_counter() - t,
-                 len(data.get("rounds", [])))
+        log.info(
+            "ingest %s: LLM done in %.1fs (%d rounds)",
+            url,
+            time.perf_counter() - t,
+            len(data.get("rounds", [])),
+        )
         return Ingested(data, "llm", True)
 
     scraper = pick_scraper(url)
@@ -58,8 +62,14 @@ def ingest_url(url: str, allow_llm: bool = True, force_llm: bool = False) -> Ing
     log.info("ingest %s: adapter=%s", url, adapter)
     t = time.perf_counter()
     data = scraper(url)
-    log.info("ingest %s: %s parsed in %.1fs (%d rounds, %d perfs)", url, adapter,
-             time.perf_counter() - t, len(data.get("rounds", [])), len(data.get("performances", [])))
+    log.info(
+        "ingest %s: %s parsed in %.1fs (%d rounds, %d perfs)",
+        url,
+        adapter,
+        time.perf_counter() - t,
+        len(data.get("rounds", [])),
+        len(data.get("performances", [])),
+    )
 
     if empty(data) and allow_llm:
         from . import llm
@@ -67,7 +77,11 @@ def ingest_url(url: str, allow_llm: bool = True, force_llm: bool = False) -> Ing
         log.info("ingest %s: empty via %s -> LLM fallback", url, adapter)
         t = time.perf_counter()
         data = llm.scrape(url)
-        log.info("ingest %s: LLM done in %.1fs (%d rounds)", url, time.perf_counter() - t,
-                 len(data.get("rounds", [])))
+        log.info(
+            "ingest %s: LLM done in %.1fs (%d rounds)",
+            url,
+            time.perf_counter() - t,
+            len(data.get("rounds", [])),
+        )
         return Ingested(data, "llm", True)
     return Ingested(data, adapter, False)

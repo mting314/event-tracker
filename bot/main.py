@@ -142,7 +142,9 @@ def build_event_embed(data: dict, slug: str, src: str) -> discord.Embed:
         ]
         if len(perfs) > 8:
             lines.append(f"…and {len(perfs) - 8} more")
-        emb.add_field(name=f"Performances ({len(perfs)})", value="\n".join(lines)[:1024], inline=False)
+        emb.add_field(
+            name=f"Performances ({len(perfs)})", value="\n".join(lines)[:1024], inline=False
+        )
     rounds = data.get("rounds", [])
     if rounds:
         lines = [
@@ -152,21 +154,62 @@ def build_event_embed(data: dict, slug: str, src: str) -> discord.Embed:
         ]
         if len(rounds) > 10:
             lines.append(f"…and {len(rounds) - 10} more")
-        emb.add_field(name=f"Lottery rounds ({len(rounds)})", value="\n".join(lines)[:1024], inline=False)
+        emb.add_field(
+            name=f"Lottery rounds ({len(rounds)})", value="\n".join(lines)[:1024], inline=False
+        )
     emb.set_footer(text=f"via {src} · events/{slug}.yaml · ⚠ verify dates before confirming")
     return emb
 
 
-async def _confirm_add(slug: str, yaml_text: str) -> str:
-    """Validate the draft and create the PR (or fall back to a link). Returns a status."""
+def _validate_draft(slug: str, yaml_text: str) -> dict:
+    """Parse + schema-validate a draft YAML; return the raw dict (raises if invalid)."""
     import yaml as _yaml
 
     from schema.models import Event
 
+    raw = _yaml.safe_load(yaml_text) or {}
+    raw["id"] = slug
+    Event.model_validate(raw)
+    return raw
+
+
+def _pr_body(raw: dict) -> str:
+    """Markdown PR body summarising the event (so the PR is reviewable at a glance)."""
+    lines = ["Drafted via the Discord bot `/add`. **Verify the lottery dates before merging.**", ""]
+    title = f"**{raw['name']}**" if raw.get("name") else ""
+    if raw.get("name_en"):
+        title += f" — {raw['name_en']}"
+    if title:
+        lines.append(title)
+    meta = " · ".join(
+        x for x in [raw.get("kind"), raw.get("artist"), ", ".join(raw.get("series", []))] if x
+    )
+    if meta:
+        lines.append(meta)
+    if raw.get("source_url"):
+        lines.append(f"Source: {raw['source_url']}")
+    if raw.get("performances"):
+        lines += ["", "**Performances**"]
+        lines += [
+            f"- {p.get('date', '?')} · {(p.get('city') or '')} {(p.get('venue') or '')}".rstrip(
+                " ·"
+            )
+            for p in raw["performances"]
+        ]
+    if raw.get("rounds"):
+        lines += ["", "**Lottery rounds**"]
+        lines += [
+            f"- `{r.get('apply_deadline') or '—'}` "
+            f"{(r.get('leg') + ': ' if r.get('leg') else '')}{r.get('name', '?')}"
+            for r in raw["rounds"]
+        ]
+    return "\n".join(lines)
+
+
+async def _confirm_add(slug: str, yaml_text: str) -> str:
+    """Validate the draft and create the PR (or fall back to a link). Returns a status."""
     try:
-        raw = _yaml.safe_load(yaml_text) or {}
-        raw["id"] = slug
-        Event.model_validate(raw)
+        raw = _validate_draft(slug, yaml_text)
     except Exception as exc:  # noqa: BLE001
         return f"⚠️ Draft failed validation, not added:\n```{str(exc)[:400]}```"
 
@@ -175,7 +218,13 @@ async def _confirm_add(slug: str, yaml_text: str) -> str:
 
         try:
             url = await asyncio.to_thread(
-                gh.create_event_pr, GITHUB_REPO, GITHUB_BRANCH, GITHUB_TOKEN, slug, yaml_text
+                gh.create_event_pr,
+                GITHUB_REPO,
+                GITHUB_BRANCH,
+                GITHUB_TOKEN,
+                slug,
+                yaml_text,
+                _pr_body(raw),
             )
             return f"✅ PR opened — review & merge: {url}"
         except Exception as exc:  # noqa: BLE001
@@ -187,16 +236,46 @@ async def _confirm_add(slug: str, yaml_text: str) -> str:
     return "Validated ✓ — commit the attached YAML to `events/`."
 
 
+class EditModal(discord.ui.Modal, title="Edit event draft (YAML)"):
+    def __init__(self, view: AddConfirmView):
+        super().__init__()
+        self._view = view
+        self.yaml_input = discord.ui.TextInput(
+            label=f"events/{view.slug}.yaml"[:45],
+            style=discord.TextStyle.paragraph,
+            default=view.yaml_text[:4000],
+            max_length=4000,
+            required=True,
+        )
+        self.add_item(self.yaml_input)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        text = self.yaml_input.value
+        try:
+            raw = _validate_draft(self._view.slug, text)
+        except Exception as exc:  # noqa: BLE001
+            await interaction.response.send_message(
+                f"⚠️ Invalid YAML — edit not applied:\n```{str(exc)[:400]}```", ephemeral=True
+            )
+            return
+        self._view.yaml_text = text
+        embed = build_event_embed(raw, self._view.slug, "edited")
+        file = discord.File(io.BytesIO(text.encode("utf-8")), filename=f"{self._view.slug}.yaml")
+        await interaction.response.edit_message(embed=embed, attachments=[file], view=self._view)
+
+
 class AddConfirmView(discord.ui.View):
     def __init__(self, author_id: int, slug: str, yaml_text: str):
-        super().__init__(timeout=180)
+        super().__init__(timeout=600)  # allow time to edit
         self.author_id = author_id
         self.slug = slug
         self.yaml_text = yaml_text
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.author_id:
-            await interaction.response.send_message("Only the requester can confirm.", ephemeral=True)
+            await interaction.response.send_message(
+                "Only the requester can confirm.", ephemeral=True
+            )
             return False
         return True
 
@@ -208,6 +287,16 @@ class AddConfirmView(discord.ui.View):
             child.disabled = True
         await interaction.edit_original_response(content=msg, view=self)
         self.stop()
+
+    @discord.ui.button(label="Edit", style=discord.ButtonStyle.primary, emoji="✏️")
+    async def edit(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if len(self.yaml_text) > 4000:
+            await interaction.response.send_message(
+                "Draft is over 4000 chars — too long for the inline editor; edit it in the PR/file.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_modal(EditModal(self))
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary, emoji="✖")
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -228,8 +317,13 @@ async def add(interaction: discord.Interaction, url: str, llm: bool = False):
         log.exception("/add failed url=%s", url)
         await interaction.followup.send(f"⚠️ Couldn't ingest that URL: {exc}", ephemeral=True)
         return
-    log.info("/add done url=%s adapter=%s used_llm=%s rounds=%d", url, res.adapter, res.used_llm,
-             len(res.data.get("rounds", [])))
+    log.info(
+        "/add done url=%s adapter=%s used_llm=%s rounds=%d",
+        url,
+        res.adapter,
+        res.used_llm,
+        len(res.data.get("rounds", [])),
+    )
 
     data = res.data
     dates = [p["date"] for p in data.get("performances", []) if p.get("date")]
@@ -241,7 +335,10 @@ async def add(interaction: discord.Interaction, url: str, llm: bool = False):
     file = discord.File(io.BytesIO(yaml_text.encode("utf-8")), filename=f"{slug}.yaml")
     await interaction.followup.send(
         "Review the scraped event, then **Confirm** to open a PR:",
-        embed=embed, view=view, file=file, ephemeral=True,
+        embed=embed,
+        view=view,
+        file=file,
+        ephemeral=True,
     )
 
 
