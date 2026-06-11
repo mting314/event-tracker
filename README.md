@@ -100,18 +100,40 @@ cp .env.example .env          # fill in DISCORD_TOKEN, EVENTS_SOURCE, SITE_URL
 uv run --extra bot python -m bot.main
 ```
 
-**Commands:** `/search`, `/subscribe event|series`, `/unsubscribe`,
-`/subscriptions`, `/upcoming`, `/deadlines` (upcoming dates for one event),
-`/settings` (lead times like `3d,1d,2h` + DM
-toggle), `/setchannel` (admin), `/delete` (admin — confirm then remove), `/testreminder` (admin — DMs you a sample reminder
-to verify delivery), and **`/add <url>`** — ingest any event page
-(official / FC / live-house) via the hybrid pipeline and show a **review embed**
-(name, performances, lottery rounds) with **Confirm / Edit / Cancel** buttons. On
-Confirm the draft is schema-validated and the bot **commits it straight to `main`**
-(needs `GITHUB_TOKEN`). Edit opens a modal to tweak the YAML first. The full YAML is
-always attached. Heavy work
-runs off the event loop (`asyncio.to_thread`); needs the `llm`/`bot` extras + GCP
-creds for the LLM fallback.
+### Commands
+
+All replies are **ephemeral** (only you see them). Event/series arguments use
+**autocomplete** — start typing a name and pick from the list, so ids can't be
+typo'd. Dates render as Discord **dynamic timestamps**, shown in each viewer's
+own timezone (absolute + relative, e.g. "in 3 days"). Each lottery date carries
+an emoji: 🟢 opens · 🔴 deadline · 🎯 results · 💰 payment.
+
+| Command | What it does |
+|---------|--------------|
+| `/search <query>` | Find tracked events by name, series, venue or performer. |
+| `/subscribe event <event>` | Get reminders for one event's lottery dates. |
+| `/subscribe series <series>` | Get reminders for **every** event in a series (incl. future ones). |
+| `/unsubscribe event <event>` | Stop reminders for one event (autocompletes from *your* subs). |
+| `/unsubscribe series <series>` | Stop reminders for a series. |
+| `/subscriptions` | List what you follow, grouped into **Events** / **Series**. |
+| `/upcoming` | Your next application dates **across all your subscriptions**, soonest-first (≤15). |
+| `/deadlines <event>` | Upcoming dates for **one specific event** (subscribed or not); links to its official page. |
+| `/settings [lead_times] [dm]` | View or change reminder lead times (e.g. `3d,1d,2h`) and DM on/off. |
+| `/add <url> [llm]` | Draft an event from any URL — see below. |
+| `/setchannel` | **(Admin)** Also post reminders to the current channel. |
+| `/delete <event>` | **(Admin)** Remove an event from the site (confirm prompt first). |
+| `/testreminder` | **(Admin)** DM yourself a sample reminder to verify delivery. |
+
+Admin commands are gated by Discord's `manage_guild` permission.
+
+**`/add <url>`** ingests any event page (official / FC / live-house) via the
+hybrid pipeline and shows a **review embed** (name, performances, lottery rounds)
+with **Confirm / Edit / Cancel** buttons. On Confirm the draft is
+schema-validated and the bot **commits it straight to `main`** (needs
+`GITHUB_TOKEN`). Edit opens a modal to tweak the YAML first; the full YAML is
+always attached. Pass `llm:true` to force Vertex extraction. Heavy work runs off
+the event loop (`asyncio.to_thread`); needs the `llm`/`bot` extras + GCP creds
+for the LLM fallback.
 
 **Reminders:** the scheduler checks every `CHECK_INTERVAL_MIN` minutes and fires
 on apply-open, deadline, results, and payment dates. Default lead times are 3d /

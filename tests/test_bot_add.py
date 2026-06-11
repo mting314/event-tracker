@@ -236,6 +236,7 @@ async def test_deadlines_lists_future_dates_only(interaction):
     body = interaction.response.send_message.call_args[0][0]
     assert "X Tour" in body
     assert "FC先行 · Tokyo" in body
+    assert "🔴 deadline" in body  # emoji tag for apply_deadline
     assert "<t:1908284340:f>" in body  # 2030-06-21T23:59:00+09:00 as a Discord timestamp
     assert "Past FC" not in body  # past dates filtered out
     assert "https://example.com/x-tour" in body  # links to the official page, not the site html
@@ -262,6 +263,21 @@ def test_discord_ts_renders_dynamic_timestamp():
     dt = datetime.fromisoformat("2030-06-21T23:59:00+09:00")
     assert discord_ts(dt, "R") == "<t:1908284340:R>"
     assert discord_ts(dt) == "<t:1908284340:f>"
+
+
+def test_date_tag_has_distinct_emoji_per_type():
+    from bot.reminders import date_tag
+
+    tags = {
+        dt: date_tag(dt)
+        for dt in ("apply_open", "apply_deadline", "results_date", "payment_deadline")
+    }
+    assert tags["apply_open"] == "🟢 opens"
+    assert tags["apply_deadline"] == "🔴 deadline"
+    assert tags["results_date"] == "🎯 results"
+    assert tags["payment_deadline"] == "💰 payment"
+    emojis = [t.split()[0] for t in tags.values()]
+    assert len(set(emojis)) == 4  # all distinct
 
 
 async def test_deadlines_unknown_event(interaction):

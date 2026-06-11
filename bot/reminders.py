@@ -21,6 +21,21 @@ DATE_LABELS = {
     "payment_deadline": "payment 入金締切",
 }
 
+# date_type -> emoji, so the four date kinds are scannable at a glance
+DATE_EMOJI = {
+    "apply_open": "🟢",
+    "apply_deadline": "🔴",
+    "results_date": "🎯",
+    "payment_deadline": "💰",
+}
+
+
+def date_tag(date_type: str) -> str:
+    """Emoji + short English label for a round date type (e.g. '🔴 deadline')."""
+    emoji = DATE_EMOJI.get(date_type, "•")
+    english = DATE_LABELS.get(date_type, date_type).split()[0]
+    return f"{emoji} {english}"
+
 
 def discord_ts(dt: datetime, style: str = "f") -> str:
     """Render a datetime as a Discord dynamic timestamp (shown in each viewer's
@@ -118,9 +133,10 @@ def due_for_user(events, subs, lead_times, now, was_sent) -> list[DueReminder]:
 
 def format_reminder(r: DueReminder) -> str:
     label = DATE_LABELS.get(r.date_type, r.date_type)
+    emoji = DATE_EMOJI.get(r.date_type, "")
     return (
         f"⏰ **{r.event_name}** — {r.round_name}\n"
-        f"{label} {discord_ts(r.target, 'R')} · {discord_ts(r.target, 'F')}"
+        f"{emoji} {label} {discord_ts(r.target, 'R')} · {discord_ts(r.target, 'F')}"
     )
 
 

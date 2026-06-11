@@ -513,7 +513,7 @@ async def subscriptions(interaction: discord.Interaction):
 async def upcoming(interaction: discord.Interaction):
     subs = db.list_subscriptions(str(interaction.user.id))
     now = datetime.now(JST)
-    from .reminders import DATE_LABELS, occurrences
+    from .reminders import date_tag, occurrences
 
     rows = []
     for ev, rnd, dtype, target in occurrences(_events_cache or refresh_events()):
@@ -532,8 +532,8 @@ async def upcoming(interaction: discord.Interaction):
         )
         return
     lines = [
-        f"• {discord_ts(t, 'f')} ({discord_ts(t, 'R')}) — "
-        f"**{ev['name']}** {rnd['name']} ({DATE_LABELS[dt].split()[0]})"
+        f"{date_tag(dt)} {discord_ts(t, 'f')} ({discord_ts(t, 'R')}) — "
+        f"**{ev['name']}** {rnd['name']}"
         for t, ev, rnd, dt in rows[:15]
     ]
     await interaction.response.send_message("Upcoming:\n" + "\n".join(lines), ephemeral=True)
@@ -542,7 +542,7 @@ async def upcoming(interaction: discord.Interaction):
 @tree.command(description="Upcoming application dates for one event")
 @app_commands.describe(event_id="event to look up")
 async def deadlines(interaction: discord.Interaction, event_id: str):
-    from .reminders import DATE_LABELS, occurrences
+    from .reminders import date_tag, occurrences
 
     ev = next((e for e in (_events_cache or refresh_events()) if e["id"] == event_id), None)
     if not ev:
@@ -561,10 +561,9 @@ async def deadlines(interaction: discord.Interaction, event_id: str):
     lines = []
     for target, rnd, dtype in rows:
         leg = f" · {rnd['leg']}" if rnd.get("leg") else ""
-        label = DATE_LABELS[dtype].split()[0]
         lines.append(
-            f"• {discord_ts(target, 'f')} ({discord_ts(target, 'R')}) — "
-            f"{rnd['name']}{leg} ({label})"
+            f"{date_tag(dtype)} {discord_ts(target, 'f')} ({discord_ts(target, 'R')}) — "
+            f"{rnd['name']}{leg}"
         )
     body = f"**{ev['name']}** — upcoming dates:\n" + "\n".join(lines)
     body += f"\n{event_official_link(ev)}"
