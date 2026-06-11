@@ -16,6 +16,10 @@ _DATE_FIELDS = ("apply_open", "apply_deadline", "results_date", "payment_deadlin
 _ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}")
 
 
+def valid_slug(slug: str) -> bool:
+    return bool(_SLUG.match(slug or ""))
+
+
 def validate_event_yaml(slug: str, text: str) -> dict:
     """Parse + sanity-check; return the data dict. Raises ValueError if invalid."""
     if not _SLUG.match(slug or ""):

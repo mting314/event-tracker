@@ -19,7 +19,7 @@ from scrape.ingest import Ingested  # noqa: E402
 @pytest.fixture
 def interaction():
     i = MagicMock(spec=discord.Interaction)
-    i.response = MagicMock(defer=AsyncMock())
+    i.response = MagicMock(defer=AsyncMock(), send_message=AsyncMock())
     i.followup = MagicMock(send=AsyncMock())
     return i
 
@@ -192,3 +192,26 @@ async def test_subscribe_event_autocomplete_filters_by_name_or_id():
         choices = await bm._event_ac(MagicMock(), "liella")
     assert len(choices) == 1 and choices[0].value == "2026-liella-7th"
     assert "Liella 7th" in choices[0].name
+
+
+async def test_delete_event_commits():
+    with (
+        patch.object(bm, "GITHUB_REPO", "me/x"),
+        patch.object(bm, "GITHUB_TOKEN", "tok"),
+        patch("bot.gh.delete_from_main", return_value="https://github.com/me/x/commit/del"),
+    ):
+        msg = await bm._delete_event("2026-x")
+    assert "Deleted" in msg and "/commit/del" in msg
+
+
+async def test_delete_event_without_config():
+    with patch.object(bm, "GITHUB_REPO", None), patch.object(bm, "GITHUB_TOKEN", None):
+        msg = await bm._delete_event("2026-x")
+    assert "can't delete" in msg
+
+
+async def test_delete_command_prompts_confirm(interaction):
+    with patch.object(bm, "_events_cache", [{"id": "2026-x", "name": "X Tour", "series": []}]):
+        await bm.delete.callback(interaction, event_id="2026-x")
+    args, kwargs = interaction.response.send_message.call_args
+    assert "X Tour" in args[0] and isinstance(kwargs["view"], bm.DeleteConfirmView)

@@ -40,3 +40,32 @@ def commit_to_main(
     r = requests.put(f"{API}/repos/{repo}/contents/{path}", headers=h, json=payload, timeout=20)
     r.raise_for_status()
     return (r.json().get("commit") or {}).get("html_url", "")
+
+
+def delete_from_main(
+    repo: str, branch: str, token: str, slug: str, message: str | None = None
+) -> str:
+    """Delete events/<slug>.yaml from `branch`; return the commit URL."""
+    h = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    path = f"events/{slug}.yaml"
+    g = requests.get(
+        f"{API}/repos/{repo}/contents/{path}", headers=h, params={"ref": branch}, timeout=20
+    )
+    if g.status_code != 200:
+        raise RuntimeError(f"event not found: {slug}")
+    r = requests.delete(
+        f"{API}/repos/{repo}/contents/{path}",
+        headers=h,
+        json={
+            "message": message or f"delete event: {slug}",
+            "branch": branch,
+            "sha": g.json()["sha"],
+        },
+        timeout=20,
+    )
+    r.raise_for_status()
+    return (r.json().get("commit") or {}).get("html_url", "")

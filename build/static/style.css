@@ -167,3 +167,7 @@ tbody tr:hover { background: var(--panel); }
 .event-head .crumb { margin: 0; }
 .edit-btn { text-decoration: none; white-space: nowrap; }
 .edit-btn:hover { text-decoration: none; opacity: .9; }
+
+/* destructive action */
+.btn.danger { background: transparent; color: var(--deadline); border: 1px solid var(--deadline); }
+.btn.danger:hover { background: var(--deadline); color: #14152b; }

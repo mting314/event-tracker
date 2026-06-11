@@ -307,6 +307,82 @@ async def add(interaction: discord.Interaction, url: str, llm: bool = False):
     )
 
 
+async def _delete_event(slug: str) -> str:
+    """Delete events/<slug>.yaml from main. Returns a status."""
+    if not (GITHUB_REPO and GITHUB_TOKEN):
+        return "⚠️ No GITHUB_REPO/GITHUB_TOKEN configured — can't delete."
+    from . import gh
+
+    try:
+        url = await asyncio.to_thread(
+            gh.delete_from_main,
+            GITHUB_REPO,
+            GITHUB_BRANCH,
+            GITHUB_TOKEN,
+            slug,
+            f"delete {slug} via /delete",
+        )
+        return f"🗑 Deleted `{slug}` from `{GITHUB_BRANCH}` — gone in ~1 min: {url}"
+    except Exception as exc:  # noqa: BLE001
+        log.exception("/delete failed slug=%s", slug)
+        return f"⚠️ Delete failed: {exc}"
+
+
+class DeleteConfirmView(discord.ui.View):
+    def __init__(self, author_id: int, slug: str):
+        super().__init__(timeout=120)
+        self.author_id = author_id
+        self.slug = slug
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.author_id:
+            await interaction.response.send_message(
+                "Only the requester can confirm.", ephemeral=True
+            )
+            return False
+        return True
+
+    @discord.ui.button(label="Delete", style=discord.ButtonStyle.danger, emoji="🗑")
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        msg = await _delete_event(self.slug)
+        for child in self.children:
+            child.disabled = True
+        await interaction.edit_original_response(content=msg, view=self)
+        self.stop()
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary, emoji="✖")
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        for child in self.children:
+            child.disabled = True
+        await interaction.response.edit_message(content="Cancelled — nothing deleted.", view=self)
+        self.stop()
+
+
+@tree.command(description="Delete a tracked event (admin)")
+@app_commands.default_permissions(manage_guild=True)
+@app_commands.describe(event_id="event to delete")
+async def delete(interaction: discord.Interaction, event_id: str):
+    ev = next((e for e in (_events_cache or refresh_events()) if e["id"] == event_id), None)
+    name = ev["name"] if ev else event_id
+    await interaction.response.send_message(
+        f"Delete **{name}** (`{event_id}`)? This removes it from the site.",
+        view=DeleteConfirmView(interaction.user.id, event_id),
+        ephemeral=True,
+    )
+
+
+@delete.autocomplete("event_id")
+async def _delete_ac(interaction: discord.Interaction, current: str):
+    cur = current.lower()
+    evs = _events_cache or refresh_events()
+    matches = [e for e in evs if cur in e["id"].lower() or cur in e["name"].lower()]
+    return [
+        app_commands.Choice(name=f"{e['name']} ({e['id']})"[:100], value=e["id"])
+        for e in matches[:25]
+    ]
+
+
 subscribe = app_commands.Group(name="subscribe", description="Subscribe to events or series")
 unsubscribe = app_commands.Group(name="unsubscribe", description="Remove a subscription")
 tree.add_command(subscribe)

@@ -448,6 +448,34 @@ function initAddForm(eventsUrl) {
       btn.disabled = false; btn.textContent = label;
     }
   });
+  document.getElementById('delete').addEventListener('click', async () => {
+    const slug = (form.querySelector('[name="id"]').value || '').trim();
+    const api = (editApi.value || '').trim();
+    const secret = (editSecret.value || '').trim();
+    if (!api || !secret) {
+      errBox.hidden = false; errBox.style.color = ''; errBox.textContent = '⚠ set Edit API URL + Admin secret in Config first';
+      return;
+    }
+    if (!window.confirm(`Delete events/${slug}.yaml? This removes the event from the site.`)) return;
+    const btn = document.getElementById('delete');
+    btn.disabled = true; const label = btn.textContent; btn.textContent = 'Deleting…';
+    errBox.hidden = false; errBox.style.color = ''; errBox.textContent = 'Deleting…';
+    try {
+      const resp = await fetch(api, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Secret': secret },
+        body: JSON.stringify({ slug, delete: true }),
+      });
+      const data = await resp.json().catch(() => ({}));
+      errBox.textContent = (resp.ok && data.ok)
+        ? `✓ Deleted events/${slug}.yaml — gone in ~1 min` + (data.commit ? ` · ${data.commit}` : '')
+        : `⚠ Delete failed: ${data.error || resp.status}`;
+    } catch (e) {
+      errBox.textContent = `⚠ Delete failed: ${e}`;
+    } finally {
+      btn.disabled = false; btn.textContent = label;
+    }
+  });
   document.getElementById('copy').addEventListener('click', async () => {
     const r = build(); if (r) { await navigator.clipboard.writeText(r.yaml); errBox.hidden = false; errBox.style.color = ''; errBox.textContent = '✓ copied'; }
   });
@@ -476,6 +504,7 @@ function initAddForm(eventsUrl) {
       const idInput = form.querySelector('[name="id"]');
       idInput.readOnly = true;
       idInput.title = 'Locked while editing — this is the file being updated';
+      document.getElementById('delete').hidden = false; // delete only for existing events
       (ev.performances || []).forEach(addPerf);
       (ev.rounds || []).forEach(addRound);
     });

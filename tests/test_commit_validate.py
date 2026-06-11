@@ -34,3 +34,11 @@ def test_round_without_date():
 def test_bad_performance_date():
     with pytest.raises(ValueError, match="performance date"):
         validate_event_yaml("2026-x", "name: X\nperformances:\n  - date: Sept 7\n")
+
+
+def test_valid_slug():
+    from validate import valid_slug
+
+    assert valid_slug("2026-liella-7th")
+    assert not valid_slug("Bad_Slug")
+    assert not valid_slug("")

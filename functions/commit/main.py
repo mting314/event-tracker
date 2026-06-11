@@ -16,7 +16,7 @@ import os
 
 import functions_framework
 import requests
-from validate import validate_event_yaml
+from validate import valid_slug, validate_event_yaml
 
 API = "https://api.github.com"
 REPO = os.environ["GITHUB_REPO"]
@@ -47,18 +47,37 @@ def commit(request):
 
     body = request.get_json(silent=True) or {}
     slug, text = body.get("slug", ""), body.get("yaml", "")
-    try:
-        validate_event_yaml(slug, text)
-    except Exception as exc:  # noqa: BLE001
-        return (json.dumps({"error": f"invalid: {exc}"}), 400, headers)
+    deleting = bool(body.get("delete"))
+    if deleting:
+        if not valid_slug(slug):
+            return (json.dumps({"error": "invalid slug"}), 400, headers)
+    else:
+        try:
+            validate_event_yaml(slug, text)
+        except Exception as exc:  # noqa: BLE001
+            return (json.dumps({"error": f"invalid: {exc}"}), 400, headers)
 
     h = {"Authorization": f"Bearer {TOKEN}", "Accept": "application/vnd.github+json"}
     path = f"events/{slug}.yaml"
-    # need the current blob sha to update an existing file
+    # need the current blob sha to update or delete an existing file
     g = requests.get(
         f"{API}/repos/{REPO}/contents/{path}", headers=h, params={"ref": BRANCH}, timeout=20
     )
     sha = g.json().get("sha") if g.status_code == 200 else None
+
+    if deleting:
+        if not sha:
+            return (json.dumps({"error": "event not found"}), 404, headers)
+        r = requests.delete(
+            f"{API}/repos/{REPO}/contents/{path}",
+            headers=h,
+            json={"message": f"delete event: {slug}", "branch": BRANCH, "sha": sha},
+            timeout=20,
+        )
+        if r.status_code == 200:
+            commit_url = (r.json().get("commit") or {}).get("html_url")
+            return (json.dumps({"ok": True, "deleted": True, "commit": commit_url}), 200, headers)
+        return (json.dumps({"error": f"github {r.status_code}: {r.text[:200]}"}), 502, headers)
 
     payload = {
         "message": f"web edit: {slug}",

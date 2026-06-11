@@ -102,7 +102,7 @@ uv run --extra bot python -m bot.main
 
 **Commands:** `/search`, `/subscribe event|series`, `/unsubscribe`,
 `/subscriptions`, `/upcoming`, `/settings` (lead times like `3d,1d,2h` + DM
-toggle), `/setchannel` (admin), `/testreminder` (admin — DMs you a sample reminder
+toggle), `/setchannel` (admin), `/delete <id>` (admin — confirm then remove), `/testreminder` (admin — DMs you a sample reminder
 to verify delivery), and **`/add <url>`** — ingest any event page
 (official / FC / live-house) via the hybrid pipeline and show a **review embed**
 (name, performances, lottery rounds) with **Confirm / Edit / Cancel** buttons. On
