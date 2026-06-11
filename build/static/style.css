@@ -161,3 +161,9 @@ tbody tr:hover { background: var(--panel); }
 .rounds-mini td { padding: .3rem .4rem; border-bottom: 1px solid #23264a; font-size: .85rem; vertical-align: top; }
 .rounds-mini tr:last-child td { border-bottom: none; }
 .occ-round { color: var(--text); }
+
+/* event page: header row with Edit button */
+.event-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: .5rem; }
+.event-head .crumb { margin: 0; }
+.edit-btn { text-decoration: none; white-space: nowrap; }
+.edit-btn:hover { text-decoration: none; opacity: .9; }

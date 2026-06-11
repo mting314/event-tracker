@@ -2,7 +2,10 @@
 {% block title %}{{ event.name }} · LL Lottery Tracker{% endblock %}
 {% block content %}
 <article class="event-detail">
-  <p class="crumb"><a href="{{ base }}catalog.html">← Catalog</a></p>
+  <div class="event-head">
+    <a class="crumb" href="{{ base }}catalog.html">← Catalog</a>
+    <a class="btn primary edit-btn" href="{{ base }}add.html?edit={{ event.id }}">✎ Edit event</a>
+  </div>
   <h1>{{ event.name }}</h1>
   {% if event.name_en %}<p class="sub">{{ event.name_en }}</p>{% endif %}
 
@@ -35,7 +38,6 @@
   <p class="links">
     {% if event.eventernote_url %}<a href="{{ event.eventernote_url }}" target="_blank" rel="noopener">eventernote ↗</a>{% endif %}
     {% if event.official_url %}<a href="{{ event.official_url }}" target="_blank" rel="noopener">official site ↗</a>{% endif %}
-    <a href="{{ base }}add.html?edit={{ event.id }}">✎ edit this event</a>
   </p>
   {% if event.notes %}<p class="notes">{{ event.notes }}</p>{% endif %}
 
