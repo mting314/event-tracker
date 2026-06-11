@@ -9,10 +9,21 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
 log = logging.getLogger(__name__)
+
+
+def _emit(progress: Callable[[str], None] | None, msg: str) -> None:
+    """Call the optional progress callback, never letting it break ingestion."""
+    if progress is None:
+        return
+    try:
+        progress(msg)
+    except Exception:  # noqa: BLE001 - progress is best-effort UI only
+        log.debug("progress callback failed", exc_info=True)
 
 
 def pick_scraper(url: str):
@@ -41,12 +52,22 @@ class Ingested:
     used_llm: bool
 
 
-def ingest_url(url: str, allow_llm: bool = True, force_llm: bool = False) -> Ingested:
-    """Fetch + structure a URL. Raises if nothing can parse it."""
+def ingest_url(
+    url: str,
+    allow_llm: bool = True,
+    force_llm: bool = False,
+    progress: Callable[[str], None] | None = None,
+) -> Ingested:
+    """Fetch + structure a URL. Raises if nothing can parse it.
+
+    ``progress`` is an optional callback invoked with a short human-readable
+    status at each stage (used by the bot to update its loading message).
+    """
     if force_llm:
         from . import llm
 
         log.info("ingest %s: forced LLM", url)
+        _emit(progress, "🤖 Extracting with AI (Vertex)… this can take ~10–30s")
         t = time.perf_counter()
         data = llm.scrape(url)
         log.info(
@@ -60,6 +81,7 @@ def ingest_url(url: str, allow_llm: bool = True, force_llm: bool = False) -> Ing
     scraper = pick_scraper(url)
     adapter = scraper.__module__.rsplit(".", 1)[-1]
     log.info("ingest %s: adapter=%s", url, adapter)
+    _emit(progress, f"🧩 Parsing with the **{adapter}** adapter…")
     t = time.perf_counter()
     data = scraper(url)
     log.info(
@@ -75,6 +97,11 @@ def ingest_url(url: str, allow_llm: bool = True, force_llm: bool = False) -> Ing
         from . import llm
 
         log.info("ingest %s: empty via %s -> LLM fallback", url, adapter)
+        _emit(
+            progress,
+            f"🤖 The **{adapter}** adapter found no structured data — "
+            "falling back to AI (Vertex)… this can take ~10–30s",
+        )
         t = time.perf_counter()
         data = llm.scrape(url)
         log.info(

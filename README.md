@@ -132,9 +132,11 @@ hybrid pipeline and shows a **review embed** (name, performances, lottery rounds
 with **Confirm / Edit / Cancel** buttons. On Confirm the draft is
 schema-validated and the bot **commits it straight to `main`** (needs
 `GITHUB_TOKEN`). Edit opens a modal to tweak the YAML first; the full YAML is
-always attached. Pass `llm:true` to force Vertex extraction. Heavy work runs off
-the event loop (`asyncio.to_thread`); needs the `llm`/`bot` extras + GCP creds
-for the LLM fallback.
+always attached. Pass `llm:true` to force Vertex extraction. While it works the
+reply **streams live status** (fetching → which adapter → AI fallback if a
+deterministic adapter finds nothing), so you can see whether the slow LLM path
+kicked in. Heavy work runs off the event loop (`asyncio.to_thread`); needs the
+`llm`/`bot` extras + GCP creds for the LLM fallback.
 
 **Reminders:** the scheduler checks every `CHECK_INTERVAL_MIN` minutes and fires
 on apply-open, deadline, results, and payment dates. Default lead times are 3d /

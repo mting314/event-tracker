@@ -168,10 +168,17 @@ def build_event_embed(data: dict, slug: str, src: str) -> discord.Embed:
         emb.add_field(name="What", value=meta[:1024], inline=False)
     perfs = data.get("performances", [])
     if perfs:
-        lines = [
-            f"`{p.get('date', '?')}` {(p.get('city') or '')} {(p.get('venue') or '')}".strip()
-            for p in perfs[:8]
-        ]
+        lines = []
+        for p in perfs[:8]:
+            loc = " ".join(x for x in [p.get("city"), p.get("venue")] if x)
+            # label ("昼公演"/"Day 1") + start time distinguish same-venue shows
+            extra = " ".join(
+                x for x in [p.get("label"), (f"開演{p['starts']}" if p.get("starts") else "")] if x
+            )
+            line = f"`{p.get('date', '?')}` {loc}".rstrip()
+            if extra:
+                line += f" — {extra}"
+            lines.append(line)
         if len(perfs) > 8:
             lines.append(f"…and {len(perfs) - 8} more")
         emb.add_field(
@@ -308,11 +315,26 @@ class AddConfirmView(discord.ui.View):
 async def add(interaction: discord.Interaction, url: str, llm: bool = False):
     await interaction.response.defer(ephemeral=True, thinking=True)
     log.info("/add user=%s url=%s force_llm=%s", interaction.user, url, llm)
+
+    # Stream progress into the (deferred) reply. ingest runs in a worker thread, so
+    # its progress callback hops back onto the event loop to edit the message.
+    loop = asyncio.get_running_loop()
+
+    async def _status(text: str):
+        try:
+            await interaction.edit_original_response(content=text)
+        except Exception:  # noqa: BLE001 - status is best-effort; never crash /add
+            log.debug("status edit failed", exc_info=True)
+
+    def progress(text: str):
+        asyncio.run_coroutine_threadsafe(_status(text), loop)
+
+    await _status(f"🔎 Fetching {url} …")
     try:  # fetch + parse off the event loop (blocking I/O + optional LLM)
-        res = await asyncio.to_thread(ingest_url, url, True, llm)
+        res = await asyncio.to_thread(ingest_url, url, True, llm, progress)
     except Exception as exc:  # noqa: BLE001
         log.exception("/add failed url=%s", url)
-        await interaction.followup.send(f"⚠️ Couldn't ingest that URL: {exc}", ephemeral=True)
+        await interaction.edit_original_response(content=f"⚠️ Couldn't ingest that URL: {exc}")
         return
     log.info(
         "/add done url=%s adapter=%s used_llm=%s rounds=%d",
@@ -330,12 +352,11 @@ async def add(interaction: discord.Interaction, url: str, llm: bool = False):
     embed = build_event_embed(data, slug, src)
     view = AddConfirmView(interaction.user.id, slug, yaml_text)
     file = discord.File(io.BytesIO(yaml_text.encode("utf-8")), filename=f"{slug}.yaml")
-    await interaction.followup.send(
-        "Review the scraped event, then **Confirm** to save it (or Edit first):",
+    await interaction.edit_original_response(
+        content=f"✅ Parsed via **{src}** — review, then **Confirm** to save (or Edit first):",
         embed=embed,
         view=view,
-        file=file,
-        ephemeral=True,
+        attachments=[file],
     )
 
 

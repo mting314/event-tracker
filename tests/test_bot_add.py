@@ -21,6 +21,7 @@ def interaction():
     i = MagicMock(spec=discord.Interaction)
     i.response = MagicMock(defer=AsyncMock(), send_message=AsyncMock())
     i.followup = MagicMock(send=AsyncMock())
+    i.edit_original_response = AsyncMock()
     return i
 
 
@@ -64,28 +65,67 @@ async def test_add_posts_embed_view_and_file(interaction):
         await bm.add.callback(interaction, url="https://lustqueen.info/news/detail/81252")
 
     interaction.response.defer.assert_awaited_once()
-    args, kwargs = interaction.followup.send.call_args
-    assert kwargs["ephemeral"] is True
-    assert isinstance(kwargs["file"], discord.File) and kwargs["file"].filename.endswith(".yaml")
+    kwargs = interaction.edit_original_response.call_args.kwargs  # final edit = the review
+    f = kwargs["attachments"][0]
+    assert isinstance(f, discord.File) and f.filename.endswith(".yaml")
     assert isinstance(kwargs["view"], bm.AddConfirmView)
     emb = kwargs["embed"]
     assert isinstance(emb, discord.Embed) and emb.title == "Test 公演"
-    assert len(args[0]) <= 2000
+    assert len(kwargs["content"]) <= 2000
+
+
+async def test_add_streams_progress_status(interaction):
+    """The deferred reply is updated with a fetching status before the result."""
+    with patch.object(bm, "ingest_url", return_value=_ingested()):
+        await bm.add.callback(interaction, url="https://x/slow")
+    # first edit is the fetch status; last edit carries the embed
+    first = interaction.edit_original_response.call_args_list[0].kwargs["content"]
+    assert "Fetching" in first
+    assert interaction.edit_original_response.call_args.kwargs["embed"].title == "Test 公演"
 
 
 async def test_embed_reports_llm_source_in_footer(interaction):
     with patch.object(bm, "ingest_url", return_value=_ingested(used_llm=True, adapter="llm")):
         await bm.add.callback(interaction, url="https://x/2")
-    emb = interaction.followup.send.call_args.kwargs["embed"]
+    emb = interaction.edit_original_response.call_args.kwargs["embed"]
     assert "LLM (Vertex)" in emb.footer.text
 
 
 async def test_embed_fields_within_discord_limits(interaction):
     with patch.object(bm, "ingest_url", return_value=_big_event()):
         await bm.add.callback(interaction, url="https://x/big")
-    emb = interaction.followup.send.call_args.kwargs["embed"]
+    emb = interaction.edit_original_response.call_args.kwargs["embed"]
     assert len(emb.title) <= 256
     assert all(len(f.value) <= 1024 for f in emb.fields)
+
+
+def test_embed_distinguishes_same_venue_performances():
+    data = {
+        "name": "Unit Fan Meeting",
+        "performances": [
+            {
+                "date": "2026-09-05",
+                "city": "大分",
+                "venue": "iichikoグランシアタ",
+                "label": "昼公演",
+                "starts": "13:00",
+            },
+            {
+                "date": "2026-09-05",
+                "city": "大分",
+                "venue": "iichikoグランシアタ",
+                "label": "夜公演",
+                "starts": "17:00",
+            },
+        ],
+        "rounds": [{"name": "FC", "apply_deadline": "2026-06-21T23:59:00"}],
+    }
+    emb = bm.build_event_embed(data, "2026-x", "generic")
+    perf = next(f for f in emb.fields if f.name.startswith("Performances"))
+    assert "昼公演" in perf.value and "夜公演" in perf.value
+    assert "開演13:00" in perf.value and "開演17:00" in perf.value
+    lines = [ln for ln in perf.value.splitlines() if ln.strip()]
+    assert lines[0] != lines[1]  # no longer identical
 
 
 async def test_confirm_saves_valid_draft_to_main():
@@ -125,13 +165,21 @@ async def test_confirm_without_token_reports_missing_config():
     assert "GITHUB_TOKEN" in msg and "can't save" in msg
 
 
+def test_ingest_progress_callback_reports_ai_step():
+    from scrape import ingest
+
+    msgs = []
+    with patch("scrape.llm.scrape", return_value={"name": "X", "rounds": []}):
+        ingest.ingest_url("https://x/1", force_llm=True, progress=msgs.append)
+    assert any("AI" in m for m in msgs)  # the LLM step is announced
+
+
 async def test_add_handles_ingest_failure_gracefully(interaction):
     with patch.object(bm, "ingest_url", side_effect=RuntimeError("boom")):
         await bm.add.callback(interaction, url="https://x/bad")
     interaction.response.defer.assert_awaited_once()
-    body = interaction.followup.send.call_args[0][0]
+    body = interaction.edit_original_response.call_args.kwargs["content"]
     assert "Couldn't ingest" in body and "boom" in body
-    assert interaction.followup.send.call_args.kwargs["ephemeral"] is True
 
 
 async def test_testreminder_dms_the_caller(interaction):
