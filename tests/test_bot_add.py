@@ -103,7 +103,10 @@ async def test_confirm_opens_pr_for_valid_draft():
 
 async def test_confirm_rejects_invalid_draft():
     bad = "name: Bad\nrounds:\n  - name: no-dates\n    type: presale\n"  # round w/o any date
-    with patch.object(bm, "GITHUB_REPO", "me/event-tracker"), patch.object(bm, "GITHUB_TOKEN", "tok"):
+    with (
+        patch.object(bm, "GITHUB_REPO", "me/event-tracker"),
+        patch.object(bm, "GITHUB_TOKEN", "tok"),
+    ):
         msg = await bm._confirm_add("2026-bad", bad)
     assert "failed validation" in msg
 
@@ -112,7 +115,10 @@ async def test_confirm_without_token_returns_link():
     from scrape.util import to_event_yaml
 
     yaml_text = to_event_yaml(_ingested().data)
-    with patch.object(bm, "GITHUB_REPO", "me/event-tracker"), patch.object(bm, "GITHUB_TOKEN", None):
+    with (
+        patch.object(bm, "GITHUB_REPO", "me/event-tracker"),
+        patch.object(bm, "GITHUB_TOKEN", None),
+    ):
         msg = await bm._confirm_add("2026-test", yaml_text)
     assert "open it yourself" in msg and "github.com/me/event-tracker/new/" in msg
 
@@ -156,3 +162,34 @@ async def test_heartbeat_noop_without_url():
     with patch.object(bm, "HEALTHCHECK_URL", None), patch.object(bm.requests, "get") as get:
         await bm._heartbeat()
     get.assert_not_called()
+
+
+def test_validate_draft_ok_and_bad():
+    from scrape.util import to_event_yaml
+
+    from pydantic import ValidationError
+
+    raw = bm._validate_draft("2026-x", to_event_yaml(_ingested().data))
+    assert raw["id"] == "2026-x" and raw["name"] == "Test 公演"
+    with pytest.raises(ValidationError):
+        bm._validate_draft("2026-x", "name: B\nrounds:\n  - name: no-dates\n")
+
+
+def test_pr_body_includes_event_details():
+    body = bm._pr_body(
+        {
+            "name": "E",
+            "artist": "A",
+            "series": ["S"],
+            "performances": [{"date": "2026-09-07", "venue": "V"}],
+            "rounds": [{"name": "R1", "apply_deadline": "2026-06-21T23:59:00"}],
+        }
+    )
+    assert "Performances" in body and "2026-09-07" in body
+    assert "Lottery rounds" in body and "R1" in body
+
+
+def test_edit_modal_prefills_current_yaml():
+    view = bm.AddConfirmView(1, "2026-x", "name: X\nrounds: []\n")
+    modal = bm.EditModal(view)
+    assert modal.yaml_input.default == "name: X\nrounds: []\n"
