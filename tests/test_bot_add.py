@@ -194,6 +194,32 @@ async def test_subscribe_event_autocomplete_filters_by_name_or_id():
     assert "Liella 7th" in choices[0].name
 
 
+async def test_subscriptions_resolves_ids_to_names(interaction):
+    subs = [
+        {"kind": "event", "target": "2026-liella-7th"},
+        {"kind": "series", "target": "Hasunosora"},
+    ]
+    evs = [{"id": "2026-liella-7th", "name": "Liella! 7th Live", "series": []}]
+    with (
+        patch.object(bm, "_events_cache", evs),
+        patch.object(bm.db, "list_subscriptions", return_value=subs),
+    ):
+        await bm.subscriptions.callback(interaction)
+    body = interaction.response.send_message.call_args[0][0]
+    assert "Liella! 7th Live" in body  # name shown, not the slug
+    assert "2026-liella-7th" not in body
+    assert "Hasunosora" in body
+    assert "**Events**" in body and "**Series**" in body
+
+
+async def test_subscribe_autocomplete_label_has_no_slug():
+    evs = [{"id": "2026-liella-7th", "name": "Liella! 7th Live", "series": []}]
+    with patch.object(bm, "_events_cache", evs):
+        choices = await bm._event_ac(MagicMock(), "liella")
+    assert choices[0].name == "Liella! 7th Live"  # human name only
+    assert choices[0].value == "2026-liella-7th"  # slug still the stored value
+
+
 async def test_delete_event_commits():
     with (
         patch.object(bm, "GITHUB_REPO", "me/x"),

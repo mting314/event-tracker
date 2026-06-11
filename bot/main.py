@@ -86,6 +86,14 @@ def event_link(eid: str) -> str:
     return f"{SITE_URL}/event/{eid}.html" if SITE_URL else eid
 
 
+def event_name(eid: str) -> str:
+    """Resolve an event id (slug) to its human-readable name; fall back to the id."""
+    for e in _events_cache or refresh_events():
+        if e["id"] == eid:
+            return e["name"]
+    return eid
+
+
 def parse_lead_spec(spec: str) -> list[int]:
     """'3d,1d,2h,30m' -> [seconds...]."""
     units = {"d": 86400, "h": 3600, "m": 60}
@@ -107,8 +115,11 @@ async def search(interaction: discord.Interaction, query: str):
     if not results:
         await interaction.response.send_message(f"No events match “{query}”.", ephemeral=True)
         return
-    lines = [f"• **{e['name']}** — `{e['id']}` ({', '.join(e.get('series', []))})" for e in results]
-    lines.append("\nSubscribe with `/subscribe event <id>` or `/subscribe series <name>`.")
+    lines = [
+        f"• **{e['name']}**" + (f" — {', '.join(e['series'])}" if e.get("series") else "")
+        for e in results
+    ]
+    lines.append("\nSubscribe with `/subscribe event` or `/subscribe series` — pick from the list.")
     await interaction.response.send_message("\n".join(lines), ephemeral=True)
 
 
@@ -377,10 +388,7 @@ async def _delete_ac(interaction: discord.Interaction, current: str):
     cur = current.lower()
     evs = _events_cache or refresh_events()
     matches = [e for e in evs if cur in e["id"].lower() or cur in e["name"].lower()]
-    return [
-        app_commands.Choice(name=f"{e['name']} ({e['id']})"[:100], value=e["id"])
-        for e in matches[:25]
-    ]
+    return [app_commands.Choice(name=e["name"][:100], value=e["id"]) for e in matches[:25]]
 
 
 subscribe = app_commands.Group(name="subscribe", description="Subscribe to events or series")
@@ -407,10 +415,7 @@ async def _event_ac(interaction: discord.Interaction, current: str):
     cur = current.lower()
     evs = _events_cache or refresh_events()
     matches = [e for e in evs if cur in e["id"].lower() or cur in e["name"].lower()]
-    return [
-        app_commands.Choice(name=f"{e['name']} ({e['id']})"[:100], value=e["id"])
-        for e in matches[:25]
-    ]
+    return [app_commands.Choice(name=e["name"][:100], value=e["id"]) for e in matches[:25]]
 
 
 @subscribe.command(name="series", description="Get reminders for all events in a series")
@@ -447,9 +452,9 @@ async def _unsub_event_ac(interaction: discord.Interaction, current: str):
     ]
     out = []
     for sid in subs:
-        label = f"{names.get(sid, sid)} ({sid})"
-        if cur in label.lower():
-            out.append(app_commands.Choice(name=label[:100], value=sid))
+        name = names.get(sid, sid)
+        if cur in name.lower() or cur in sid.lower():
+            out.append(app_commands.Choice(name=name[:100], value=sid))
     return out[:25]
 
 
@@ -480,9 +485,15 @@ async def subscriptions(interaction: discord.Interaction):
             "No subscriptions yet. Try `/search`.", ephemeral=True
         )
         return
-    lines = [f"• {s['kind']}: **{s['target']}**" for s in subs]
+    events = sorted(event_name(s["target"]) for s in subs if s["kind"] == "event")
+    series = sorted(s["target"] for s in subs if s["kind"] == "series")
+    blocks = []
+    if events:
+        blocks.append("**Events**\n" + "\n".join(f"• {n}" for n in events))
+    if series:
+        blocks.append("**Series**\n" + "\n".join(f"• {n}" for n in series))
     await interaction.response.send_message(
-        "Your subscriptions:\n" + "\n".join(lines), ephemeral=True
+        "Your subscriptions:\n" + "\n\n".join(blocks), ephemeral=True
     )
 
 
