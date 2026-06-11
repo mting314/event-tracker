@@ -193,3 +193,14 @@ def test_edit_modal_prefills_current_yaml():
     view = bm.AddConfirmView(1, "2026-x", "name: X\nrounds: []\n")
     modal = bm.EditModal(view)
     assert modal.yaml_input.default == "name: X\nrounds: []\n"
+
+
+async def test_subscribe_event_autocomplete_filters_by_name_or_id():
+    evs = [
+        {"id": "2026-liella-7th", "name": "Liella 7th", "series": []},
+        {"id": "2026-gkss", "name": "GKSS VS", "series": []},
+    ]
+    with patch.object(bm, "_events_cache", evs):
+        choices = await bm._event_ac(MagicMock(), "liella")
+    assert len(choices) == 1 and choices[0].value == "2026-liella-7th"
+    assert "Liella 7th" in choices[0].name

@@ -360,6 +360,18 @@ async def subscribe_event(interaction: discord.Interaction, event_id: str):
     await interaction.response.send_message(msg, ephemeral=True)
 
 
+@subscribe_event.autocomplete("event_id")
+async def _event_ac(interaction: discord.Interaction, current: str):
+    """Pick an event from a list (so the id can't be typo'd)."""
+    cur = current.lower()
+    evs = _events_cache or refresh_events()
+    matches = [e for e in evs if cur in e["id"].lower() or cur in e["name"].lower()]
+    return [
+        app_commands.Choice(name=f"{e['name']} ({e['id']})"[:100], value=e["id"])
+        for e in matches[:25]
+    ]
+
+
 @subscribe.command(name="series", description="Get reminders for all events in a series")
 async def subscribe_series(interaction: discord.Interaction, series: str):
     ok = db.add_subscription(str(interaction.user.id), "series", series)
@@ -384,12 +396,39 @@ async def unsubscribe_event(interaction: discord.Interaction, event_id: str):
     )
 
 
+@unsubscribe_event.autocomplete("event_id")
+async def _unsub_event_ac(interaction: discord.Interaction, current: str):
+    """Only suggest events the user is actually subscribed to."""
+    cur = current.lower()
+    names = {e["id"]: e["name"] for e in (_events_cache or refresh_events())}
+    subs = [
+        s["target"] for s in db.list_subscriptions(str(interaction.user.id)) if s["kind"] == "event"
+    ]
+    out = []
+    for sid in subs:
+        label = f"{names.get(sid, sid)} ({sid})"
+        if cur in label.lower():
+            out.append(app_commands.Choice(name=label[:100], value=sid))
+    return out[:25]
+
+
 @unsubscribe.command(name="series", description="Stop reminders for a series")
 async def unsubscribe_series(interaction: discord.Interaction, series: str):
     ok = db.remove_subscription(str(interaction.user.id), "series", series)
     await interaction.response.send_message(
         "✅ Removed." if ok else "You weren't subscribed.", ephemeral=True
     )
+
+
+@unsubscribe_series.autocomplete("series")
+async def _unsub_series_ac(interaction: discord.Interaction, current: str):
+    cur = current.lower()
+    subs = [
+        s["target"]
+        for s in db.list_subscriptions(str(interaction.user.id))
+        if s["kind"] == "series"
+    ]
+    return [app_commands.Choice(name=s, value=s) for s in subs if cur in s.lower()][:25]
 
 
 @tree.command(description="List your subscriptions")
