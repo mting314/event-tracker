@@ -1,0 +1,9 @@
+name: "BanG Dream! 13th☆LIVE"
+artist: BanG
+kind: concert
+source_url: https://bang-dream.com/13th-live/
+rounds:
+  - name: "受付期間：2026年5月3日(日) 21:00 ～ 7月13日(月) 23:59"
+    type: presale
+    apply_open: 2026-05-03T21:00:00
+    apply_deadline: 2026-07-13T23:59:00
