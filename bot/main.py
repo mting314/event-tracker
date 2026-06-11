@@ -228,6 +228,83 @@ def build_event_embed(data: dict, slug: str, src: str) -> discord.Embed:
     return emb
 
 
+# ---- merge support: fold a new URL's rounds into an existing event ----
+# (Some sources announce each lottery round as a separate post, so /add needs to
+#  recognise "this is an update to an event I already track" and append to it.)
+
+
+def _norm_date(v) -> str:
+    return (v.isoformat() if hasattr(v, "isoformat") else str(v or ""))[:10]
+
+
+def _round_key(r: dict) -> str:
+    """Dedup identity for a round: apply deadline at minute precision (tz-agnostic —
+    everything is JST), else name+leg. Matches both stored ISO strings and freshly
+    parsed datetimes, so re-adding the same post is a no-op."""
+    v = r.get("apply_deadline")
+    if v:
+        s = v.isoformat() if hasattr(v, "isoformat") else str(v)
+        return "dl:" + s[:16]
+    return f"nm:{r.get('name', '')}|{r.get('leg', '')}"
+
+
+def _perf_key(p: dict) -> tuple:
+    return (
+        _norm_date(p.get("date")),
+        p.get("venue") or "",
+        p.get("label") or "",
+        p.get("starts") or "",
+    )
+
+
+def find_matching_event(data: dict, slug: str, events: list[dict]) -> dict | None:
+    """The existing event this ingested page most likely refers to, or None.
+    Tries exact slug, then exact name, then shared performance (date+venue) overlap."""
+    by_id = {e["id"]: e for e in events}
+    if slug in by_id:
+        return by_id[slug]
+    name = (data.get("name") or "").strip()
+    if name:
+        for e in events:
+            if (e.get("name") or "").strip() == name:
+                return e
+    keys = {
+        (_norm_date(p.get("date")), p.get("venue") or "")
+        for p in data.get("performances", [])
+        if p.get("date")
+    }
+    best, best_ov = None, 0
+    for e in events:
+        ek = {
+            (_norm_date(p.get("date")), p.get("venue") or "")
+            for p in e.get("performances", [])
+            if p.get("date")
+        }
+        ov = len(keys & ek)
+        if ov > best_ov:
+            best, best_ov = e, ov
+    return best if best_ov else None
+
+
+def merge_event_data(existing: dict, new: dict) -> tuple[dict, int, int]:
+    """Append new rounds/performances from `new` into a copy of `existing`, deduped.
+    Existing fields are preserved (the new post is usually sparse); only empty
+    top-level scalars are filled in. Returns (merged, n_new_rounds, n_new_perfs)."""
+    merged = {k: v for k, v in existing.items() if k not in ("event_dates", "venues")}
+    have_r = {_round_key(r) for r in merged.get("rounds", [])}
+    new_rounds = [r for r in new.get("rounds", []) if _round_key(r) not in have_r]
+    if new_rounds:
+        merged["rounds"] = list(merged.get("rounds", [])) + new_rounds
+    have_p = {_perf_key(p) for p in merged.get("performances", [])}
+    new_perfs = [p for p in new.get("performances", []) if _perf_key(p) not in have_p]
+    if new_perfs:
+        merged["performances"] = list(merged.get("performances", [])) + new_perfs
+    for f in ("name_en", "artist", "kind", "official_url", "eventernote_url"):
+        if not merged.get(f) and new.get(f):
+            merged[f] = new[f]
+    return merged, len(new_rounds), len(new_perfs)
+
+
 def _validate_draft(slug: str, yaml_text: str) -> dict:
     """Parse + schema-validate a draft YAML; return the raw dict (raises if invalid)."""
     import yaml as _yaml
@@ -338,9 +415,70 @@ class AddConfirmView(discord.ui.View):
         self.stop()
 
 
+class MergeConfirmView(discord.ui.View):
+    """Shown when /add recognises the URL as an update to an existing event:
+    merge the new rounds in, edit first, create a separate new event, or cancel."""
+
+    def __init__(self, author_id: int, slug: str, yaml_text: str, new_slug: str, new_yaml: str):
+        super().__init__(timeout=600)
+        self.author_id = author_id
+        self.slug = slug  # existing event id (merge target) — also used by EditModal
+        self.yaml_text = yaml_text  # merged YAML
+        self.new_slug = new_slug  # fallback: commit as a brand-new event
+        self.new_yaml = new_yaml
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.author_id:
+            await interaction.response.send_message(
+                "Only the requester can confirm.", ephemeral=True
+            )
+            return False
+        return True
+
+    @discord.ui.button(label="Confirm update", style=discord.ButtonStyle.success, emoji="🔄")
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        msg = await _confirm_add(self.slug, self.yaml_text)
+        for child in self.children:
+            child.disabled = True
+        await interaction.edit_original_response(content=msg, view=self)
+        self.stop()
+
+    @discord.ui.button(label="Edit", style=discord.ButtonStyle.primary, emoji="✏️")
+    async def edit(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if len(self.yaml_text) > 4000:
+            await interaction.response.send_message(
+                "Draft is over 4000 chars — too long for the inline editor.", ephemeral=True
+            )
+            return
+        await interaction.response.send_modal(EditModal(self))
+
+    @discord.ui.button(label="Create new instead", style=discord.ButtonStyle.secondary, emoji="🆕")
+    async def create_new(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        msg = await _confirm_add(self.new_slug, self.new_yaml)
+        for child in self.children:
+            child.disabled = True
+        await interaction.edit_original_response(content=msg, view=self)
+        self.stop()
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary, emoji="✖")
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        for child in self.children:
+            child.disabled = True
+        await interaction.response.edit_message(content="Cancelled — nothing changed.", view=self)
+        self.stop()
+
+
 @tree.command(description="Draft an event from any URL (official, FC, live-house, …)")
-@app_commands.describe(url="event page URL", llm="force LLM (Vertex) extraction")
-async def add(interaction: discord.Interaction, url: str, llm: bool = False):
+@app_commands.describe(
+    url="event page URL",
+    llm="force LLM (Vertex) extraction",
+    event="merge the scraped rounds into this existing event (optional)",
+)
+async def add(
+    interaction: discord.Interaction, url: str, llm: bool = False, event: str | None = None
+):
     await interaction.response.defer(ephemeral=True, thinking=True)
     log.info("/add user=%s url=%s force_llm=%s", interaction.user, url, llm)
 
@@ -376,11 +514,50 @@ async def add(interaction: discord.Interaction, url: str, llm: bool = False):
         data = res.data
         dates = [p["date"] for p in data.get("performances", []) if p.get("date")]
         slug = slugify(data.get("name") or "", dates)
-        yaml_text = to_event_yaml(data)
+        new_yaml = to_event_yaml(data)
         src = "LLM (Vertex)" if res.used_llm else res.adapter
+        events = _events_cache or refresh_events()
+
+        # Decide: merge into an existing event, or create a new one. An explicit
+        # `event` arg forces the target; otherwise we try to auto-detect a match.
+        if event:
+            target = next((e for e in events if e["id"] == event), None)
+            if not target:
+                await interaction.edit_original_response(
+                    content=f"⚠️ Unknown event `{event}` to merge into."
+                )
+                return
+        else:
+            target = find_matching_event(data, slug, events)
+
+        if target:
+            merged, n_r, n_p = merge_event_data(target, data)
+            merged_yaml = to_event_yaml(merged)
+            embed = build_event_embed(merged, target["id"], src)
+            view = MergeConfirmView(interaction.user.id, target["id"], merged_yaml, slug, new_yaml)
+            file = discord.File(
+                io.BytesIO(merged_yaml.encode("utf-8")), filename=f"{target['id']}.yaml"
+            )
+            bits = []
+            if n_r:
+                bits.append(f"**+{n_r} new round{'s' if n_r != 1 else ''}**")
+            if n_p:
+                bits.append(f"+{n_p} new performance{'s' if n_p != 1 else ''}")
+            change = ", ".join(bits) if bits else "no new rounds or performances"
+            await interaction.edit_original_response(
+                content=(
+                    f"🔄 This looks like an update to **{target['name']}** — {change}. "
+                    "Confirm to update it, Edit first, or create a new event."
+                )[:1900],
+                embed=embed,
+                view=view,
+                attachments=[file],
+            )
+            return
+
         embed = build_event_embed(data, slug, src)
-        view = AddConfirmView(interaction.user.id, slug, yaml_text)
-        file = discord.File(io.BytesIO(yaml_text.encode("utf-8")), filename=f"{slug}.yaml")
+        view = AddConfirmView(interaction.user.id, slug, new_yaml)
+        file = discord.File(io.BytesIO(new_yaml.encode("utf-8")), filename=f"{slug}.yaml")
         await interaction.edit_original_response(
             content=f"✅ Parsed via **{src}** — review, then **Confirm** to save (or Edit first):",
             embed=embed,
@@ -392,6 +569,11 @@ async def add(interaction: discord.Interaction, url: str, llm: bool = False):
         await interaction.edit_original_response(
             content=f"⚠️ Parsed the page but couldn't build the preview: {exc}"
         )
+
+
+@add.autocomplete("event")
+async def _add_event_ac(interaction: discord.Interaction, current: str):
+    return await _event_ac(interaction, current)
 
 
 async def _delete_event(slug: str) -> str:

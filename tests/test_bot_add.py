@@ -205,6 +205,109 @@ def test_ingest_progress_callback_reports_ai_step():
     assert any("AI" in m for m in msgs)  # the LLM step is announced
 
 
+def test_merge_event_data_appends_only_new_deduped():
+    existing = {
+        "id": "2026-lq",
+        "name": "Lust Queen",
+        "name_en": "Lust Queen",
+        "performances": [{"date": "2026-09-05", "venue": "X"}],
+        "rounds": [{"name": "R1", "apply_deadline": "2026-06-01T23:59:00+09:00"}],
+        "event_dates": ["2026-09-05"],  # derived keys must be dropped
+        "venues": ["X"],
+    }
+    new = {
+        "name": "Lust Queen",
+        "performances": [{"date": "2026-09-05", "venue": "X"}],  # duplicate perf
+        "rounds": [
+            {"name": "R1 (dup)", "apply_deadline": "2026-06-01T23:59:00"},  # same deadline -> dup
+            {"name": "R2", "apply_deadline": "2026-07-01T23:59:00"},  # genuinely new
+        ],
+    }
+    merged, n_r, n_p = bm.merge_event_data(existing, new)
+    assert n_r == 1 and n_p == 0
+    assert len(merged["rounds"]) == 2
+    assert "event_dates" not in merged and "venues" not in merged
+
+
+def test_find_matching_event_by_slug_name_and_overlap():
+    events = [
+        {
+            "id": "2026-lq",
+            "name": "Lust Queen",
+            "performances": [{"date": "2026-09-05", "venue": "X"}],
+        }
+    ]
+    assert bm.find_matching_event({"name": "?"}, "2026-lq", events)["id"] == "2026-lq"  # slug
+    assert (
+        bm.find_matching_event({"name": "Lust Queen"}, "2026-z", events)["id"] == "2026-lq"
+    )  # name
+    overlap = {"name": "Other", "performances": [{"date": "2026-09-05", "venue": "X"}]}
+    assert bm.find_matching_event(overlap, "2026-z", events)["id"] == "2026-lq"  # perf overlap
+    miss = {"name": "Nope", "performances": [{"date": "2030-01-01", "venue": "Q"}]}
+    assert bm.find_matching_event(miss, "2026-z", events) is None
+
+
+async def test_add_merges_into_matching_event(interaction):
+    existing = {
+        "id": "2026-lq",
+        "name": "Lust Queen",
+        "series": [],
+        "performances": [{"date": "2026-09-05", "venue": "X"}],
+        "rounds": [{"name": "R1", "apply_deadline": "2026-06-01T23:59:00+09:00"}],
+    }
+    new = Ingested(
+        data={
+            "name": "Lust Queen",
+            "performances": [{"date": "2026-09-05", "venue": "X"}],
+            "rounds": [{"name": "R2", "apply_deadline": "2026-07-01T23:59:00"}],
+        },
+        adapter="generic",
+        used_llm=False,
+    )
+    with (
+        patch.object(bm, "_events_cache", [existing]),
+        patch.object(bm, "ingest_url", return_value=new),
+    ):
+        await bm.add.callback(interaction, url="https://lustqueen.info/news/detail/81252")
+    kwargs = interaction.edit_original_response.call_args.kwargs
+    assert isinstance(kwargs["view"], bm.MergeConfirmView)
+    assert "update to **Lust Queen**" in kwargs["content"]
+    assert "+1 new round" in kwargs["content"]
+    assert kwargs["view"].slug == "2026-lq"  # merge target
+    assert kwargs["view"].new_slug != "2026-lq"  # distinct create-new fallback
+
+
+async def test_add_explicit_event_arg_forces_merge(interaction):
+    existing = {
+        "id": "2026-lq",
+        "name": "Lust Queen",
+        "series": [],
+        "performances": [],
+        "rounds": [],
+    }
+    with (
+        patch.object(bm, "_events_cache", [existing]),
+        patch.object(
+            bm, "ingest_url", return_value=_ingested()
+        ),  # name "Test 公演", wouldn't auto-match
+    ):
+        await bm.add.callback(interaction, url="https://x/y", event="2026-lq")
+    assert isinstance(
+        interaction.edit_original_response.call_args.kwargs["view"], bm.MergeConfirmView
+    )
+
+
+async def test_add_creates_new_when_no_match(interaction):
+    with (
+        patch.object(bm, "_events_cache", []),
+        patch.object(bm, "ingest_url", return_value=_ingested()),
+    ):
+        await bm.add.callback(interaction, url="https://x/new")
+    assert isinstance(
+        interaction.edit_original_response.call_args.kwargs["view"], bm.AddConfirmView
+    )
+
+
 async def test_error_handler_replaces_spinner_when_deferred(interaction):
     interaction.response.is_done = MagicMock(return_value=True)
     err = discord.app_commands.CommandInvokeError(MagicMock(), RuntimeError("boom"))

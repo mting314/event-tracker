@@ -138,6 +138,15 @@ deterministic adapter finds nothing), so you can see whether the slow LLM path
 kicked in. Heavy work runs off the event loop (`asyncio.to_thread`); needs the
 `llm`/`bot` extras + GCP creds for the LLM fallback.
 
+**Updating an existing event (new-round posts).** Some sources announce each
+lottery round as a *separate* post (e.g. round 1 and round 2 at different URLs).
+`/add` a later URL and it **recognises the existing event** (by slug, name, or
+shared performances) and switches to a **merge review** — "🔄 update to **X** —
++1 new round" — with **Confirm update / Edit / Create new instead / Cancel**.
+The merge appends only genuinely new rounds/performances (deduped by apply
+deadline), preserving every existing field, so re-adding the same post is a
+no-op. Pass `event:<existing>` to force the target when auto-detection is unsure.
+
 **Reminders:** the scheduler checks every `CHECK_INTERVAL_MIN` minutes and fires
 on apply-open, deadline, results, and payment dates. Default lead times are 3d /
 1d / 2h before each; a late subscribe gets one message, not a burst (dedup +
