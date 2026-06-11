@@ -1,24 +1,50 @@
 {% extends "base.html" %}
-{% block title %}Upcoming deadlines · LL Lottery Tracker{% endblock %}
+{% block title %}Upcoming · LL Lottery Tracker{% endblock %}
 {% block content %}
-<h1>Upcoming application deadlines</h1>
-<p class="hint">What you can apply to soon. Past items are hidden automatically.
-  <label><input type="checkbox" id="show-past"> show past</label>
+<h1>Upcoming</h1>
+<p class="hint">One row per event, showing its next deadline. Click to expand rounds &amp; shows.
+  <label><input type="checkbox" id="show-past"> show past / no upcoming</label>
 </p>
 
-<ul class="feed" id="feed">
-  {% for item in feed %}
-  <li class="feed-item type-{{ item.css }}" data-iso="{{ item.iso }}">
-    <span class="badge {{ item.css }}">{{ item.label }}</span>
-    <span class="countdown" data-iso="{{ item.iso }}"></span>
-    <a class="feed-event" href="{{ base }}event/{{ item.event_id }}.html">{{ item.event_name }}</a>
-    <span class="feed-round">{{ item.round_name }}</span>
-    {% if item.series %}<span class="series-tags">{% for s in item.series %}<span class="tag">{{ s }}</span>{% endfor %}</span>{% endif %}
-    <time class="dt" datetime="{{ item.iso }}">{{ item.iso|jst_fmt }}</time>
-    {% if item.apply_url %}<a class="apply" href="{{ item.apply_url }}" target="_blank" rel="noopener">Apply ↗</a>{% endif %}
+<ul class="evgroups" id="groups">
+  {% for g in groups %}
+  <li>
+    <details class="evgroup">
+      <summary>
+        <span class="next-badge"></span>
+        <span class="countdown"></span>
+        <span class="evname">{{ g.name }}</span>
+        {% for s in g.series %}<span class="tag">{{ s }}</span>{% endfor %}
+        {% if g.kind %}<span class="kind-badge">{{ g.kind }}</span>{% endif %}
+        <time class="next-when dt"></time>
+      </summary>
+      <div class="evbody">
+        <p class="crumb"><a href="{{ base }}event/{{ g.id }}.html">open event page →</a></p>
+        {% if g.performances %}
+        <div class="perf-line">🎤
+          {% for p in g.performances %}<span class="nowrap">{{ p.date[:10] }}{% if p.city %} {{ p.city }}{% endif %}{% if p.venue %} · {{ p.venue }}{% endif %}</span>{% if not loop.last %} / {% endif %}{% endfor %}
+        </div>
+        {% endif %}
+        {% if g.occurrences %}
+        <table class="rounds-mini">
+          <tbody>
+            {% for o in g.occurrences %}
+            <tr class="occ" data-iso="{{ o.iso }}">
+              <td><span class="badge {{ o.css }}">{{ o.label }}</span></td>
+              <td class="occ-round">{{ o.round }}</td>
+              <td><time class="dt" datetime="{{ o.iso }}">{{ o.iso|jst_fmt }}</time>
+                <span class="countdown" data-iso="{{ o.iso }}"></span></td>
+              <td>{% if o.apply_url %}<a class="apply" href="{{ o.apply_url }}" target="_blank" rel="noopener">Apply ↗</a>{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}<p class="muted">No lottery rounds recorded yet.</p>{% endif %}
+      </div>
+    </details>
   </li>
   {% endfor %}
 </ul>
 <p class="empty" id="feed-empty" hidden>Nothing upcoming. 🎉</p>
 {% endblock %}
-{% block scripts %}<script>initFeed();</script>{% endblock %}
+{% block scripts %}<script>initGroups();</script>{% endblock %}

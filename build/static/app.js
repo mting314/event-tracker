@@ -58,24 +58,59 @@ function paintCountdowns() {
   });
 }
 
-/* --- upcoming feed --- */
-function initFeed() {
-  paintCountdowns();
+/* --- upcoming: one collapsible row per event, summarised by its next deadline --- */
+function initGroups() {
   const showPast = document.getElementById('show-past');
   const empty = document.getElementById('feed-empty');
-  const filter = () => {
+  const container = document.getElementById('groups');
+  const groups = [...container.querySelectorAll('.evgroup')];
+
+  const refresh = () => {
     const now = new Date();
     let visible = 0;
-    document.querySelectorAll('#feed .feed-item').forEach((li) => {
-      const past = new Date(li.dataset.iso) < now;
-      const hide = past && !showPast.checked;
-      li.hidden = hide;
-      if (!hide) visible++;
+    const rows = groups.map((d) => {
+      const future = [...d.querySelectorAll('.occ')]
+        .map((o) => o.dataset.iso)
+        .filter((iso) => new Date(iso) > now)
+        .sort();
+      return { d, next: future[0] || null };
     });
+
+    for (const { d, next } of rows) {
+      const li = d.closest('li');
+      li.hidden = !next && !showPast.checked;
+      if (li.hidden) continue;
+      visible++;
+      const badge = d.querySelector('summary .next-badge');
+      const cd = d.querySelector('summary .countdown');
+      const when = d.querySelector('summary .next-when');
+      const occEl = next && [...d.querySelectorAll('.occ')].find((o) => o.dataset.iso === next);
+      if (occEl) {
+        const src = occEl.querySelector('.badge');
+        badge.className = 'next-badge ' + src.className; // copies "badge <css>"
+        badge.textContent = src.textContent;
+        cd.dataset.iso = next;
+        when.setAttribute('datetime', next);
+      } else {
+        badge.className = 'next-badge'; badge.textContent = 'past';
+        delete cd.dataset.iso; cd.textContent = '';
+        when.removeAttribute('datetime'); when.textContent = '';
+      }
+    }
+
+    // soonest-next first; hidden/no-next sink to the bottom
+    rows
+      .filter((r) => !r.d.closest('li').hidden)
+      .sort((a, b) => (a.next || '9999').localeCompare(b.next || '9999'))
+      .forEach((r) => container.appendChild(r.d.closest('li')));
+
+    paintCountdowns();
+    applyTz(document.getElementById('tz-local')?.checked);
     if (empty) empty.hidden = visible > 0;
   };
-  showPast.addEventListener('change', filter);
-  filter();
+
+  showPast.addEventListener('change', refresh);
+  refresh();
   setInterval(paintCountdowns, 60000);
 }
 

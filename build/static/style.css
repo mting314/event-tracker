@@ -141,3 +141,23 @@ tbody tr:hover { background: var(--panel); }
 .event-detail .kind-badge { margin: 0 0 .5rem; }
 #kind { padding: .5rem .6rem; border-radius: 8px; border: 1px solid #2c2f55;
   background: var(--panel); color: var(--text); font-size: .9rem; }
+
+/* upcoming: collapsible per-event groups */
+.evgroups { list-style: none; padding: 0; margin: 1rem 0; }
+.evgroup { background: var(--panel); border: 1px solid #2c2f55; border-radius: 8px; margin-bottom: .5rem; }
+.evgroup summary { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+  padding: .6rem .8rem; cursor: pointer; list-style: none; }
+.evgroup summary::-webkit-details-marker { display: none; }
+.evgroup summary::before { content: "▸"; color: var(--muted); }
+.evgroup[open] summary::before { content: "▾"; }
+.evgroup .evname { font-weight: 600; }
+.evgroup .next-badge:empty { display: none; }
+.evgroup .next-when { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; font-size: .85rem; }
+.evbody { padding: .2rem .8rem .7rem 1.6rem; border-top: 1px solid #2c2f55; }
+.evbody .crumb { margin: .5rem 0; font-size: .85rem; }
+.perf-line { color: var(--muted); font-size: .8rem; margin: .4rem 0; }
+.perf-line .nowrap { margin-right: .3rem; }
+.rounds-mini { width: 100%; border-collapse: collapse; margin: 0; }
+.rounds-mini td { padding: .3rem .4rem; border-bottom: 1px solid #23264a; font-size: .85rem; vertical-align: top; }
+.rounds-mini tr:last-child td { border-bottom: none; }
+.occ-round { color: var(--text); }

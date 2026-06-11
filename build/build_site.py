@@ -36,34 +36,50 @@ DATE_TYPES = {
 }
 
 
-def build_deadline_feed(events) -> list[dict]:
-    """Flatten every dated round action across all events, sorted by time.
-
-    The site's "upcoming" view and JS countdowns work off this feed; client JS
-    filters out items already in the past relative to the viewer's clock.
+def build_index_groups(events) -> list[dict]:
+    """Per-event groups for the Upcoming page: all dated round occurrences +
+    performances. The *next* deadline per event is chosen client-side (viewer's
+    clock), and each event row is collapsible to reveal its rounds + shows.
     """
-    feed = []
+    groups = []
     for ev in events:
+        occ = []
         for rnd in ev.rounds:
             for field, (label, css) in DATE_TYPES.items():
                 dt = getattr(rnd, field)
                 if dt is None:
                     continue
-                feed.append(
+                occ.append(
                     {
-                        "event_id": ev.id,
-                        "event_name": ev.name,
-                        "series": ev.series,
-                        "round_name": rnd.name + (f" · {rnd.leg}" if rnd.leg else ""),
-                        "date_type": field,
+                        "iso": dt.isoformat(),
                         "label": label,
                         "css": css,
-                        "iso": dt.isoformat(),
+                        "round": rnd.name + (f" · {rnd.leg}" if rnd.leg else ""),
                         "apply_url": rnd.apply_url,
                     }
                 )
-    feed.sort(key=lambda i: i["iso"])
-    return feed
+        occ.sort(key=lambda o: o["iso"])
+        groups.append(
+            {
+                "id": ev.id,
+                "name": ev.name,
+                "series": ev.series,
+                "kind": ev.kind,
+                "performances": [
+                    {
+                        "date": p.date.isoformat(),
+                        "city": p.city,
+                        "venue": p.venue,
+                        "label": p.label,
+                        "doors": p.doors,
+                        "starts": p.starts,
+                    }
+                    for p in ev.performances
+                ],
+                "occurrences": occ,
+            }
+        )
+    return groups
 
 
 def jst_fmt(iso: str) -> str:
@@ -111,11 +127,13 @@ def main() -> None:
     env.filters["jst_fmt"] = jst_fmt
     env.filters["jst_date"] = jst_date
 
-    feed = build_deadline_feed(events)
+    groups = build_index_groups(events)
     # `base` is the relative path back to dist root, so links work at any depth.
     common = {"date_types": DATE_TYPES, "event_count": len(events), "base": ""}
 
-    env.get_template("index.html").stream(feed=feed, **common).dump(str(DIST_DIR / "index.html"))
+    env.get_template("index.html").stream(groups=groups, **common).dump(
+        str(DIST_DIR / "index.html")
+    )
     env.get_template("catalog.html").stream(
         events=[e.public_dict() for e in events], **common
     ).dump(str(DIST_DIR / "catalog.html"))
