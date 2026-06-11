@@ -129,6 +129,29 @@ def parse_lead_spec(spec: str) -> list[int]:
 # ---------------- slash commands ----------------
 
 
+@tree.error
+async def on_app_command_error(
+    interaction: discord.Interaction, error: app_commands.AppCommandError
+):
+    """Global safety net: any uncaught command error is surfaced to the user
+    (ephemerally) instead of leaving the 'is thinking…' spinner hanging."""
+    orig = getattr(error, "original", error)
+    cmd = interaction.command.qualified_name if interaction.command else "?"
+    log.exception("unhandled error in /%s", cmd, exc_info=orig)
+    msg = f"⚠️ Something went wrong running `/{cmd}`: {orig}"[:1900]
+    try:
+        if interaction.response.is_done():
+            # deferred or already replied — replace the spinner if we can
+            try:
+                await interaction.edit_original_response(content=msg)
+            except discord.HTTPException:
+                await interaction.followup.send(msg, ephemeral=True)
+        else:
+            await interaction.response.send_message(msg, ephemeral=True)
+    except Exception:  # noqa: BLE001 - last resort; don't mask the original error
+        log.exception("failed to surface command error to the user")
+
+
 @tree.command(description="Search tracked events")
 @app_commands.describe(query="name, series, venue or performer")
 async def search(interaction: discord.Interaction, query: str):

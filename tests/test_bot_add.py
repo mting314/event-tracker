@@ -205,6 +205,22 @@ def test_ingest_progress_callback_reports_ai_step():
     assert any("AI" in m for m in msgs)  # the LLM step is announced
 
 
+async def test_error_handler_replaces_spinner_when_deferred(interaction):
+    interaction.response.is_done = MagicMock(return_value=True)
+    err = discord.app_commands.CommandInvokeError(MagicMock(), RuntimeError("boom"))
+    await bm.on_app_command_error(interaction, err)
+    body = interaction.edit_original_response.call_args.kwargs["content"]
+    assert "went wrong" in body and "boom" in body
+
+
+async def test_error_handler_replies_when_not_deferred(interaction):
+    interaction.response.is_done = MagicMock(return_value=False)
+    await bm.on_app_command_error(interaction, RuntimeError("nope"))
+    body = interaction.response.send_message.call_args[0][0]
+    assert "nope" in body
+    assert interaction.response.send_message.call_args.kwargs["ephemeral"] is True
+
+
 async def test_add_handles_ingest_failure_gracefully(interaction):
     with patch.object(bm, "ingest_url", side_effect=RuntimeError("boom")):
         await bm.add.callback(interaction, url="https://x/bad")
