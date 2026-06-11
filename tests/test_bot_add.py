@@ -273,6 +273,40 @@ def test_merge_keeps_distinct_time_slots():
     assert n_p == 1 and len(merged["performances"]) == 2
 
 
+def test_merge_keeps_label_distinct_shows_before_times_announced():
+    # 昼/夜 at the same date+venue with NO start times yet must not be collapsed.
+    existing = {
+        "id": "x",
+        "name": "X",
+        "performances": [{"date": "2026-09-05", "venue": "H", "label": "昼公演"}],
+        "rounds": [{"name": "r", "apply_deadline": "2026-06-01T00:00"}],
+    }
+    new = {"performances": [{"date": "2026-09-05", "venue": "H", "label": "夜公演"}]}
+    merged, _, n_p = bm.merge_event_data(existing, new)
+    assert n_p == 1 and len(merged["performances"]) == 2
+
+
+def test_merge_fills_start_time_announced_later_into_right_show():
+    # Times announced in a later post fill the matching labeled show, not the other.
+    existing = {
+        "id": "x",
+        "name": "X",
+        "performances": [
+            {"date": "2026-09-05", "venue": "H", "label": "昼公演"},
+            {"date": "2026-09-05", "venue": "H", "label": "夜公演"},
+        ],
+        "rounds": [{"name": "r", "apply_deadline": "2026-06-01T00:00"}],
+    }
+    new = {
+        "performances": [{"date": "2026-09-05", "venue": "H", "label": "昼公演", "starts": "13:00"}]
+    }
+    merged, _, n_p = bm.merge_event_data(existing, new)
+    assert n_p == 0  # matched the existing 昼公演, no new perf added
+    noon = next(p for p in merged["performances"] if p["label"] == "昼公演")
+    eve = next(p for p in merged["performances"] if p["label"] == "夜公演")
+    assert noon["starts"] == "13:00" and not eve.get("starts")  # filled the right one
+
+
 def test_find_matching_event_by_slug_name_and_overlap():
     events = [
         {

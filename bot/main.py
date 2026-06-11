@@ -248,22 +248,31 @@ def _round_key(r: dict) -> str:
     return f"nm:{r.get('name', '')}|{r.get('leg', '')}"
 
 
-def _venue_core(v) -> str:
-    """Venue with spaces removed, for tolerant comparison."""
-    return (v or "").replace(" ", "").replace("　", "")
+def _loose_eq(a, b) -> bool:
+    """Tolerant string match for venue/label: True if either side is blank, or they
+    are equal / one contains the other (spaces ignored). So '東京・下北沢シャングリラ'
+    matches '下北沢シャングリラ', and 'The story resumes EXTRA' matches
+    'LustQueen「The story resumes EXTRA」' — but '昼公演' ≠ '夜公演'."""
+    na = (a or "").replace(" ", "").replace("　", "")
+    nb = (b or "").replace(" ", "").replace("　", "")
+    if not (na and nb):
+        return True
+    return na == nb or na in nb or nb in na
 
 
 def _perf_same(a: dict, b: dict) -> bool:
-    """Whether two performances are the same show. Same date + compatible venue
-    (equal, or one contains the other so '東京・下北沢シャングリラ' ≈ '下北沢シャングリラ'),
-    unless they have *different* explicit start times (noon vs evening = distinct)."""
+    """Whether two performances are the same show. Requires same date + compatible
+    venue. Then distinct iff they have *different* explicit start times (noon vs
+    evening). Start times are often announced only later, so when they're missing we
+    fall back to the label to tell apart multiple same-day/venue shows."""
     if _norm_date(a.get("date")) != _norm_date(b.get("date")):
         return False
-    va, vb = _venue_core(a.get("venue")), _venue_core(b.get("venue"))
-    if va and vb and not (va == vb or va in vb or vb in va):
+    if not _loose_eq(a.get("venue"), b.get("venue")):
         return False
     sa, sb = a.get("starts") or "", b.get("starts") or ""
-    return not (sa and sb and sa != sb)
+    if sa and sb and sa != sb:
+        return False
+    return _loose_eq(a.get("label"), b.get("label"))
 
 
 def _merge_perfs(existing: list, new: list) -> tuple[list, int]:
