@@ -526,6 +526,41 @@ async def upcoming(interaction: discord.Interaction):
     await interaction.response.send_message("Upcoming:\n" + "\n".join(lines), ephemeral=True)
 
 
+@tree.command(description="Upcoming application dates for one event")
+@app_commands.describe(event_id="event to look up")
+async def deadlines(interaction: discord.Interaction, event_id: str):
+    from .reminders import DATE_LABELS, occurrences
+
+    ev = next((e for e in (_events_cache or refresh_events()) if e["id"] == event_id), None)
+    if not ev:
+        await interaction.response.send_message(f"Unknown event `{event_id}`.", ephemeral=True)
+        return
+    now = datetime.now(JST)
+    rows = sorted(
+        ((target, rnd, dtype) for _, rnd, dtype, target in occurrences([ev]) if target > now),
+        key=lambda r: r[0],
+    )
+    if not rows:
+        await interaction.response.send_message(
+            f"No upcoming application dates for **{ev['name']}**.", ephemeral=True
+        )
+        return
+    lines = []
+    for target, rnd, dtype in rows:
+        leg = f" · {rnd['leg']}" if rnd.get("leg") else ""
+        label = DATE_LABELS[dtype].split()[0]
+        lines.append(f"• {target.strftime('%Y-%m-%d %H:%M')} — {rnd['name']}{leg} ({label})")
+    body = f"**{ev['name']}** — upcoming dates:\n" + "\n".join(lines)
+    if SITE_URL:
+        body += f"\n{event_link(ev['id'])}"
+    await interaction.response.send_message(body, ephemeral=True)
+
+
+@deadlines.autocomplete("event_id")
+async def _deadlines_ac(interaction: discord.Interaction, current: str):
+    return await _event_ac(interaction, current)
+
+
 @tree.command(description="View or change your reminder settings")
 @app_commands.describe(lead_times="e.g. 3d,1d,2h", dm="receive DMs?")
 async def settings(

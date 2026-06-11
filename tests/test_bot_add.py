@@ -220,6 +220,42 @@ async def test_subscribe_autocomplete_label_has_no_slug():
     assert choices[0].value == "2026-liella-7th"  # slug still the stored value
 
 
+async def test_deadlines_lists_future_dates_only(interaction):
+    ev = {
+        "id": "2026-x",
+        "name": "X Tour",
+        "series": [],
+        "rounds": [
+            {"name": "Past FC", "apply_deadline": "2020-01-01T23:59:00+09:00"},
+            {"name": "FC先行", "leg": "Tokyo", "apply_deadline": "2030-06-21T23:59:00+09:00"},
+        ],
+    }
+    with patch.object(bm, "_events_cache", [ev]):
+        await bm.deadlines.callback(interaction, event_id="2026-x")
+    body = interaction.response.send_message.call_args[0][0]
+    assert "X Tour" in body
+    assert "FC先行 · Tokyo" in body and "2030-06-21" in body
+    assert "Past FC" not in body  # past dates filtered out
+
+
+async def test_deadlines_unknown_event(interaction):
+    with patch.object(bm, "_events_cache", []):
+        await bm.deadlines.callback(interaction, event_id="nope")
+    assert "Unknown event" in interaction.response.send_message.call_args[0][0]
+
+
+async def test_deadlines_no_upcoming(interaction):
+    ev = {
+        "id": "2026-x",
+        "name": "X Tour",
+        "series": [],
+        "rounds": [{"name": "Past", "apply_deadline": "2020-01-01T00:00:00+09:00"}],
+    }
+    with patch.object(bm, "_events_cache", [ev]):
+        await bm.deadlines.callback(interaction, event_id="2026-x")
+    assert "No upcoming" in interaction.response.send_message.call_args[0][0]
+
+
 async def test_delete_event_commits():
     with (
         patch.object(bm, "GITHUB_REPO", "me/x"),
