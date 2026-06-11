@@ -168,7 +168,9 @@ def _usage_str(result) -> str:
     across versions (request/response_tokens pre-v1, input/output_tokens in v1),
     so probe both. Returns '' if usage isn't available."""
     try:
-        u = result.usage()
+        u = result.usage
+        if callable(u):  # pre-v1 pydantic-ai exposed usage() as a method
+            u = u()
     except Exception:  # noqa: BLE001 - usage is logging-only, never fail the call
         return ""
 
