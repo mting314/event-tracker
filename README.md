@@ -73,16 +73,15 @@ and X posts are best-effort. The scraper never runs on a server — only locally
 ### Web add/edit form
 
 The site's **+ Add** page builds event YAML in the browser from structured fields,
-validates it, and opens a prefilled GitHub PR (set your `owner/repo` once via the
-form). Each event page has an **✎ edit** link that deep-links the form prefilled
-from existing data.
+validates it, and **💾 Save**s it straight to `main` (auto-deploys in ~1 min). Each
+event page has a **✎ Edit event** button that opens the same form prefilled (slug
+locked) from existing data — so add and edit are the same quick flow, no PR.
 
-**Save directly (no PR).** The same form has a **💾 Save directly** button that
-commits the event straight to `main` (auto-deploys in ~1 min) via a small GCP
-**Cloud Function** (`functions/commit/`). The static site can't hold a write token,
-so the function holds the PAT server-side and is guarded by an admin secret; the
-browser sends `POST {slug, yaml}` + the secret. Set the **Edit API URL** + **Admin
-secret** once in the form's Config (stored in `localStorage`). Deploy/update it with:
+Saving goes through a small GCP **Cloud Function** (`functions/commit/`): the static
+site can't hold a write token, so the function holds the PAT server-side and is
+guarded by an admin secret; the browser sends `POST {slug, yaml}` + the secret. Set
+the **Edit API URL** + **Admin secret** once in the form's Config (stored in
+`localStorage`). Deploy/update the function with:
 
 ```bash
 gcloud functions deploy ll-commit --gen2 --region us-central1 --runtime python312 \
@@ -106,9 +105,10 @@ uv run --extra bot python -m bot.main
 toggle), `/setchannel` (admin), `/testreminder` (admin — DMs you a sample reminder
 to verify delivery), and **`/add <url>`** — ingest any event page
 (official / FC / live-house) via the hybrid pipeline and show a **review embed**
-(name, performances, lottery rounds) with **Confirm / Cancel** buttons. On Confirm
-the draft is schema-validated and the bot **opens a PR** (needs `GITHUB_TOKEN`;
-without it, returns a new-file link). The full YAML is always attached. Heavy work
+(name, performances, lottery rounds) with **Confirm / Edit / Cancel** buttons. On
+Confirm the draft is schema-validated and the bot **commits it straight to `main`**
+(needs `GITHUB_TOKEN`). Edit opens a modal to tweak the YAML first. The full YAML is
+always attached. Heavy work
 runs off the event loop (`asyncio.to_thread`); needs the `llm`/`bot` extras + GCP
 creds for the LLM fallback.
 

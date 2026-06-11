@@ -173,67 +173,32 @@ def _validate_draft(slug: str, yaml_text: str) -> dict:
     return raw
 
 
-def _pr_body(raw: dict) -> str:
-    """Markdown PR body summarising the event (so the PR is reviewable at a glance)."""
-    lines = ["Drafted via the Discord bot `/add`. **Verify the lottery dates before merging.**", ""]
-    title = f"**{raw['name']}**" if raw.get("name") else ""
-    if raw.get("name_en"):
-        title += f" — {raw['name_en']}"
-    if title:
-        lines.append(title)
-    meta = " · ".join(
-        x for x in [raw.get("kind"), raw.get("artist"), ", ".join(raw.get("series", []))] if x
-    )
-    if meta:
-        lines.append(meta)
-    if raw.get("source_url"):
-        lines.append(f"Source: {raw['source_url']}")
-    if raw.get("performances"):
-        lines += ["", "**Performances**"]
-        lines += [
-            f"- {p.get('date', '?')} · {(p.get('city') or '')} {(p.get('venue') or '')}".rstrip(
-                " ·"
-            )
-            for p in raw["performances"]
-        ]
-    if raw.get("rounds"):
-        lines += ["", "**Lottery rounds**"]
-        lines += [
-            f"- `{r.get('apply_deadline') or '—'}` "
-            f"{(r.get('leg') + ': ' if r.get('leg') else '')}{r.get('name', '?')}"
-            for r in raw["rounds"]
-        ]
-    return "\n".join(lines)
-
-
 async def _confirm_add(slug: str, yaml_text: str) -> str:
-    """Validate the draft and create the PR (or fall back to a link). Returns a status."""
+    """Validate the draft and commit it straight to main. Returns a status."""
     try:
-        raw = _validate_draft(slug, yaml_text)
+        _validate_draft(slug, yaml_text)
     except Exception as exc:  # noqa: BLE001
-        return f"⚠️ Draft failed validation, not added:\n```{str(exc)[:400]}```"
+        return f"⚠️ Draft failed validation, not saved:\n```{str(exc)[:400]}```"
 
-    if GITHUB_REPO and GITHUB_TOKEN:
-        from . import gh
+    if not (GITHUB_REPO and GITHUB_TOKEN):
+        return "⚠️ No GITHUB_REPO/GITHUB_TOKEN configured — can't save."
 
-        try:
-            url = await asyncio.to_thread(
-                gh.create_event_pr,
-                GITHUB_REPO,
-                GITHUB_BRANCH,
-                GITHUB_TOKEN,
-                slug,
-                yaml_text,
-                _pr_body(raw),
-            )
-            return f"✅ PR opened — review & merge: {url}"
-        except Exception as exc:  # noqa: BLE001
-            log.exception("/add PR creation failed slug=%s", slug)
-            return f"⚠️ PR creation failed: {exc}\nUse the attached YAML to add it manually."
-    if GITHUB_REPO:
-        link = f"https://github.com/{GITHUB_REPO}/new/{GITHUB_BRANCH}?filename=events/{slug}.yaml"
-        return f"No `GITHUB_TOKEN` set — open it yourself: {link} (paste the attached YAML)."
-    return "Validated ✓ — commit the attached YAML to `events/`."
+    from . import gh
+
+    try:
+        url = await asyncio.to_thread(
+            gh.commit_to_main,
+            GITHUB_REPO,
+            GITHUB_BRANCH,
+            GITHUB_TOKEN,
+            slug,
+            yaml_text,
+            f"add/update {slug} via /add",
+        )
+        return f"✅ Saved to `{GITHUB_BRANCH}` — live in ~1 min: {url}"
+    except Exception as exc:  # noqa: BLE001
+        log.exception("/add save failed slug=%s", slug)
+        return f"⚠️ Save failed: {exc}\nUse the attached YAML to add it manually."
 
 
 class EditModal(discord.ui.Modal, title="Edit event draft (YAML)"):
@@ -279,7 +244,7 @@ class AddConfirmView(discord.ui.View):
             return False
         return True
 
-    @discord.ui.button(label="Confirm & open PR", style=discord.ButtonStyle.success, emoji="✅")
+    @discord.ui.button(label="Confirm & save", style=discord.ButtonStyle.success, emoji="✅")
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer()
         msg = await _confirm_add(self.slug, self.yaml_text)
@@ -334,7 +299,7 @@ async def add(interaction: discord.Interaction, url: str, llm: bool = False):
     view = AddConfirmView(interaction.user.id, slug, yaml_text)
     file = discord.File(io.BytesIO(yaml_text.encode("utf-8")), filename=f"{slug}.yaml")
     await interaction.followup.send(
-        "Review the scraped event, then **Confirm** to open a PR:",
+        "Review the scraped event, then **Confirm** to save it (or Edit first):",
         embed=embed,
         view=view,
         file=file,

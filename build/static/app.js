@@ -359,16 +359,10 @@ function initAddForm(eventsUrl) {
   const form = document.getElementById('event-form');
   const out = document.getElementById('yaml-out');
   const errBox = document.getElementById('form-error');
-  const repo = document.getElementById('gh-repo');
-  const branch = document.getElementById('gh-branch');
   const editApi = document.getElementById('edit-api');
   const editSecret = document.getElementById('edit-secret');
-  repo.value = localStorage.getItem('ghRepo') || '';
-  branch.value = localStorage.getItem('ghBranch') || 'main';
   editApi.value = localStorage.getItem('editApi') || '';
   editSecret.value = localStorage.getItem('editSecret') || '';
-  repo.addEventListener('change', () => localStorage.setItem('ghRepo', repo.value.trim()));
-  branch.addEventListener('change', () => localStorage.setItem('ghBranch', branch.value.trim()));
   editApi.addEventListener('change', () => localStorage.setItem('editApi', editApi.value.trim()));
   editSecret.addEventListener('change', () => localStorage.setItem('editSecret', editSecret.value.trim()));
 
@@ -462,15 +456,6 @@ function initAddForm(eventsUrl) {
     const blob = new Blob([r.yaml], { type: 'text/yaml' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
     a.download = `${r.ev.id}.yaml`; a.click(); URL.revokeObjectURL(a.href);
-  });
-  document.getElementById('pr').addEventListener('click', () => {
-    const r = build(); if (!r) return;
-    const slug = (repo.value || '').trim();
-    if (!slug) { errBox.hidden = false; errBox.textContent = '⚠ set the GitHub repo (owner/repo) first'; return; }
-    const url = `https://github.com/${slug}/new/${(branch.value || 'main').trim()}` +
-      `?filename=events/${r.ev.id}.yaml&value=${encodeURIComponent(r.yaml)}`;
-    if (url.length > 8000) { errBox.hidden = false; errBox.textContent = '⚠ YAML too long for a PR link — use Download instead'; return; }
-    window.open(url, '_blank', 'noopener');
   });
 
   // edit mode: ?edit=<id> prefills from events.json

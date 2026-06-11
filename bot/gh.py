@@ -1,7 +1,8 @@
-"""Open a GitHub PR for a drafted event via the REST API.
+"""Commit an event YAML straight to the default branch via the GitHub REST API.
 
-Used by the bot's /add confirm flow so a user can create the PR with one click.
-Needs a token with contents + pull-requests write on the repo (fine-grained PAT).
+Used by the bot's /add confirm flow. Needs a token with contents write on the
+repo (fine-grained PAT). No PR — the change lands on main and auto-deploys; the
+CI build re-validates as a backstop.
 """
 
 from __future__ import annotations
@@ -13,69 +14,29 @@ import requests
 API = "https://api.github.com"
 
 
-def create_event_pr(
-    repo: str, base: str, token: str, slug: str, yaml_text: str, body: str | None = None
+def commit_to_main(
+    repo: str, branch: str, token: str, slug: str, yaml_text: str, message: str | None = None
 ) -> str:
-    """Create branch + commit events/<slug>.yaml + open a PR; return its URL."""
+    """Create or update events/<slug>.yaml on `branch`; return the commit URL."""
     h = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
     }
-    owner = repo.split("/")[0]
-    branch = f"add-{slug}"
+    path = f"events/{slug}.yaml"
+    # need the current blob sha to update an existing file
+    g = requests.get(
+        f"{API}/repos/{repo}/contents/{path}", headers=h, params={"ref": branch}, timeout=20
+    )
+    sha = g.json().get("sha") if g.status_code == 200 else None
 
-    # base branch SHA
-    r = requests.get(f"{API}/repos/{repo}/git/ref/heads/{base}", headers=h, timeout=20)
+    payload = {
+        "message": message or f"add/update event: {slug}",
+        "content": base64.b64encode(yaml_text.encode("utf-8")).decode("ascii"),
+        "branch": branch,
+    }
+    if sha:
+        payload["sha"] = sha
+    r = requests.put(f"{API}/repos/{repo}/contents/{path}", headers=h, json=payload, timeout=20)
     r.raise_for_status()
-    sha = r.json()["object"]["sha"]
-
-    # create the branch (ok if it already exists)
-    rb = requests.post(
-        f"{API}/repos/{repo}/git/refs",
-        headers=h,
-        timeout=20,
-        json={"ref": f"refs/heads/{branch}", "sha": sha},
-    )
-    if rb.status_code not in (201, 422):
-        rb.raise_for_status()
-
-    # commit the file on that branch
-    rc = requests.put(
-        f"{API}/repos/{repo}/contents/events/{slug}.yaml",
-        headers=h,
-        timeout=20,
-        json={
-            "message": f"add event: {slug}",
-            "branch": branch,
-            "content": base64.b64encode(yaml_text.encode("utf-8")).decode("ascii"),
-        },
-    )
-    rc.raise_for_status()
-
-    # open the PR (reuse an existing one if already open for this branch)
-    rp = requests.post(
-        f"{API}/repos/{repo}/pulls",
-        headers=h,
-        timeout=20,
-        json={
-            "title": f"Add event: {slug}",
-            "head": branch,
-            "base": base,
-            "body": body
-            or "Drafted via the Discord bot `/add` command. Verify dates before merging.",
-        },
-    )
-    if rp.status_code == 201:
-        return rp.json()["html_url"]
-    if rp.status_code == 422:  # PR already exists for this head
-        existing = requests.get(
-            f"{API}/repos/{repo}/pulls",
-            headers=h,
-            timeout=20,
-            params={"head": f"{owner}:{branch}", "state": "open"},
-        ).json()
-        if existing:
-            return existing[0]["html_url"]
-    rp.raise_for_status()
-    raise RuntimeError("PR creation failed")  # unreachable; for type-checkers
+    return (r.json().get("commit") or {}).get("html_url", "")

@@ -8,10 +8,8 @@
 
 <details class="gh-config">
   <summary>Config (set once — stored in your browser)</summary>
-  <label>Repo <input id="gh-repo" placeholder="owner/repo"></label>
-  <label>Branch <input id="gh-branch" placeholder="main" value="main"></label>
-  <label>Edit API URL <input id="edit-api" placeholder="https://…run.app (for Save directly)"></label>
-  <label>Admin secret <input id="edit-secret" type="password" placeholder="for Save directly"></label>
+  <label>Edit API URL <input id="edit-api" placeholder="https://…run.app"></label>
+  <label>Admin secret <input id="edit-secret" type="password"></label>
 </details>
 
 <form id="event-form" autocomplete="off">
@@ -43,8 +41,7 @@
   <button type="button" id="add-round" class="btn">+ Add round</button>
 
   <div class="actions">
-    <button type="button" id="save" class="btn primary">💾 Save directly</button>
-    <button type="button" id="pr" class="btn">Open GitHub PR ↗</button>
+    <button type="button" id="save" class="btn primary">💾 Save</button>
     <button type="button" id="build" class="btn">Preview YAML</button>
     <button type="button" id="copy" class="btn">Copy</button>
     <button type="button" id="download" class="btn">Download .yaml</button>
