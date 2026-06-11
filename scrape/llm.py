@@ -163,6 +163,29 @@ def _agent():
     )
 
 
+def _usage_str(result) -> str:
+    """Best-effort token counts from a pydantic-ai result. Attribute names differ
+    across versions (request/response_tokens pre-v1, input/output_tokens in v1),
+    so probe both. Returns '' if usage isn't available."""
+    try:
+        u = result.usage()
+    except Exception:  # noqa: BLE001 - usage is logging-only, never fail the call
+        return ""
+
+    def pick(*names):
+        for n in names:
+            v = getattr(u, n, None)
+            if v is not None:
+                return v
+        return None
+
+    inp = pick("input_tokens", "request_tokens")
+    out = pick("output_tokens", "response_tokens")
+    tot = pick("total_tokens")
+    parts = [f"{label}={v}" for label, v in (("in", inp), ("out", out), ("total", tot)) if v]
+    return ", ".join(parts)
+
+
 def extract_event(text: str, url: str | None = None, title: str = "", agent=None) -> dict:
     """Run extraction. `agent` is injectable for tests (must expose .run_sync)."""
     agent = agent or _agent()
@@ -174,7 +197,8 @@ def extract_event(text: str, url: str | None = None, title: str = "", agent=None
     except Exception:
         log.exception("llm: call FAILED after %.1fs (model=%s)", time.perf_counter() - t, model)
         raise
-    log.info("llm: call ok in %.1fs", time.perf_counter() - t)
+    usage = _usage_str(result)
+    log.info("llm: call ok in %.1fs%s", time.perf_counter() - t, f" ({usage})" if usage else "")
     return _to_event_dict(result.output, url)
 
 

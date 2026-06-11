@@ -4,6 +4,8 @@ No LLM is called — a fake agent (exposing .run_sync().output) returns a canned
 ExtractedEvent, exercising normalisation + the end-to-end schema round-trip.
 """
 
+import logging
+
 import yaml
 
 from schema.models import Event
@@ -13,6 +15,7 @@ from scrape.llm import (
     ExtractedPerformance,
     ExtractedRound,
     _to_event_dict,
+    _usage_str,
     extract_event,
     page_text,
 )
@@ -40,18 +43,32 @@ SAMPLE = ExtractedEvent(
 )
 
 
+class _Usage:
+    def __init__(self, inp, out, total):
+        self.input_tokens = inp
+        self.output_tokens = out
+        self.total_tokens = total
+
+
 class _Result:
-    def __init__(self, output):
+    def __init__(self, output, usage=None):
         self.output = output
+        self._usage = usage
+
+    def usage(self):
+        if self._usage is None:
+            raise AttributeError("no usage")
+        return self._usage
 
 
 class _Agent:
-    def __init__(self, output):
+    def __init__(self, output, usage=None):
         self._output = output
+        self._usage = usage
 
     def run_sync(self, prompt):
         assert "PAGE TEXT" in prompt  # the built prompt is passed through
-        return _Result(self._output)
+        return _Result(self._output, self._usage)
 
 
 def test_to_event_dict_normalises():
@@ -87,3 +104,15 @@ def test_page_text_strips_chrome():
 def test_empty_predicate_triggers_fallback():
     assert _empty({"name": "x", "rounds": [], "performances": []}) is True
     assert _empty({"rounds": [{"name": "r"}]}) is False
+
+
+def test_usage_str_reads_token_counts():
+    assert _usage_str(_Result(SAMPLE, _Usage(7820, 412, 8232))) == "in=7820, out=412, total=8232"
+    # missing usage() -> empty string, never raises
+    assert _usage_str(_Result(SAMPLE)) == ""
+
+
+def test_extract_event_logs_token_usage(caplog):
+    with caplog.at_level(logging.INFO, logger="scrape.llm"):
+        extract_event("page text", "https://x/1", "T", agent=_Agent(SAMPLE, _Usage(100, 20, 120)))
+    assert any("in=100, out=20, total=120" in r.message for r in caplog.records)
