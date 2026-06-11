@@ -29,7 +29,7 @@
         <table class="rounds-mini">
           <tbody>
             {% for o in g.occurrences %}
-            <tr class="occ" data-iso="{{ o.iso }}">
+            <tr class="occ" data-iso="{{ o.iso }}" data-round="{{ o.round }}">
               <td><span class="badge {{ o.css }}">{{ o.label }}</span></td>
               <td class="occ-round">{{ o.round }}</td>
               <td><time class="dt" datetime="{{ o.iso }}">{{ o.iso|jst_fmt }}</time>

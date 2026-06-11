@@ -67,18 +67,33 @@ function initGroups() {
 
   const refresh = () => {
     const now = new Date();
+    const showPastChecked = showPast.checked;
     let visible = 0;
     const rows = groups.map((d) => {
-      const future = [...d.querySelectorAll('.occ')]
-        .map((o) => o.dataset.iso)
-        .filter((iso) => new Date(iso) > now)
-        .sort();
-      return { d, next: future[0] || null };
+      // Per round, keep only the next upcoming date (so a round isn't repeated
+      // once per Opens/Deadline/Results/Payment). showPast reveals all rows.
+      const byRound = {};
+      for (const o of d.querySelectorAll('.occ')) {
+        (byRound[o.dataset.round] ||= []).push(o);
+      }
+      let next = null;
+      for (const key in byRound) {
+        const occs = byRound[key];
+        const future = occs
+          .filter((o) => new Date(o.dataset.iso) > now)
+          .sort((a, b) => a.dataset.iso.localeCompare(b.dataset.iso));
+        const chosen = future[0] || null;
+        occs.forEach((o) => {
+          o.hidden = showPastChecked ? false : o !== chosen;
+        });
+        if (chosen && (!next || chosen.dataset.iso < next)) next = chosen.dataset.iso;
+      }
+      return { d, next };
     });
 
     for (const { d, next } of rows) {
       const li = d.closest('li');
-      li.hidden = !next && !showPast.checked;
+      li.hidden = !next && !showPastChecked;
       if (li.hidden) continue;
       visible++;
       const badge = d.querySelector('summary .next-badge');
