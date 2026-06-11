@@ -18,5 +18,11 @@ source_url: https://lustqueen.info/news/detail/81252
 rounds:
   - name: "「ゆいなかま」 & 「Apollo Bay Cruiser」 チケット先行受付期間 抽選"
     type: presale
-    apply_open: 2026-06-05T12:00:00
-    apply_deadline: 2026-06-21T23:59:00
+    apply_open: 2026-06-05T12:00:00+09:00
+    apply_deadline: 2026-06-21T23:59:00+09:00
+  - name: FC先行申し込み
+    type: fanclub
+    apply_open: 2026-05-09T19:30:00
+    apply_deadline: 2026-05-25T23:59:00
+    apply_url: https://lustqueen.info/news/detail/78880
+    notes: "src: 2026年5月9日(土)19:30 ～ 2026年5月25日(月)23:59"
