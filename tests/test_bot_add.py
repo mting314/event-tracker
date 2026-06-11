@@ -238,7 +238,7 @@ async def test_deadlines_lists_future_dates_only(interaction):
         ],
     }
     with patch.object(bm, "_events_cache", [ev]):
-        await bm.deadlines.callback(interaction, event_id="2026-x")
+        await bm.deadlines.callback(interaction, event="2026-x")
     emb = interaction.response.send_message.call_args.kwargs["embed"]
     body = emb.description
     assert "X Tour" in emb.title
@@ -329,7 +329,7 @@ async def test_upcoming_embeds_apply_links(interaction):
 
 async def test_deadlines_unknown_event(interaction):
     with patch.object(bm, "_events_cache", []):
-        await bm.deadlines.callback(interaction, event_id="nope")
+        await bm.deadlines.callback(interaction, event="nope")
     assert "Unknown event" in interaction.response.send_message.call_args[0][0]
 
 
@@ -341,7 +341,7 @@ async def test_deadlines_no_upcoming(interaction):
         "rounds": [{"name": "Past", "apply_deadline": "2020-01-01T00:00:00+09:00"}],
     }
     with patch.object(bm, "_events_cache", [ev]):
-        await bm.deadlines.callback(interaction, event_id="2026-x")
+        await bm.deadlines.callback(interaction, event="2026-x")
     assert "No upcoming" in interaction.response.send_message.call_args[0][0]
 
 
@@ -363,6 +363,6 @@ async def test_delete_event_without_config():
 
 async def test_delete_command_prompts_confirm(interaction):
     with patch.object(bm, "_events_cache", [{"id": "2026-x", "name": "X Tour", "series": []}]):
-        await bm.delete.callback(interaction, event_id="2026-x")
+        await bm.delete.callback(interaction, event="2026-x")
     args, kwargs = interaction.response.send_message.call_args
     assert "X Tour" in args[0] and isinstance(kwargs["view"], bm.DeleteConfirmView)

@@ -393,18 +393,18 @@ class DeleteConfirmView(discord.ui.View):
 
 @tree.command(description="Delete a tracked event (admin)")
 @app_commands.default_permissions(manage_guild=True)
-@app_commands.describe(event_id="event to delete")
-async def delete(interaction: discord.Interaction, event_id: str):
-    ev = next((e for e in (_events_cache or refresh_events()) if e["id"] == event_id), None)
-    name = ev["name"] if ev else event_id
+@app_commands.describe(event="event to delete")
+async def delete(interaction: discord.Interaction, event: str):
+    ev = next((e for e in (_events_cache or refresh_events()) if e["id"] == event), None)
+    name = ev["name"] if ev else event
     await interaction.response.send_message(
-        f"Delete **{name}** (`{event_id}`)? This removes it from the site.",
-        view=DeleteConfirmView(interaction.user.id, event_id),
+        f"Delete **{name}** (`{event}`)? This removes it from the site.",
+        view=DeleteConfirmView(interaction.user.id, event),
         ephemeral=True,
     )
 
 
-@delete.autocomplete("event_id")
+@delete.autocomplete("event")
 async def _delete_ac(interaction: discord.Interaction, current: str):
     cur = current.lower()
     evs = _events_cache or refresh_events()
@@ -419,18 +419,18 @@ tree.add_command(unsubscribe)
 
 
 @subscribe.command(name="event", description="Get reminders for one event")
-async def subscribe_event(interaction: discord.Interaction, event_id: str):
-    ev = next((e for e in (_events_cache or refresh_events()) if e["id"] == event_id), None)
+async def subscribe_event(interaction: discord.Interaction, event: str):
+    ev = next((e for e in (_events_cache or refresh_events()) if e["id"] == event), None)
     if not ev:
-        await interaction.response.send_message(f"Unknown event id `{event_id}`.", ephemeral=True)
+        await interaction.response.send_message(f"Unknown event `{event}`.", ephemeral=True)
         return
-    ok = db.add_subscription(str(interaction.user.id), "event", event_id)
-    db.mark_event_notified(str(interaction.user.id), event_id)  # don't "new-event" ping for it
+    ok = db.add_subscription(str(interaction.user.id), "event", event)
+    db.mark_event_notified(str(interaction.user.id), event)  # don't "new-event" ping for it
     msg = f"✅ Subscribed to **{ev['name']}**." if ok else "Already subscribed."
     await interaction.response.send_message(msg, ephemeral=True)
 
 
-@subscribe_event.autocomplete("event_id")
+@subscribe_event.autocomplete("event")
 async def _event_ac(interaction: discord.Interaction, current: str):
     """Pick an event from a list (so the id can't be typo'd)."""
     cur = current.lower()
@@ -456,14 +456,14 @@ async def _series_ac(interaction: discord.Interaction, current: str):
 
 
 @unsubscribe.command(name="event", description="Stop reminders for one event")
-async def unsubscribe_event(interaction: discord.Interaction, event_id: str):
-    ok = db.remove_subscription(str(interaction.user.id), "event", event_id)
+async def unsubscribe_event(interaction: discord.Interaction, event: str):
+    ok = db.remove_subscription(str(interaction.user.id), "event", event)
     await interaction.response.send_message(
         "✅ Removed." if ok else "You weren't subscribed.", ephemeral=True
     )
 
 
-@unsubscribe_event.autocomplete("event_id")
+@unsubscribe_event.autocomplete("event")
 async def _unsub_event_ac(interaction: discord.Interaction, current: str):
     """Only suggest events the user is actually subscribed to."""
     cur = current.lower()
@@ -554,13 +554,13 @@ async def upcoming(interaction: discord.Interaction):
 
 
 @tree.command(description="Upcoming application dates for one event")
-@app_commands.describe(event_id="event to look up")
-async def deadlines(interaction: discord.Interaction, event_id: str):
+@app_commands.describe(event="event to look up")
+async def deadlines(interaction: discord.Interaction, event: str):
     from .reminders import date_tag, occurrences
 
-    ev = next((e for e in (_events_cache or refresh_events()) if e["id"] == event_id), None)
+    ev = next((e for e in (_events_cache or refresh_events()) if e["id"] == event), None)
     if not ev:
-        await interaction.response.send_message(f"Unknown event `{event_id}`.", ephemeral=True)
+        await interaction.response.send_message(f"Unknown event `{event}`.", ephemeral=True)
         return
     now = datetime.now(JST)
     rows = sorted(
@@ -589,7 +589,7 @@ async def deadlines(interaction: discord.Interaction, event_id: str):
     await interaction.response.send_message(embed=emb, ephemeral=True)
 
 
-@deadlines.autocomplete("event_id")
+@deadlines.autocomplete("event")
 async def _deadlines_ac(interaction: discord.Interaction, current: str):
     return await _event_ac(interaction, current)
 
