@@ -224,6 +224,11 @@ uv run python -m scrape.watch            # report diffs
 uv run python -m scrape.watch --write    # also write drafts/<id>.rounds.yaml
 ```
 
+- **Auto-watch:** beyond `sources.yaml`, the watcher also re-scans every tracked
+  event that has an `official_url`/`source_url`, isn't already listed above, and
+  isn't finished (any performance or round date today-or-later). So events added
+  via the bot's `/add` are monitored for new rounds **with no edit to
+  `sources.yaml`**; past events drop off automatically to bound the daily cost.
 - Handles both official page layouts (`【申込受付期間】…` and `■受付期間：…` / `★申込対象：＜…公演＞`).
 - Diffs **by apply deadline** (the stable fact), so it isn't fooled by JP↔EN name/leg
   differences between the official page and our data — it surfaces genuine changes.

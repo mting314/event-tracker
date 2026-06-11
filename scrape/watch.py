@@ -13,11 +13,12 @@ writes draft round snippets you review and merge (CI opens a PR).
 from __future__ import annotations
 
 import argparse
+from datetime import datetime
 from pathlib import Path
 
 import yaml
 
-from schema.models import JST, load_all_events
+from schema.models import JST, ROUND_DATE_FIELDS, load_all_events
 
 from . import eventernote, generic, official
 from .ingest import ingest_url
@@ -45,6 +46,25 @@ def scrape_source(url: str, adapter: str | None = None) -> dict:
     if mod is None:
         raise ValueError(f"unknown adapter '{adapter}' (auto/official/generic/eventernote/llm)")
     return mod.scrape(url)
+
+
+def event_watch_url(ev) -> str | None:
+    """The page to re-scan a tracked event from: its official page, else the URL
+    it was ingested from. (Eventernote is a catalog, not a lottery source.)"""
+    return ev.official_url or ev.source_url
+
+
+def event_is_past(ev, today) -> bool:
+    """True when no performance or round date is today-or-later — nothing left to
+    watch, so we skip it (keeps the daily auto-scan cost bounded)."""
+    if any(d >= today for d in ev.event_dates):
+        return False
+    for r in ev.rounds:
+        for f in ROUND_DATE_FIELDS:
+            v = getattr(r, f)
+            if v is not None and v.date() >= today:
+                return False
+    return True
 
 
 def _iso(v):
@@ -131,10 +151,35 @@ def main(argv=None) -> int:
             drafts.append((eid or "new-event", parsed["rounds"]))
             continue
 
-        d = diff_rounds(parsed["rounds"], ev.rounds)
+        d = diff_rounds(parsed.get("rounds", []), ev.rounds)
         n = len(d["new"])
         total_new += n
         print(f"• {eid}: {(str(n) + ' new/updated rounds') if n else 'up to date'}")
+        for r in d["new"]:
+            print(f"    + [{r.get('leg') or '-'}] {r['name']}  dl={_iso(r.get('apply_deadline'))}")
+        if n:
+            drafts.append((eid, d["new"]))
+
+    # Auto-watch: re-scan every tracked event that has a source page, isn't already
+    # configured above, and isn't finished — so events added via /add are monitored
+    # for new rounds without anyone editing sources.yaml.
+    configured = {s.get("id") for s in sources}
+    today = datetime.now(JST).date()
+    total_auto = 0
+    for eid, ev in events.items():
+        url = event_watch_url(ev)
+        if eid in configured or not url or event_is_past(ev, today):
+            continue
+        total_auto += 1
+        try:
+            parsed = scrape_source(url, "auto")
+        except Exception as exc:  # noqa: BLE001 - report and continue
+            print(f"⚠️  {url} (auto, {eid}): fetch/parse failed: {exc}")
+            continue
+        d = diff_rounds(parsed.get("rounds", []), ev.rounds)
+        n = len(d["new"])
+        total_new += n
+        print(f"• {eid} (auto): {(str(n) + ' new/updated rounds') if n else 'up to date'}")
         for r in d["new"]:
             print(f"    + [{r.get('leg') or '-'}] {r['name']}  dl={_iso(r.get('apply_deadline'))}")
         if n:
@@ -148,7 +193,10 @@ def main(argv=None) -> int:
             (DRAFTS_DIR / f"{eid}.{stamp}.yaml").write_text(body, encoding="utf-8")
         print(f"\n✍️  wrote {len(drafts)} draft(s) to {DRAFTS_DIR}/")
 
-    print(f"\nSummary: {total_new} new/updated rounds, {total_unknown} new events")
+    print(
+        f"\nSummary: {total_new} new/updated rounds, {total_unknown} new events, "
+        f"{total_auto} auto-watched events scanned"
+    )
     return 0
 
 
