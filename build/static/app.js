@@ -309,10 +309,16 @@ function initAddForm(eventsUrl) {
   const errBox = document.getElementById('form-error');
   const repo = document.getElementById('gh-repo');
   const branch = document.getElementById('gh-branch');
+  const editApi = document.getElementById('edit-api');
+  const editSecret = document.getElementById('edit-secret');
   repo.value = localStorage.getItem('ghRepo') || '';
   branch.value = localStorage.getItem('ghBranch') || 'main';
+  editApi.value = localStorage.getItem('editApi') || '';
+  editSecret.value = localStorage.getItem('editSecret') || '';
   repo.addEventListener('change', () => localStorage.setItem('ghRepo', repo.value.trim()));
   branch.addEventListener('change', () => localStorage.setItem('ghBranch', branch.value.trim()));
+  editApi.addEventListener('change', () => localStorage.setItem('editApi', editApi.value.trim()));
+  editSecret.addEventListener('change', () => localStorage.setItem('editSecret', editSecret.value.trim()));
 
   const perfTpl = document.getElementById('perf-tpl');
   const perfBox = document.getElementById('performances');
@@ -364,6 +370,38 @@ function initAddForm(eventsUrl) {
     return { ev, yaml };
   };
   document.getElementById('build').addEventListener('click', build);
+  document.getElementById('save').addEventListener('click', async () => {
+    const r = build();
+    if (!r) return;
+    const api = (editApi.value || '').trim();
+    const secret = (editSecret.value || '').trim();
+    if (!api || !secret) {
+      errBox.hidden = false; errBox.style.color = '';
+      errBox.textContent = '⚠ set Edit API URL + Admin secret in Config to Save directly';
+      return;
+    }
+    const btn = document.getElementById('save');
+    btn.disabled = true; const label = btn.textContent; btn.textContent = 'Saving…';
+    errBox.hidden = false; errBox.style.color = ''; errBox.textContent = 'Saving…';
+    try {
+      const resp = await fetch(api, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Secret': secret },
+        body: JSON.stringify({ slug: r.ev.id, yaml: r.yaml }),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (resp.ok && data.ok) {
+        errBox.textContent = `✓ ${data.updated ? 'Updated' : 'Created'} events/${r.ev.id}.yaml — live in ~1 min`
+          + (data.commit ? ` · ${data.commit}` : '');
+      } else {
+        errBox.style.color = ''; errBox.textContent = `⚠ Save failed: ${data.error || resp.status}`;
+      }
+    } catch (e) {
+      errBox.textContent = `⚠ Save failed: ${e}`;
+    } finally {
+      btn.disabled = false; btn.textContent = label;
+    }
+  });
   document.getElementById('copy').addEventListener('click', async () => {
     const r = build(); if (r) { await navigator.clipboard.writeText(r.yaml); errBox.hidden = false; errBox.style.color = ''; errBox.textContent = '✓ copied'; }
   });

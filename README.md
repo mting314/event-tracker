@@ -72,10 +72,24 @@ and X posts are best-effort. The scraper never runs on a server — only locally
 
 ### Web add/edit form
 
-The site's **+ Add** page builds event YAML in the browser, validates it, and
-opens a prefilled GitHub PR (set your `owner/repo` once via the form). Each event
-page has an **✎ edit** link that deep-links the form prefilled from existing data.
-No backend — the committed YAML stays the source of truth.
+The site's **+ Add** page builds event YAML in the browser from structured fields,
+validates it, and opens a prefilled GitHub PR (set your `owner/repo` once via the
+form). Each event page has an **✎ edit** link that deep-links the form prefilled
+from existing data.
+
+**Save directly (no PR).** The same form has a **💾 Save directly** button that
+commits the event straight to `main` (auto-deploys in ~1 min) via a small GCP
+**Cloud Function** (`functions/commit/`). The static site can't hold a write token,
+so the function holds the PAT server-side and is guarded by an admin secret; the
+browser sends `POST {slug, yaml}` + the secret. Set the **Edit API URL** + **Admin
+secret** once in the form's Config (stored in `localStorage`). Deploy/update it with:
+
+```bash
+gcloud functions deploy ll-commit --gen2 --region us-central1 --runtime python312 \
+  --source functions/commit --entry-point commit --trigger-http --allow-unauthenticated \
+  --set-env-vars GITHUB_REPO=<owner/repo>,GITHUB_BRANCH=main,\
+ALLOW_ORIGIN=https://<owner>.github.io,GITHUB_TOKEN=<pat>,ADMIN_SECRET=<secret>
+```
 
 ## Discord bot
 
