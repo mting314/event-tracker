@@ -229,6 +229,50 @@ def test_merge_event_data_appends_only_new_deduped():
     assert "event_dates" not in merged and "venues" not in merged
 
 
+def test_merge_dedupes_performances_despite_venue_and_label_drift():
+    # the lustqueen case: same show, two posts, venue prefix + label differ.
+    existing = {
+        "id": "2026-lq",
+        "name": "LQ",
+        "performances": [
+            {
+                "date": "2026-09-07",
+                "venue": "東京・下北沢シャングリラ",
+                "label": "LustQueen「The story resumes EXTRA」",
+                "starts": "19:00",
+            }
+        ],
+        "rounds": [{"name": "R1", "apply_deadline": "2026-06-21T23:59:00+09:00"}],
+    }
+    new = {
+        "performances": [
+            {
+                "date": "2026-09-07",
+                "venue": "下北沢シャングリラ",
+                "label": "The story resumes EXTRA",
+            }
+        ],
+        "rounds": [{"name": "FC先行", "apply_deadline": "2026-05-25T23:59:00"}],
+    }
+    merged, n_r, n_p = bm.merge_event_data(existing, new)
+    assert n_p == 0 and len(merged["performances"]) == 1  # same show, not duplicated
+    assert merged["performances"][0]["venue"] == "東京・下北沢シャングリラ"  # richer record kept
+    assert n_r == 1  # the new round still merges in
+
+
+def test_merge_keeps_distinct_time_slots():
+    # noon vs evening at the same venue/date must stay separate.
+    existing = {
+        "id": "x",
+        "name": "X",
+        "performances": [{"date": "2026-09-05", "venue": "H", "starts": "13:00"}],
+        "rounds": [{"name": "r", "apply_deadline": "2026-06-01T00:00"}],
+    }
+    new = {"performances": [{"date": "2026-09-05", "venue": "H", "starts": "17:00"}]}
+    merged, _, n_p = bm.merge_event_data(existing, new)
+    assert n_p == 1 and len(merged["performances"]) == 2
+
+
 def test_find_matching_event_by_slug_name_and_overlap():
     events = [
         {

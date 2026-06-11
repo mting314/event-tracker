@@ -248,13 +248,39 @@ def _round_key(r: dict) -> str:
     return f"nm:{r.get('name', '')}|{r.get('leg', '')}"
 
 
-def _perf_key(p: dict) -> tuple:
-    return (
-        _norm_date(p.get("date")),
-        p.get("venue") or "",
-        p.get("label") or "",
-        p.get("starts") or "",
-    )
+def _venue_core(v) -> str:
+    """Venue with spaces removed, for tolerant comparison."""
+    return (v or "").replace(" ", "").replace("　", "")
+
+
+def _perf_same(a: dict, b: dict) -> bool:
+    """Whether two performances are the same show. Same date + compatible venue
+    (equal, or one contains the other so '東京・下北沢シャングリラ' ≈ '下北沢シャングリラ'),
+    unless they have *different* explicit start times (noon vs evening = distinct)."""
+    if _norm_date(a.get("date")) != _norm_date(b.get("date")):
+        return False
+    va, vb = _venue_core(a.get("venue")), _venue_core(b.get("venue"))
+    if va and vb and not (va == vb or va in vb or vb in va):
+        return False
+    sa, sb = a.get("starts") or "", b.get("starts") or ""
+    return not (sa and sb and sa != sb)
+
+
+def _merge_perfs(existing: list, new: list) -> tuple[list, int]:
+    """Append only genuinely new performances; for a same-show match keep the
+    existing (richer) record and fill any fields it's missing. Returns (list, n_added)."""
+    merged = [dict(p) for p in existing]
+    added = 0
+    for np in new:
+        i = next((i for i, ep in enumerate(merged) if _perf_same(ep, np)), None)
+        if i is None:
+            merged.append(dict(np))
+            added += 1
+        else:
+            for k, v in np.items():
+                if v and not merged[i].get(k):
+                    merged[i][k] = v
+    return merged, added
 
 
 def _perf_dates(ev: dict) -> set[str]:
@@ -315,14 +341,15 @@ def merge_event_data(existing: dict, new: dict) -> tuple[dict, int, int]:
     new_rounds = [r for r in new.get("rounds", []) if _round_key(r) not in have_r]
     if new_rounds:
         merged["rounds"] = list(merged.get("rounds", [])) + new_rounds
-    have_p = {_perf_key(p) for p in merged.get("performances", [])}
-    new_perfs = [p for p in new.get("performances", []) if _perf_key(p) not in have_p]
-    if new_perfs:
-        merged["performances"] = list(merged.get("performances", [])) + new_perfs
+    n_p = 0
+    if new.get("performances"):
+        merged["performances"], n_p = _merge_perfs(
+            merged.get("performances", []), new["performances"]
+        )
     for f in ("name_en", "artist", "kind", "official_url", "eventernote_url"):
         if not merged.get(f) and new.get(f):
             merged[f] = new[f]
-    return merged, len(new_rounds), len(new_perfs)
+    return merged, len(new_rounds), n_p
 
 
 def _validate_draft(slug: str, yaml_text: str) -> dict:
