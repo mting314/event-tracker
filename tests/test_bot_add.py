@@ -247,6 +247,42 @@ def test_find_matching_event_by_slug_name_and_overlap():
     assert bm.find_matching_event(miss, "2026-z", events) is None
 
 
+def test_find_matching_event_by_artist_and_date_despite_venue_drift():
+    # different post title AND different venue string, but same artist + same date —
+    # this is the lustqueen "round 2 announced as a new post" case.
+    events = [
+        {
+            "id": "2026-lq",
+            "name": "LustQueen「The story resumes EXTRA」",
+            "artist": "LustQueen",
+            "performances": [{"date": "2026-09-07", "venue": "東京・下北沢シャングリラ"}],
+        }
+    ]
+    cand = {
+        "name": "LustQueen 9月公演 会員限定チケット先行受付開始！",
+        "artist": "LustQueen",
+        "performances": [{"date": "2026-09-07", "venue": "下北沢シャングリラ"}],  # venue differs
+    }
+    assert bm.find_matching_event(cand, "2026-z", events)["id"] == "2026-lq"
+
+
+def test_find_matching_event_date_overlap_without_artist_is_not_a_match():
+    events = [
+        {
+            "id": "2026-a",
+            "name": "A",
+            "artist": "Band A",
+            "performances": [{"date": "2026-09-07", "venue": "Hall"}],
+        }
+    ]
+    cand = {
+        "name": "B",
+        "artist": "Band B",
+        "performances": [{"date": "2026-09-07", "venue": "Other"}],
+    }
+    assert bm.find_matching_event(cand, "2026-z", events) is None  # same day, different artist
+
+
 async def test_add_merges_into_matching_event(interaction):
     existing = {
         "id": "2026-lq",

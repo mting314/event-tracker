@@ -257,9 +257,28 @@ def _perf_key(p: dict) -> tuple:
     )
 
 
+def _perf_dates(ev: dict) -> set[str]:
+    return {_norm_date(p.get("date")) for p in ev.get("performances", []) if p.get("date")}
+
+
+def _perf_date_venues(ev: dict) -> set[tuple]:
+    return {
+        (_norm_date(p.get("date")), p.get("venue") or "")
+        for p in ev.get("performances", [])
+        if p.get("date")
+    }
+
+
 def find_matching_event(data: dict, slug: str, events: list[dict]) -> dict | None:
     """The existing event this ingested page most likely refers to, or None.
-    Tries exact slug, then exact name, then shared performance (date+venue) overlap."""
+
+    Round-announcement posts often have a different title and even different venue
+    strings (LLM vs deterministic adapter) from the original, so we match by, in
+    order: exact slug, exact name, shared performance date+venue, or — when the
+    same artist plays — a shared performance *date* alone (handles venue-string
+    drift between posts). A bare date overlap without a matching artist is ignored
+    to avoid merging two unrelated events that happen to share a day.
+    """
     by_id = {e["id"]: e for e in events}
     if slug in by_id:
         return by_id[slug]
@@ -268,22 +287,23 @@ def find_matching_event(data: dict, slug: str, events: list[dict]) -> dict | Non
         for e in events:
             if (e.get("name") or "").strip() == name:
                 return e
-    keys = {
-        (_norm_date(p.get("date")), p.get("venue") or "")
-        for p in data.get("performances", [])
-        if p.get("date")
-    }
-    best, best_ov = None, 0
+
+    new_dates, new_dv = _perf_dates(data), _perf_date_venues(data)
+    artist = (data.get("artist") or "").strip().lower()
+    best, best_score = None, 0
     for e in events:
-        ek = {
-            (_norm_date(p.get("date")), p.get("venue") or "")
-            for p in e.get("performances", [])
-            if p.get("date")
-        }
-        ov = len(keys & ek)
-        if ov > best_ov:
-            best, best_ov = e, ov
-    return best if best_ov else None
+        dv_ov = len(new_dv & _perf_date_venues(e))
+        date_ov = len(new_dates & _perf_dates(e))
+        same_artist = bool(artist) and artist == (e.get("artist") or "").strip().lower()
+        if dv_ov:  # same date AND venue — conclusive
+            score = 100 + dv_ov
+        elif date_ov and same_artist:  # same date + same artist — safe despite venue drift
+            score = 10 + date_ov
+        else:
+            score = 0
+        if score > best_score:
+            best, best_score = e, score
+    return best if best_score else None
 
 
 def merge_event_data(existing: dict, new: dict) -> tuple[dict, int, int]:
