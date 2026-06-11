@@ -106,10 +106,13 @@ def event_official_link(ev: dict) -> str:
     )
 
 
-def _apply_link(rnd: dict) -> str:
-    """A ` · [apply](url)` masked link for a round, or '' if it has no apply_url.
-    Masked links only render inside embeds, so use this in embed text only."""
-    return f" · [apply]({rnd['apply_url']})" if rnd.get("apply_url") else ""
+def _apply_link(rnd: dict, date_type: str) -> str:
+    """A ` · [apply](url)` masked link, only on the application-deadline row (where
+    applying is the action) and only if the round has an apply_url. Returns '' for
+    results/payment/open rows. Masked links render only inside embeds."""
+    if date_type != "apply_deadline" or not rnd.get("apply_url"):
+        return ""
+    return f" · [apply]({rnd['apply_url']})"
 
 
 def parse_lead_spec(spec: str) -> list[int]:
@@ -539,7 +542,7 @@ async def upcoming(interaction: discord.Interaction):
         return
     lines = [
         f"{date_tag(dt)} {discord_ts(t, 'f')} ({discord_ts(t, 'R')}) — "
-        f"**{ev['name']}** {rnd['name']}{_apply_link(rnd)}"
+        f"**{ev['name']}** {rnd['name']}{_apply_link(rnd, dt)}"
         for t, ev, rnd, dt in rows[:15]
     ]
     emb = discord.Embed(
@@ -574,7 +577,7 @@ async def deadlines(interaction: discord.Interaction, event_id: str):
         leg = f" · {rnd['leg']}" if rnd.get("leg") else ""
         lines.append(
             f"{date_tag(dtype)} {discord_ts(target, 'f')} ({discord_ts(target, 'R')}) — "
-            f"{rnd['name']}{leg}{_apply_link(rnd)}"
+            f"{rnd['name']}{leg}{_apply_link(rnd, dtype)}"
         )
     # Embed so the [apply](url) masked links and the title link render as clickable.
     emb = discord.Embed(

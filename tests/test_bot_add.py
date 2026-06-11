@@ -232,6 +232,7 @@ async def test_deadlines_lists_future_dates_only(interaction):
                 "name": "FC先行",
                 "leg": "Tokyo",
                 "apply_deadline": "2030-06-21T23:59:00+09:00",
+                "results_date": "2030-07-01T12:00:00+09:00",
                 "apply_url": "https://apply.example.com/fc",
             },
         ],
@@ -245,7 +246,11 @@ async def test_deadlines_lists_future_dates_only(interaction):
     assert "FC先行 · Tokyo" in body
     assert "🔴 deadline" in body  # emoji tag for apply_deadline
     assert "<t:1908284340:f>" in body  # 2030-06-21T23:59:00+09:00 as a Discord timestamp
-    assert "[apply](https://apply.example.com/fc)" in body  # masked apply link
+    assert body.count("[apply](https://apply.example.com/fc)") == 1  # only on the deadline row
+    assert "🎯 results" in body  # results row present...
+    deadline_line = next(ln for ln in body.splitlines() if "🔴 deadline" in ln)
+    results_line = next(ln for ln in body.splitlines() if "🎯 results" in ln)
+    assert "[apply]" in deadline_line and "[apply]" not in results_line  # ...but no apply link
     assert "Past FC" not in body  # past dates filtered out
 
 
@@ -287,9 +292,15 @@ def test_date_tag_has_distinct_emoji_per_type():
     assert len(set(emojis)) == 4  # all distinct
 
 
-def test_apply_link_only_when_url_present():
-    assert bm._apply_link({"apply_url": "https://a.com"}) == " · [apply](https://a.com)"
-    assert bm._apply_link({"name": "no url"}) == ""
+def test_apply_link_only_on_deadline_with_url():
+    rnd = {"apply_url": "https://a.com"}
+    assert bm._apply_link(rnd, "apply_deadline") == " · [apply](https://a.com)"
+    # not on results/payment/open rows, even with a url
+    assert bm._apply_link(rnd, "results_date") == ""
+    assert bm._apply_link(rnd, "payment_deadline") == ""
+    assert bm._apply_link(rnd, "apply_open") == ""
+    # no url -> no link
+    assert bm._apply_link({"name": "no url"}, "apply_deadline") == ""
 
 
 async def test_upcoming_embeds_apply_links(interaction):
