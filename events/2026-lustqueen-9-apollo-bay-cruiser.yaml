@@ -1,0 +1,22 @@
+name: "LustQueen 9月公演「ゆいなかま」&「Apollo Bay Cruiser」会員限定チケット先行受付開始！"
+artist: LustQueen
+kind: concert
+performances:
+  - date: 2026-09-07
+    label: LustQueen「The story resumes EXTRA」
+    venue: 東京・下北沢シャングリラ
+    venue_address: 〒155-0031 東京都世田谷区北沢2丁目4−5 mosia B1
+    doors: "18:15"
+    starts: "19:00"
+  - date: 2026-09-08
+    label: LustQueen「pre. Stairway to Queen vol.5」
+    venue: 東京・下北沢シャングリラ
+    venue_address: 〒155-0031 東京都世田谷区北沢2丁目4−5 mosia B1
+    doors: "18:15"
+    starts: "19:00"
+source_url: https://lustqueen.info/news/detail/81252
+rounds:
+  - name: "「ゆいなかま」 & 「Apollo Bay Cruiser」 チケット先行受付期間 抽選"
+    type: presale
+    apply_open: 2026-06-05T12:00:00
+    apply_deadline: 2026-06-21T23:59:00
