@@ -228,18 +228,25 @@ async def test_deadlines_lists_future_dates_only(interaction):
         "official_url": "https://example.com/x-tour",
         "rounds": [
             {"name": "Past FC", "apply_deadline": "2020-01-01T23:59:00+09:00"},
-            {"name": "FC先行", "leg": "Tokyo", "apply_deadline": "2030-06-21T23:59:00+09:00"},
+            {
+                "name": "FC先行",
+                "leg": "Tokyo",
+                "apply_deadline": "2030-06-21T23:59:00+09:00",
+                "apply_url": "https://apply.example.com/fc",
+            },
         ],
     }
     with patch.object(bm, "_events_cache", [ev]):
         await bm.deadlines.callback(interaction, event_id="2026-x")
-    body = interaction.response.send_message.call_args[0][0]
-    assert "X Tour" in body
+    emb = interaction.response.send_message.call_args.kwargs["embed"]
+    body = emb.description
+    assert "X Tour" in emb.title
+    assert emb.url == "https://example.com/x-tour"  # title links to the official page
     assert "FC先行 · Tokyo" in body
     assert "🔴 deadline" in body  # emoji tag for apply_deadline
     assert "<t:1908284340:f>" in body  # 2030-06-21T23:59:00+09:00 as a Discord timestamp
+    assert "[apply](https://apply.example.com/fc)" in body  # masked apply link
     assert "Past FC" not in body  # past dates filtered out
-    assert "https://example.com/x-tour" in body  # links to the official page, not the site html
 
 
 def test_event_official_link_prefers_official_then_falls_back():
@@ -278,6 +285,35 @@ def test_date_tag_has_distinct_emoji_per_type():
     assert tags["payment_deadline"] == "💰 payment"
     emojis = [t.split()[0] for t in tags.values()]
     assert len(set(emojis)) == 4  # all distinct
+
+
+def test_apply_link_only_when_url_present():
+    assert bm._apply_link({"apply_url": "https://a.com"}) == " · [apply](https://a.com)"
+    assert bm._apply_link({"name": "no url"}) == ""
+
+
+async def test_upcoming_embeds_apply_links(interaction):
+    ev = {
+        "id": "2026-x",
+        "name": "X Tour",
+        "series": [],
+        "rounds": [
+            {
+                "name": "FC先行",
+                "apply_deadline": "2030-06-21T23:59:00+09:00",
+                "apply_url": "https://apply.example.com/fc",
+            },
+        ],
+    }
+    subs = [{"kind": "event", "target": "2026-x"}]
+    with (
+        patch.object(bm, "_events_cache", [ev]),
+        patch.object(bm.db, "list_subscriptions", return_value=subs),
+    ):
+        await bm.upcoming.callback(interaction)
+    emb = interaction.response.send_message.call_args.kwargs["embed"]
+    assert "X Tour" in emb.description
+    assert "[apply](https://apply.example.com/fc)" in emb.description
 
 
 async def test_deadlines_unknown_event(interaction):

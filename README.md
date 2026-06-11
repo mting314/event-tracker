@@ -106,7 +106,8 @@ All replies are **ephemeral** (only you see them). Event/series arguments use
 **autocomplete** — start typing a name and pick from the list, so ids can't be
 typo'd. Dates render as Discord **dynamic timestamps**, shown in each viewer's
 own timezone (absolute + relative, e.g. "in 3 days"). Each lottery date carries
-an emoji: 🟢 opens · 🔴 deadline · 🎯 results · 💰 payment.
+an emoji: 🟢 opens · 🔴 deadline · 🎯 results · 💰 payment. In `/upcoming` and
+`/deadlines`, rounds with an application URL show a clickable **[apply]** link.
 
 | Command | What it does |
 |---------|--------------|

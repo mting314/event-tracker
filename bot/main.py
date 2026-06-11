@@ -106,6 +106,12 @@ def event_official_link(ev: dict) -> str:
     )
 
 
+def _apply_link(rnd: dict) -> str:
+    """A ` · [apply](url)` masked link for a round, or '' if it has no apply_url.
+    Masked links only render inside embeds, so use this in embed text only."""
+    return f" · [apply]({rnd['apply_url']})" if rnd.get("apply_url") else ""
+
+
 def parse_lead_spec(spec: str) -> list[int]:
     """'3d,1d,2h,30m' -> [seconds...]."""
     units = {"d": 86400, "h": 3600, "m": 60}
@@ -533,10 +539,15 @@ async def upcoming(interaction: discord.Interaction):
         return
     lines = [
         f"{date_tag(dt)} {discord_ts(t, 'f')} ({discord_ts(t, 'R')}) — "
-        f"**{ev['name']}** {rnd['name']}"
+        f"**{ev['name']}** {rnd['name']}{_apply_link(rnd)}"
         for t, ev, rnd, dt in rows[:15]
     ]
-    await interaction.response.send_message("Upcoming:\n" + "\n".join(lines), ephemeral=True)
+    emb = discord.Embed(
+        title="Your upcoming application dates",
+        description="\n".join(lines)[:4096],
+        color=0xFF5FA2,
+    )
+    await interaction.response.send_message(embed=emb, ephemeral=True)
 
 
 @tree.command(description="Upcoming application dates for one event")
@@ -563,11 +574,16 @@ async def deadlines(interaction: discord.Interaction, event_id: str):
         leg = f" · {rnd['leg']}" if rnd.get("leg") else ""
         lines.append(
             f"{date_tag(dtype)} {discord_ts(target, 'f')} ({discord_ts(target, 'R')}) — "
-            f"{rnd['name']}{leg}"
+            f"{rnd['name']}{leg}{_apply_link(rnd)}"
         )
-    body = f"**{ev['name']}** — upcoming dates:\n" + "\n".join(lines)
-    body += f"\n{event_official_link(ev)}"
-    await interaction.response.send_message(body, ephemeral=True)
+    # Embed so the [apply](url) masked links and the title link render as clickable.
+    emb = discord.Embed(
+        title=f"{ev['name']} — upcoming dates"[:256],
+        url=event_official_link(ev),
+        description="\n".join(lines)[:4096],
+        color=0xFF5FA2,
+    )
+    await interaction.response.send_message(embed=emb, ephemeral=True)
 
 
 @deadlines.autocomplete("event_id")
