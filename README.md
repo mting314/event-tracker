@@ -70,8 +70,18 @@ manual** since they're rarely on the source page. Each writes `events/<slug>.yam
 for you to finish and commit. Eventernote parsing is good; ticket/official pages
 and X posts are best-effort. The scraper never runs on a server — only locally.
 
-**Dispatch policy:** domain-tuned adapters (lovelive-anime.jp, eventernote, x)
-run deterministically and only fall back to the LLM if they find nothing.
+**LLFans base-event seeding:** `/add https://ll-fans.jp/data/event/<id>` pulls a
+tour's clean base metadata — name, series, every show (date/venue/open+start
+times), and the **official URL** — from the [ll-fans.jp](https://ll-fans.jp)
+GraphQL API (`scrape/llfans.py`). It carries **no lottery rounds** (LLFans doesn't
+track them), so the role split is: LLFans seeds the base event + performances, and
+the official/FC page (via `/add` or the watcher) supplies the deadlines. The merge
+joins them — and stamps `llfans_id` as a stable cross-source key so re-syncs and
+official-page matches line up exactly regardless of name drift.
+
+**Dispatch policy:** domain-tuned adapters (ll-fans.jp, lovelive-anime.jp,
+eventernote, x) run deterministically and only fall back to the LLM if they find
+nothing.
 **Arbitrary pages go LLM-first** — the generic 【label】 parser mangles real ticket
 pages (per-day rounds, per-day apply URLs), so it's only used when the LLM is
 unavailable. This keeps the daily watcher cheap on official pages while making

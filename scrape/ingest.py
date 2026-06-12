@@ -31,9 +31,11 @@ def _emit(progress: Callable[[str], None] | None, msg: str) -> None:
 
 def pick_scraper(url: str):
     """Hybrid dispatch by domain; the generic 【label】 parser is the default."""
-    from . import eventernote, generic, official, x_post
+    from . import eventernote, generic, llfans, official, x_post
 
     host = urlparse(url).netloc.lower()
+    if "ll-fans.jp" in host:
+        return llfans.scrape
     if "lovelive-anime.jp" in host:
         return official.scrape
     if "eventernote.com" in host:

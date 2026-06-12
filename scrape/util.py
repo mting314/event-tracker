@@ -166,6 +166,8 @@ def to_event_yaml(data: dict) -> str:
     for f in ("eventernote_url", "official_url", "source_url"):
         if data.get(f):
             L.append(f"{f}: {data[f]}")
+    if data.get("llfans_id"):
+        L.append(f"llfans_id: {_yaml_str(str(data['llfans_id']))}")
     if data.get("notes"):
         L.append(f"notes: {_yaml_str(data['notes'])}")
 

@@ -325,6 +325,21 @@ def test_find_matching_event_by_slug_name_and_overlap():
     assert bm.find_matching_event(miss, "2026-z", events) is None
 
 
+def test_find_matching_event_joins_on_llfans_id():
+    events = [
+        {
+            "id": "2026-a",
+            "name": "Different Title",
+            "artist": "Z",
+            "llfans_id": "264",
+            "performances": [],
+        }
+    ]
+    # name/artist/dates all differ, but the ll-fans tour id is the same -> match
+    cand = {"name": "Other", "artist": "Q", "llfans_id": "264", "performances": []}
+    assert bm.find_matching_event(cand, "2026-z", events)["id"] == "2026-a"
+
+
 def test_find_matching_event_by_artist_and_date_despite_venue_drift():
     # different post title AND different venue string, but same artist + same date —
     # this is the lustqueen "round 2 announced as a new post" case.

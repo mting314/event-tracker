@@ -314,6 +314,12 @@ def find_matching_event(data: dict, slug: str, events: list[dict]) -> dict | Non
     drift between posts). A bare date overlap without a matching artist is ignored
     to avoid merging two unrelated events that happen to share a day.
     """
+    # Stable cross-source join: an ll-fans tour id matches regardless of name drift.
+    lf = data.get("llfans_id")
+    if lf:
+        for e in events:
+            if e.get("llfans_id") == lf:
+                return e
     by_id = {e["id"]: e for e in events}
     if slug in by_id:
         return by_id[slug]
@@ -355,7 +361,7 @@ def merge_event_data(existing: dict, new: dict) -> tuple[dict, int, int]:
         merged["performances"], n_p = _merge_perfs(
             merged.get("performances", []), new["performances"]
         )
-    for f in ("name_en", "artist", "kind", "official_url", "eventernote_url"):
+    for f in ("name_en", "artist", "kind", "official_url", "eventernote_url", "llfans_id"):
         if not merged.get(f) and new.get(f):
             merged[f] = new[f]
     return merged, len(new_rounds), n_p

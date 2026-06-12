@@ -115,6 +115,7 @@ class Event(BaseModel):
     performances: list[Performance] = []  # the shows that make up the tour
     eventernote_url: str | None = None
     official_url: str | None = None
+    llfans_id: str | None = None  # ll-fans.jp tour id — stable cross-source join key
     image: str | None = None
     notes: str | None = None
     rounds: list[Round] = []
