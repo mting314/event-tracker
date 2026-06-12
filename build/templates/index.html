@@ -21,9 +21,23 @@
       <div class="evbody">
         <p class="crumb"><a href="{{ base }}event/{{ g.id }}.html">open event page →</a></p>
         {% if g.performances %}
-        <div class="perf-line">🎤
-          {% for p in g.performances %}<span class="nowrap">{{ p.date[:10] }}{% if p.city %} {{ p.city }}{% endif %}{% if p.venue %} · {{ p.venue }}{% endif %}</span>{% if not loop.last %} / {% endif %}{% endfor %}
-        </div>
+        <ul class="perf-rows">
+          {% for p in g.performances %}
+          <li>
+            {% if p.venue %}
+            <a class="perf-row" href="https://www.google.com/maps/search/?api=1&query={{ p.venue | urlencode }}" target="_blank" rel="noopener">
+              <span class="perf-date">🎤 {{ p.date[:10] }}</span>
+              <span class="perf-where">{% if p.city %}{{ p.city }} · {% endif %}{{ p.venue }} <span class="ext">↗</span></span>
+            </a>
+            {% else %}
+            <span class="perf-row">
+              <span class="perf-date">🎤 {{ p.date[:10] }}</span>
+              <span class="perf-where">{% if p.city %}{{ p.city }}{% endif %}</span>
+            </span>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
         {% endif %}
         {% if g.occurrences %}
         <table class="rounds-mini">

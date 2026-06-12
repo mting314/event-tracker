@@ -157,6 +157,16 @@ tbody tr:hover { background: var(--panel); }
 .evbody .crumb { margin: .5rem 0; font-size: .85rem; }
 .perf-line { color: var(--muted); font-size: .8rem; margin: .4rem 0; }
 .perf-line .nowrap { margin-right: .3rem; }
+/* upcoming: one clickable row per performance */
+.perf-rows { list-style: none; margin: .4rem 0; padding: 0; }
+.perf-rows li { margin: 0; }
+.perf-row { display: flex; gap: .6rem; align-items: baseline; flex-wrap: wrap;
+  padding: .35rem .5rem; border-bottom: 1px solid #23264a; font-size: .85rem;
+  color: var(--text); text-decoration: none; border-radius: 6px; }
+a.perf-row:hover { background: #20234420; background: rgba(255,255,255,.04); }
+.perf-row .perf-date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.perf-row .perf-where { color: var(--muted); }
+.perf-row .ext { opacity: .6; font-size: .75rem; }
 .rounds-mini { width: 100%; border-collapse: collapse; margin: 0; }
 .rounds-mini td { padding: .3rem .4rem; border-bottom: 1px solid #23264a; font-size: .85rem; vertical-align: top; }
 .rounds-mini tr:last-child td { border-bottom: none; }
