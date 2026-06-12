@@ -1,8 +1,11 @@
 """Shared URL → event-dict ingestion (used by the CLI and the Discord bot).
 
-Hybrid dispatch by domain, with the generic 【label】 parser as default and the
-Pydantic AI LLM extractor as the fallback when a deterministic adapter finds
-nothing. Adapters and the LLM are imported lazily so importing this module is cheap.
+Hybrid dispatch by domain. Domain-tuned adapters (official lovelive-anime.jp,
+eventernote, x) run deterministically with an LLM fallback only if they find
+nothing. Arbitrary (non-domain) pages go **LLM-first** — the generic 【label】
+parser is best-effort and routinely mangles real ticket pages (per-day lottery
+rounds, per-day apply URLs), so it's only a fallback when the LLM is unavailable.
+Adapters and the LLM are imported lazily so importing this module is cheap.
 """
 
 from __future__ import annotations
@@ -63,10 +66,11 @@ def ingest_url(
     ``progress`` is an optional callback invoked with a short human-readable
     status at each stage (used by the bot to update its loading message).
     """
-    if force_llm:
+
+    def _llm(reason: str) -> Ingested:
         from . import llm
 
-        log.info("ingest %s: forced LLM", url)
+        log.info("ingest %s: LLM (%s)", url, reason)
         _emit(progress, "🤖 Extracting with AI (Vertex)… this can take ~10–30s")
         t = time.perf_counter()
         data = llm.scrape(url)
@@ -78,8 +82,24 @@ def ingest_url(
         )
         return Ingested(data, "llm", True)
 
+    if force_llm:
+        return _llm("forced")
+
     scraper = pick_scraper(url)
     adapter = scraper.__module__.rsplit(".", 1)[-1]
+
+    # The generic 【label】 parser is best-effort and routinely mangles real ticket
+    # pages (per-day lottery rounds, per-day apply URLs), so for arbitrary (non-
+    # domain) pages prefer the LLM. The parser stays as a fallback if the LLM is
+    # unavailable (no GCP creds). Domain adapters (official/eventernote/x) are
+    # trusted and stay deterministic, with an LLM fallback only when they find nothing.
+    if adapter == "generic" and allow_llm:
+        try:
+            return _llm("generic page")
+        except Exception as exc:  # noqa: BLE001 - fall back to the deterministic parser
+            log.warning("ingest %s: LLM failed (%s); using generic parser", url, exc)
+            _emit(progress, "⚠️ AI unavailable — using the basic parser…")
+
     log.info("ingest %s: adapter=%s", url, adapter)
     _emit(progress, f"🧩 Parsing with the **{adapter}** adapter…")
     t = time.perf_counter()
@@ -93,22 +113,10 @@ def ingest_url(
         len(data.get("performances", [])),
     )
 
-    if empty(data) and allow_llm:
-        from . import llm
-
-        log.info("ingest %s: empty via %s -> LLM fallback", url, adapter)
-        _emit(
-            progress,
-            f"🤖 The **{adapter}** adapter found no structured data — "
-            "falling back to AI (Vertex)… this can take ~10–30s",
-        )
-        t = time.perf_counter()
-        data = llm.scrape(url)
-        log.info(
-            "ingest %s: LLM done in %.1fs (%d rounds)",
-            url,
-            time.perf_counter() - t,
-            len(data.get("rounds", [])),
-        )
-        return Ingested(data, "llm", True)
+    # Domain adapter found nothing usable -> try the LLM (generic already tried it above).
+    if empty(data) and allow_llm and adapter != "generic":
+        try:
+            return _llm(f"empty via {adapter}")
+        except Exception as exc:  # noqa: BLE001
+            log.warning("ingest %s: LLM fallback failed (%s)", url, exc)
     return Ingested(data, adapter, False)

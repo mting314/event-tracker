@@ -70,6 +70,13 @@ manual** since they're rarely on the source page. Each writes `events/<slug>.yam
 for you to finish and commit. Eventernote parsing is good; ticket/official pages
 and X posts are best-effort. The scraper never runs on a server — only locally.
 
+**Dispatch policy:** domain-tuned adapters (lovelive-anime.jp, eventernote, x)
+run deterministically and only fall back to the LLM if they find nothing.
+**Arbitrary pages go LLM-first** — the generic 【label】 parser mangles real ticket
+pages (per-day rounds, per-day apply URLs), so it's only used when the LLM is
+unavailable. This keeps the daily watcher cheap on official pages while making
+`/add <random FC/ticket URL>` reliable.
+
 ### Web add/edit form
 
 The site's **+ Add** page builds event YAML in the browser from structured fields,
