@@ -638,6 +638,44 @@ async def _add_event_ac(interaction: discord.Interaction, current: str):
     return await _event_ac(interaction, current)
 
 
+@tree.command(description="(Admin) Upcoming LL events on LLFans we don't track yet")
+@app_commands.default_permissions(manage_guild=True)
+async def discover(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True, thinking=True)
+    from scrape import llfans
+
+    today = datetime.now(JST).date().isoformat()
+    try:
+        tours = await asyncio.to_thread(llfans.upcoming_tours, today)
+    except Exception as exc:  # noqa: BLE001
+        log.exception("/discover failed")
+        await interaction.followup.send(f"⚠️ Couldn't reach LLFans: {exc}", ephemeral=True)
+        return
+
+    def _squash(s):
+        return (s or "").replace(" ", "").replace("　", "")
+
+    events = _events_cache or refresh_events()
+    have_lf = {e.get("llfans_id") for e in events if e.get("llfans_id")}
+    have_nm = {_squash(e.get("name")) for e in events}
+    new = [t for t in tours if str(t["id"]) not in have_lf and _squash(t["name"]) not in have_nm]
+    if not new:
+        await interaction.followup.send(
+            f"✅ All {len(tours)} upcoming LL events on LLFans are already tracked.",
+            ephemeral=True,
+        )
+        return
+    lines = [f"**{len(new)} untracked upcoming events** (of {len(tours)} on LLFans):"]
+    for t in new[:15]:
+        span = t["startsOn"] + (f"→{t['endsOn']}" if t["endsOn"] != t["startsOn"] else "")
+        lines.append(f"• {span} — {(t['name'] or '')[:46]}\n  `/add` <{llfans.event_url(t['id'])}>")
+    if len(new) > 15:
+        lines.append(
+            f"…and {len(new) - 15} more (run `python -m scrape.discover` for the full list)"
+        )
+    await interaction.followup.send("\n".join(lines)[:1950], ephemeral=True)
+
+
 async def _delete_event(slug: str) -> str:
     """Delete events/<slug>.yaml from main. Returns a status."""
     if not (GITHUB_REPO and GITHUB_TOKEN):

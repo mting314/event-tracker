@@ -79,6 +79,10 @@ the official/FC page (via `/add` or the watcher) supplies the deadlines. The mer
 joins them — and stamps `llfans_id` as a stable cross-source key so re-syncs and
 official-page matches line up exactly regardless of name drift.
 
+**Discovery:** `/discover` (admin) — or `python -m scrape.discover` — lists every
+upcoming LL tour on LLFans, flags which we already track (by `llfans_id` or name),
+and prints an `/add` URL for each new one, so nothing slips through.
+
 **Dispatch policy:** domain-tuned adapters (ll-fans.jp, lovelive-anime.jp,
 eventernote, x) run deterministically and only fall back to the LLM if they find
 nothing.
@@ -138,6 +142,7 @@ an emoji: 🟢 opens · 🔴 deadline · 🎯 results · 💰 payment. In `/upco
 | `/deadlines <event>` | Upcoming dates for **one specific event** (subscribed or not); links to its official page. |
 | `/settings [lead_times] [dm]` | View or change reminder lead times (e.g. `3d,1d,2h`) and DM on/off. |
 | `/add <url> [llm]` | Draft an event from any URL — see below. |
+| `/discover` | **(Admin)** Upcoming LL events on LLFans we don't track yet, each with an `/add` URL. |
 | `/setchannel` | **(Admin)** Also post reminders to the current channel. |
 | `/delete <event>` | **(Admin)** Remove an event from the site (confirm prompt first). |
 | `/testreminder` | **(Admin)** DM yourself a sample reminder to verify delivery. |

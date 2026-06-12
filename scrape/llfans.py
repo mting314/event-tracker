@@ -45,21 +45,33 @@ _QUERY = """query EventDetailPage($id: ID!) {
   }
 }"""
 
+# `tours` is a Lighthouse paginator (TourPaginator { data, paginatorInfo }).
+_LIST_QUERY = """query Tours($first: Int!, $page: Int!) {
+  tours(first: $first, page: $page) {
+    data { id name startsOn endsOn seriesIds url }
+    paginatorInfo { hasMorePages }
+  }
+}"""
+
 
 def tour_id(url: str) -> str | None:
     m = _ID.search(url or "")
     return m.group(1) if m else None
 
 
+def event_url(tid) -> str:
+    return f"https://ll-fans.jp/data/event/{tid}"
+
+
 def _hhmm(t: str | None) -> str | None:
     return t[:5] if t else None
 
 
-def query_tour(tid: str) -> dict:
-    """Fetch a tour by id from the LLFans GraphQL API (raises on error)."""
+def _post(query: str, variables: dict) -> dict:
+    """POST a GraphQL query to LLFans; return data (raises on transport/GraphQL error)."""
     resp = requests.post(
         API,
-        json={"operationName": "EventDetailPage", "variables": {"id": tid}, "query": _QUERY},
+        json={"query": query, "variables": variables},
         headers={"Accept": "application/json", "User-Agent": "Mozilla/5.0 (event-tracker)"},
         timeout=25,
     )
@@ -67,10 +79,34 @@ def query_tour(tid: str) -> dict:
     payload = resp.json()
     if payload.get("errors"):
         raise RuntimeError(f"llfans graphql errors: {payload['errors']}")
-    tour = (payload.get("data") or {}).get("tour")
+    return payload.get("data") or {}
+
+
+def query_tour(tid: str) -> dict:
+    """Fetch a tour by id from the LLFans GraphQL API (raises on error)."""
+    tour = _post(_QUERY, {"id": tid}).get("tour")
     if not tour:
         raise RuntimeError(f"llfans: no tour with id {tid}")
     return tour
+
+
+def all_tours(page_size: int = 100) -> list[dict]:
+    """Every tour (paginated): {id, name, startsOn, endsOn, seriesIds, url}."""
+    out: list[dict] = []
+    page = 1
+    while True:
+        block = _post(_LIST_QUERY, {"first": page_size, "page": page})["tours"]
+        out.extend(block["data"])
+        if not block["paginatorInfo"]["hasMorePages"]:
+            return out
+        page += 1
+
+
+def upcoming_tours(today: str) -> list[dict]:
+    """Tours not yet ended (endsOn >= today), soonest-first."""
+    ts = [t for t in all_tours() if (t.get("endsOn") or t.get("startsOn") or "") >= today]
+    ts.sort(key=lambda t: t.get("startsOn") or "")
+    return ts
 
 
 def from_tour(tour: dict, url: str | None = None) -> dict:
