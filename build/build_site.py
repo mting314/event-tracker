@@ -36,47 +36,59 @@ DATE_TYPES = {
 }
 
 
+def _round_occurrences(rnd) -> list[dict]:
+    """The dated actions (opens/deadline/results/payment) for one round."""
+    out = []
+    for field, (label, css) in DATE_TYPES.items():
+        dt = getattr(rnd, field)
+        if dt is None:
+            continue
+        out.append(
+            {
+                "iso": dt.isoformat(),
+                "label": label,
+                "css": css,
+                "round": rnd.name + (f" · {rnd.leg}" if rnd.leg else ""),
+                "apply_url": rnd.apply_url,
+            }
+        )
+    return out
+
+
 def build_index_groups(events) -> list[dict]:
-    """Per-event groups for the Upcoming page: all dated round occurrences +
-    performances. The *next* deadline per event is chosen client-side (viewer's
-    clock), and each event row is collapsible to reveal its rounds + shows.
+    """Per-event groups for the Upcoming page: each performance carries its own
+    dated round occurrences (deadlines shown under their show), plus a flat
+    ``occurrences`` list so the client can pick the event's *next* deadline.
     """
     groups = []
     for ev in events:
-        occ = []
-        for rnd in ev.rounds:
-            for field, (label, css) in DATE_TYPES.items():
-                dt = getattr(rnd, field)
-                if dt is None:
-                    continue
-                occ.append(
-                    {
-                        "iso": dt.isoformat(),
-                        "label": label,
-                        "css": css,
-                        "round": rnd.name + (f" · {rnd.leg}" if rnd.leg else ""),
-                        "apply_url": rnd.apply_url,
-                    }
-                )
-        occ.sort(key=lambda o: o["iso"])
+        perfs, all_occ = [], []
+        for p in ev.performances:
+            occ = []
+            for rnd in p.rounds:
+                occ.extend(_round_occurrences(rnd))
+            occ.sort(key=lambda o: o["iso"])
+            all_occ.extend(occ)
+            perfs.append(
+                {
+                    "date": p.date.isoformat(),
+                    "city": p.city,
+                    "venue": p.venue,
+                    "label": p.label,
+                    "doors": p.doors,
+                    "starts": p.starts,
+                    "occurrences": occ,
+                }
+            )
+        all_occ.sort(key=lambda o: o["iso"])
         groups.append(
             {
                 "id": ev.id,
                 "name": ev.name,
                 "series": ev.series,
                 "kind": ev.kind,
-                "performances": [
-                    {
-                        "date": p.date.isoformat(),
-                        "city": p.city,
-                        "venue": p.venue,
-                        "label": p.label,
-                        "doors": p.doors,
-                        "starts": p.starts,
-                    }
-                    for p in ev.performances
-                ],
-                "occurrences": occ,
+                "performances": perfs,
+                "occurrences": all_occ,
             }
         )
     return groups

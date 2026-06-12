@@ -167,6 +167,8 @@ a.perf-row:hover { background: #20234420; background: rgba(255,255,255,.04); }
 .perf-row .perf-date { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .perf-row .perf-where { color: var(--muted); }
 .perf-row .ext { opacity: .6; font-size: .75rem; }
+.perf-block { margin-bottom: .3rem; }
+.perf-block .rounds-mini { margin: .1rem 0 .5rem 1.7rem; }
 .rounds-mini { width: 100%; border-collapse: collapse; margin: 0; }
 .rounds-mini td { padding: .3rem .4rem; border-bottom: 1px solid #23264a; font-size: .85rem; vertical-align: top; }
 .rounds-mini tr:last-child td { border-bottom: none; }

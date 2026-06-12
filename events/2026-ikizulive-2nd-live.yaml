@@ -1,9 +1,9 @@
-name: Ikizulive! 2nd LIVE Dou-Da? DOING! ~Reply to L~
-name_en: Ikizulive! 2nd LIVE Dou-Da? DOING! ~Reply to L~
+name: "Ikizulive! 2nd LIVE Dou-Da? DOING! ~Reply to L~"
+name_en: "Ikizulive! 2nd LIVE Dou-Da? DOING! ~Reply to L~"
 kind: concert
 series:
-  - Ikizulive!
-  - Love Live! Bluebird
+  - "Ikizulive!"
+  - "Love Live! Bluebird"
 categories:
   - concert
 performances:
@@ -13,45 +13,78 @@ performances:
     venue_address: 東京都調布市 (旧 武蔵野の森総合スポーツプラザ メインアリーナ)
     doors: "16:00"
     starts: "17:00"
+    rounds:
+      - name: "Lottery #1: First Advance Lottery"
+        type: presale
+        apply_open: 2026-02-15T21:00:00+09:00
+        apply_deadline: 2026-03-15T23:59:00+09:00
+        results_date: 2026-03-20T13:00:00+09:00
+        payment_deadline: 2026-03-23T21:00:00+09:00
+        apply_url: https://eplus.jp/ikizulive_2nd/
+      - name: "Lottery #2: Pre-order Advance Lottery"
+        type: presale
+        apply_open: 2026-04-04T12:00:00+09:00
+        apply_deadline: 2026-05-10T23:59:00+09:00
+        results_date: 2026-05-16T13:00:00+09:00
+        payment_deadline: 2026-05-19T21:00:00+09:00
+        apply_url: https://eplus.jp/ikizulive_2nd/
+      - name: "Lottery #3: Open Lottery"
+        type: general
+        apply_open: 2026-05-16T12:00:00+09:00
+        apply_deadline: 2026-06-14T23:59:00+09:00
+        results_date: 2026-06-20T13:00:00+09:00
+        payment_deadline: 2026-06-23T21:00:00+09:00
+        apply_url: https://eplus.jp/ikizulive_2nd/
+      - name: "Upgrade Lottery #1 (requires Lottery #1 win)"
+        type: upgrade
+        apply_open: 2026-03-28T12:00:00+09:00
+        apply_deadline: 2026-04-19T23:59:00+09:00
+        results_date: 2026-04-25T13:00:00+09:00
+        payment_deadline: 2026-04-27T21:00:00+09:00
+      - name: "Upgrade Lottery #2 (requires Lottery #1 or #2 win)"
+        type: upgrade
+        apply_open: 2026-05-23T12:00:00+09:00
+        apply_deadline: 2026-05-31T23:59:00+09:00
+        results_date: 2026-06-06T13:00:00+09:00
   - date: 2026-09-20
     label: Day 2
     venue: Keio Arena TOKYO
     venue_address: 東京都調布市
     doors: "15:00"
     starts: "16:00"
+    rounds:
+      - name: "Lottery #1: First Advance Lottery"
+        type: presale
+        apply_open: 2026-02-15T21:00:00+09:00
+        apply_deadline: 2026-03-15T23:59:00+09:00
+        results_date: 2026-03-20T13:00:00+09:00
+        payment_deadline: 2026-03-23T21:00:00+09:00
+        apply_url: https://eplus.jp/ikizulive_2nd/
+      - name: "Lottery #2: Pre-order Advance Lottery"
+        type: presale
+        apply_open: 2026-04-04T12:00:00+09:00
+        apply_deadline: 2026-05-10T23:59:00+09:00
+        results_date: 2026-05-16T13:00:00+09:00
+        payment_deadline: 2026-05-19T21:00:00+09:00
+        apply_url: https://eplus.jp/ikizulive_2nd/
+      - name: "Lottery #3: Open Lottery"
+        type: general
+        apply_open: 2026-05-16T12:00:00+09:00
+        apply_deadline: 2026-06-14T23:59:00+09:00
+        results_date: 2026-06-20T13:00:00+09:00
+        payment_deadline: 2026-06-23T21:00:00+09:00
+        apply_url: https://eplus.jp/ikizulive_2nd/
+      - name: "Upgrade Lottery #1 (requires Lottery #1 win)"
+        type: upgrade
+        apply_open: 2026-03-28T12:00:00+09:00
+        apply_deadline: 2026-04-19T23:59:00+09:00
+        results_date: 2026-04-25T13:00:00+09:00
+        payment_deadline: 2026-04-27T21:00:00+09:00
+      - name: "Upgrade Lottery #2 (requires Lottery #1 or #2 win)"
+        type: upgrade
+        apply_open: 2026-05-23T12:00:00+09:00
+        apply_deadline: 2026-05-31T23:59:00+09:00
+        results_date: 2026-06-06T13:00:00+09:00
 eventernote_url: https://ramen.events/ikizulive-2nd-live/
 official_url: https://www.lovelive-anime.jp/lovehigh/live/live_detail.php?_id=2ndLIVE
-notes: Love Live! Bluebird のグループ Ikizulive! の2ndライブ。10名出演。出典 ramen.events。
-rounds:
-  - name: "Lottery #1: First Advance Lottery"
-    type: presale
-    apply_open: 2026-02-15T21:00:00
-    apply_deadline: 2026-03-15T23:59:00
-    results_date: 2026-03-20T13:00:00
-    payment_deadline: 2026-03-23T21:00:00
-    apply_url: https://eplus.jp/ikizulive_2nd/
-  - name: "Lottery #2: Pre-order Advance Lottery"
-    type: presale
-    apply_open: 2026-04-04T12:00:00
-    apply_deadline: 2026-05-10T23:59:00
-    results_date: 2026-05-16T13:00:00
-    payment_deadline: 2026-05-19T21:00:00
-    apply_url: https://eplus.jp/ikizulive_2nd/
-  - name: "Lottery #3: Open Lottery"
-    type: general
-    apply_open: 2026-05-16T12:00:00
-    apply_deadline: 2026-06-14T23:59:00
-    results_date: 2026-06-20T13:00:00
-    payment_deadline: 2026-06-23T21:00:00
-    apply_url: https://eplus.jp/ikizulive_2nd/
-  - name: "Upgrade Lottery #1 (requires Lottery #1 win)"
-    type: upgrade
-    apply_open: 2026-03-28T12:00:00
-    apply_deadline: 2026-04-19T23:59:00
-    results_date: 2026-04-25T13:00:00
-    payment_deadline: 2026-04-27T21:00:00
-  - name: "Upgrade Lottery #2 (requires Lottery #1 or #2 win)"
-    type: upgrade
-    apply_open: 2026-05-23T12:00:00
-    apply_deadline: 2026-05-31T23:59:00
-    results_date: 2026-06-06T13:00:00
+notes: "Love Live! Bluebird のグループ Ikizulive! の2ndライブ。10名出演。出典 ramen.events。"

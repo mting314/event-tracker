@@ -23,37 +23,39 @@
         {% if g.performances %}
         <ul class="perf-rows">
           {% for p in g.performances %}
-          <li>
+          {% set pidx = loop.index0 %}
+          <li class="perf-block">
             {% if p.venue %}
             <a class="perf-row" href="https://www.google.com/maps/search/?api=1&query={{ p.venue | urlencode }}" target="_blank" rel="noopener">
-              <span class="perf-date">🎤 {{ p.date[:10] }}</span>
+              <span class="perf-date">🎤 {{ p.date[:10] }}{% if p.label %} · {{ p.label }}{% endif %}</span>
               <span class="perf-where">{% if p.city %}{{ p.city }} · {% endif %}{{ p.venue }} <span class="ext">↗</span></span>
             </a>
             {% else %}
             <span class="perf-row">
-              <span class="perf-date">🎤 {{ p.date[:10] }}</span>
+              <span class="perf-date">🎤 {{ p.date[:10] }}{% if p.label %} · {{ p.label }}{% endif %}</span>
               <span class="perf-where">{% if p.city %}{{ p.city }}{% endif %}</span>
             </span>
+            {% endif %}
+            {% if p.occurrences %}
+            <table class="rounds-mini">
+              <tbody>
+                {% for o in p.occurrences %}
+                <tr class="occ" data-iso="{{ o.iso }}" data-round="{{ o.round }}" data-perf="{{ pidx }}-{{ p.date }}">
+                  <td><span class="badge {{ o.css }}">{{ o.label }}</span></td>
+                  <td class="occ-round">{{ o.round }}</td>
+                  <td><time class="dt" datetime="{{ o.iso }}">{{ o.iso|jst_fmt }}</time>
+                    <span class="countdown" data-iso="{{ o.iso }}"></span></td>
+                  <td>{% if o.apply_url %}<a class="apply" href="{{ o.apply_url }}" target="_blank" rel="noopener">Apply ↗</a>{% endif %}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
             {% endif %}
           </li>
           {% endfor %}
         </ul>
         {% endif %}
-        {% if g.occurrences %}
-        <table class="rounds-mini">
-          <tbody>
-            {% for o in g.occurrences %}
-            <tr class="occ" data-iso="{{ o.iso }}" data-round="{{ o.round }}">
-              <td><span class="badge {{ o.css }}">{{ o.label }}</span></td>
-              <td class="occ-round">{{ o.round }}</td>
-              <td><time class="dt" datetime="{{ o.iso }}">{{ o.iso|jst_fmt }}</time>
-                <span class="countdown" data-iso="{{ o.iso }}"></span></td>
-              <td>{% if o.apply_url %}<a class="apply" href="{{ o.apply_url }}" target="_blank" rel="noopener">Apply ↗</a>{% endif %}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        {% else %}<p class="muted">No lottery rounds recorded yet.</p>{% endif %}
+        {% if not g.occurrences %}<p class="muted">No lottery rounds recorded yet.</p>{% endif %}
       </div>
     </details>
   </li>

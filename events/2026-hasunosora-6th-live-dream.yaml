@@ -1,5 +1,5 @@
 name: 蓮ノ空女学院スクールアイドルクラブ 6th Live Dream ~Bloom Garden Party~
-name_en: "Hasunosora Jogakuin School Idol Club 6th Live Dream ~Bloom Garden Party~"
+name_en: Hasunosora Jogakuin School Idol Club 6th Live Dream ~Bloom Garden Party~
 kind: concert
 series:
   - Hasunosora
@@ -22,151 +22,260 @@ performances:
     venue: マリンメッセ福岡 B館
     doors: "16:00"
     starts: "17:00"
+    rounds:
+      - name: "Lottery #1"
+        type: cd-lottery
+        leg: Fukuoka
+        apply_open: 2026-01-28T12:00:00+09:00
+        apply_deadline: 2026-03-01T23:59:00+09:00
+        results_date: 2026-03-07T13:00:00+09:00
+        payment_deadline: 2026-03-10T21:00:00+09:00
+      - name: "Lottery #2: Open Lottery"
+        type: general
+        leg: Fukuoka
+        apply_open: 2026-03-07T12:00:00+09:00
+        apply_deadline: 2026-03-22T23:59:00+09:00
+        results_date: 2026-03-28T13:00:00+09:00
+        payment_deadline: 2026-03-31T21:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
+      - name: "Lottery #3: Open Lottery (Round 2)"
+        type: general
+        leg: Fukuoka
+        apply_open: 2026-03-28T12:00:00+09:00
+        apply_deadline: 2026-04-12T23:59:00+09:00
+        results_date: 2026-04-17T13:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
   - date: 2026-05-03
     city: Fukuoka
     label: Bloom Stage Day 2
     venue: マリンメッセ福岡 B館
     doors: "14:00"
     starts: "15:00"
+    rounds:
+      - name: "Lottery #1"
+        type: cd-lottery
+        leg: Fukuoka
+        apply_open: 2026-01-28T12:00:00+09:00
+        apply_deadline: 2026-03-01T23:59:00+09:00
+        results_date: 2026-03-07T13:00:00+09:00
+        payment_deadline: 2026-03-10T21:00:00+09:00
+      - name: "Lottery #2: Open Lottery"
+        type: general
+        leg: Fukuoka
+        apply_open: 2026-03-07T12:00:00+09:00
+        apply_deadline: 2026-03-22T23:59:00+09:00
+        results_date: 2026-03-28T13:00:00+09:00
+        payment_deadline: 2026-03-31T21:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
+      - name: "Lottery #3: Open Lottery (Round 2)"
+        type: general
+        leg: Fukuoka
+        apply_open: 2026-03-28T12:00:00+09:00
+        apply_deadline: 2026-04-12T23:59:00+09:00
+        results_date: 2026-04-17T13:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
   - date: 2026-05-23
     city: Hyogo
     label: Garden Stage Day 1
     venue: ワールド記念ホール
     doors: "16:00"
     starts: "17:00"
+    rounds:
+      - name: "Lottery #1"
+        type: cd-lottery
+        leg: Hyogo
+        apply_open: 2026-02-18T12:00:00+09:00
+        apply_deadline: 2026-03-15T23:59:00+09:00
+        results_date: 2026-03-20T13:00:00+09:00
+        payment_deadline: 2026-03-23T21:00:00+09:00
+      - name: "Lottery #2: Open Lottery"
+        type: general
+        leg: Hyogo
+        apply_open: 2026-03-20T12:00:00+09:00
+        apply_deadline: 2026-04-05T23:59:00+09:00
+        results_date: 2026-04-11T13:00:00+09:00
+        payment_deadline: 2026-04-14T21:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
+      - name: "Lottery #3: Open Lottery (Round 2)"
+        type: general
+        leg: Hyogo
+        apply_open: 2026-04-11T12:00:00+09:00
+        apply_deadline: 2026-04-26T23:59:00+09:00
+        results_date: 2026-05-01T13:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
   - date: 2026-05-24
     city: Hyogo
     label: Garden Stage Day 2
     venue: ワールド記念ホール
     doors: "14:00"
     starts: "15:00"
+    rounds:
+      - name: "Lottery #1"
+        type: cd-lottery
+        leg: Hyogo
+        apply_open: 2026-02-18T12:00:00+09:00
+        apply_deadline: 2026-03-15T23:59:00+09:00
+        results_date: 2026-03-20T13:00:00+09:00
+        payment_deadline: 2026-03-23T21:00:00+09:00
+      - name: "Lottery #2: Open Lottery"
+        type: general
+        leg: Hyogo
+        apply_open: 2026-03-20T12:00:00+09:00
+        apply_deadline: 2026-04-05T23:59:00+09:00
+        results_date: 2026-04-11T13:00:00+09:00
+        payment_deadline: 2026-04-14T21:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
+      - name: "Lottery #3: Open Lottery (Round 2)"
+        type: general
+        leg: Hyogo
+        apply_open: 2026-04-11T12:00:00+09:00
+        apply_deadline: 2026-04-26T23:59:00+09:00
+        results_date: 2026-05-01T13:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
   - date: 2026-05-30
     city: Kanagawa
     label: Party Stage Day 1
     venue: ぴあアリーナMM
     doors: "16:00"
     starts: "17:00"
+    rounds:
+      - name: "Lottery #1: Movie Ticket Cards (Round 2)"
+        type: code-lottery
+        leg: Kanagawa
+        apply_open: 2026-02-27T12:00:00+09:00
+        apply_deadline: 2026-04-05T23:59:00+09:00
+        results_date: 2026-04-11T13:00:00+09:00
+        payment_deadline: 2026-04-14T21:00:00+09:00
+      - name: "Lottery #2: Open Lottery"
+        type: general
+        leg: Kanagawa
+        apply_open: 2026-04-11T12:00:00+09:00
+        apply_deadline: 2026-04-26T23:59:00+09:00
+        results_date: 2026-05-02T13:00:00+09:00
+        payment_deadline: 2026-05-05T21:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
+      - name: "Lottery #3: Open Lottery (Round 2)"
+        type: general
+        leg: Kanagawa
+        apply_open: 2026-05-02T12:00:00+09:00
+        apply_deadline: 2026-05-10T23:59:00+09:00
+        results_date: 2026-05-13T13:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
   - date: 2026-05-31
     city: Kanagawa
     label: Party Stage Day 2
     venue: ぴあアリーナMM
     doors: "14:00"
     starts: "15:00"
+    rounds:
+      - name: "Lottery #1: Movie Ticket Cards (Round 2)"
+        type: code-lottery
+        leg: Kanagawa
+        apply_open: 2026-02-27T12:00:00+09:00
+        apply_deadline: 2026-04-05T23:59:00+09:00
+        results_date: 2026-04-11T13:00:00+09:00
+        payment_deadline: 2026-04-14T21:00:00+09:00
+      - name: "Lottery #2: Open Lottery"
+        type: general
+        leg: Kanagawa
+        apply_open: 2026-04-11T12:00:00+09:00
+        apply_deadline: 2026-04-26T23:59:00+09:00
+        results_date: 2026-05-02T13:00:00+09:00
+        payment_deadline: 2026-05-05T21:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
+      - name: "Lottery #3: Open Lottery (Round 2)"
+        type: general
+        leg: Kanagawa
+        apply_open: 2026-05-02T12:00:00+09:00
+        apply_deadline: 2026-05-10T23:59:00+09:00
+        results_date: 2026-05-13T13:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
   - date: 2026-07-11
     city: Saitama
     label: Bloom Garden Party Stage Day 1
     venue: ベルーナドーム
     doors: "14:00"
     starts: "16:00"
+    rounds:
+      - name: "Day 1 Lottery #1: Apr 4 Unit Single CDs"
+        type: cd-lottery
+        leg: Saitama
+        apply_open: 2026-04-08T12:00:00+09:00
+        apply_deadline: 2026-04-26T23:59:00+09:00
+        results_date: 2026-05-02T13:00:00+09:00
+        payment_deadline: 2026-05-05T21:00:00+09:00
+      - name: "Day 2 Lottery #1: 10th Single CD"
+        type: cd-lottery
+        leg: Saitama
+        apply_open: 2026-04-15T12:00:00+09:00
+        apply_deadline: 2026-04-26T23:59:00+09:00
+        results_date: 2026-05-02T13:00:00+09:00
+        payment_deadline: 2026-05-05T21:00:00+09:00
+      - name: "Lottery #2: Movie / Cards / Magazine Code"
+        type: code-lottery
+        leg: Saitama
+        apply_open: 2026-05-08T12:00:00+09:00
+        apply_deadline: 2026-05-24T23:59:00+09:00
+        results_date: 2026-05-30T13:00:00+09:00
+        payment_deadline: 2026-06-02T21:00:00+09:00
+      - name: "Lottery #3: Open Lottery"
+        type: general
+        leg: Saitama
+        apply_open: 2026-05-30T12:00:00+09:00
+        apply_deadline: 2026-06-07T23:59:00+09:00
+        results_date: 2026-06-13T13:00:00+09:00
+        payment_deadline: 2026-06-16T21:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
+      - name: "Lottery #4: Open Lottery (Round 2)"
+        type: general
+        leg: Saitama
+        apply_open: 2026-06-13T12:00:00+09:00
+        apply_deadline: 2026-06-21T23:59:00+09:00
+        results_date: 2026-06-26T13:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
   - date: 2026-07-12
     city: Saitama
     label: Bloom Garden Party Stage Day 2
     venue: ベルーナドーム
     doors: "13:00"
     starts: "15:00"
+    rounds:
+      - name: "Day 1 Lottery #1: Apr 4 Unit Single CDs"
+        type: cd-lottery
+        leg: Saitama
+        apply_open: 2026-04-08T12:00:00+09:00
+        apply_deadline: 2026-04-26T23:59:00+09:00
+        results_date: 2026-05-02T13:00:00+09:00
+        payment_deadline: 2026-05-05T21:00:00+09:00
+      - name: "Day 2 Lottery #1: 10th Single CD"
+        type: cd-lottery
+        leg: Saitama
+        apply_open: 2026-04-15T12:00:00+09:00
+        apply_deadline: 2026-04-26T23:59:00+09:00
+        results_date: 2026-05-02T13:00:00+09:00
+        payment_deadline: 2026-05-05T21:00:00+09:00
+      - name: "Lottery #2: Movie / Cards / Magazine Code"
+        type: code-lottery
+        leg: Saitama
+        apply_open: 2026-05-08T12:00:00+09:00
+        apply_deadline: 2026-05-24T23:59:00+09:00
+        results_date: 2026-05-30T13:00:00+09:00
+        payment_deadline: 2026-06-02T21:00:00+09:00
+      - name: "Lottery #3: Open Lottery"
+        type: general
+        leg: Saitama
+        apply_open: 2026-05-30T12:00:00+09:00
+        apply_deadline: 2026-06-07T23:59:00+09:00
+        results_date: 2026-06-13T13:00:00+09:00
+        payment_deadline: 2026-06-16T21:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
+      - name: "Lottery #4: Open Lottery (Round 2)"
+        type: general
+        leg: Saitama
+        apply_open: 2026-06-13T12:00:00+09:00
+        apply_deadline: 2026-06-21T23:59:00+09:00
+        results_date: 2026-06-26T13:00:00+09:00
+        apply_url: https://eplus.jp/hasunosora6th/
 eventernote_url: https://ramen.events/hasunosora-6th-live-dream/
 official_url: https://www.lovelive-anime.jp/hasunosora/live-event/live_detail.php?p=6thBGP
 notes: 6th Live Dream 全国ツアー（福岡/兵庫/神奈川/埼玉）。抽選は公演地ごと。出典 ramen.events。
-rounds:
-  - name: "Lottery #1"
-    type: cd-lottery
-    leg: Fukuoka
-    apply_open: 2026-01-28T12:00:00
-    apply_deadline: 2026-03-01T23:59:00
-    results_date: 2026-03-07T13:00:00
-    payment_deadline: 2026-03-10T21:00:00
-  - name: "Lottery #2: Open Lottery"
-    type: general
-    leg: Fukuoka
-    apply_open: 2026-03-07T12:00:00
-    apply_deadline: 2026-03-22T23:59:00
-    results_date: 2026-03-28T13:00:00
-    payment_deadline: 2026-03-31T21:00:00
-    apply_url: https://eplus.jp/hasunosora6th/
-  - name: "Lottery #3: Open Lottery (Round 2)"
-    type: general
-    leg: Fukuoka
-    apply_open: 2026-03-28T12:00:00
-    apply_deadline: 2026-04-12T23:59:00
-    results_date: 2026-04-17T13:00:00
-    apply_url: https://eplus.jp/hasunosora6th/
-  - name: "Lottery #1"
-    type: cd-lottery
-    leg: Hyogo
-    apply_open: 2026-02-18T12:00:00
-    apply_deadline: 2026-03-15T23:59:00
-    results_date: 2026-03-20T13:00:00
-    payment_deadline: 2026-03-23T21:00:00
-  - name: "Lottery #2: Open Lottery"
-    type: general
-    leg: Hyogo
-    apply_open: 2026-03-20T12:00:00
-    apply_deadline: 2026-04-05T23:59:00
-    results_date: 2026-04-11T13:00:00
-    payment_deadline: 2026-04-14T21:00:00
-    apply_url: https://eplus.jp/hasunosora6th/
-  - name: "Lottery #3: Open Lottery (Round 2)"
-    type: general
-    leg: Hyogo
-    apply_open: 2026-04-11T12:00:00
-    apply_deadline: 2026-04-26T23:59:00
-    results_date: 2026-05-01T13:00:00
-    apply_url: https://eplus.jp/hasunosora6th/
-  - name: "Lottery #1: Movie Ticket Cards (Round 2)"
-    type: code-lottery
-    leg: Kanagawa
-    apply_open: 2026-02-27T12:00:00
-    apply_deadline: 2026-04-05T23:59:00
-    results_date: 2026-04-11T13:00:00
-    payment_deadline: 2026-04-14T21:00:00
-  - name: "Lottery #2: Open Lottery"
-    type: general
-    leg: Kanagawa
-    apply_open: 2026-04-11T12:00:00
-    apply_deadline: 2026-04-26T23:59:00
-    results_date: 2026-05-02T13:00:00
-    payment_deadline: 2026-05-05T21:00:00
-    apply_url: https://eplus.jp/hasunosora6th/
-  - name: "Lottery #3: Open Lottery (Round 2)"
-    type: general
-    leg: Kanagawa
-    apply_open: 2026-05-02T12:00:00
-    apply_deadline: 2026-05-10T23:59:00
-    results_date: 2026-05-13T13:00:00
-    apply_url: https://eplus.jp/hasunosora6th/
-  - name: "Day 1 Lottery #1: Apr 4 Unit Single CDs"
-    type: cd-lottery
-    leg: Saitama
-    apply_open: 2026-04-08T12:00:00
-    apply_deadline: 2026-04-26T23:59:00
-    results_date: 2026-05-02T13:00:00
-    payment_deadline: 2026-05-05T21:00:00
-  - name: "Day 2 Lottery #1: 10th Single CD"
-    type: cd-lottery
-    leg: Saitama
-    apply_open: 2026-04-15T12:00:00
-    apply_deadline: 2026-04-26T23:59:00
-    results_date: 2026-05-02T13:00:00
-    payment_deadline: 2026-05-05T21:00:00
-  - name: "Lottery #2: Movie / Cards / Magazine Code"
-    type: code-lottery
-    leg: Saitama
-    apply_open: 2026-05-08T12:00:00
-    apply_deadline: 2026-05-24T23:59:00
-    results_date: 2026-05-30T13:00:00
-    payment_deadline: 2026-06-02T21:00:00
-  - name: "Lottery #3: Open Lottery"
-    type: general
-    leg: Saitama
-    apply_open: 2026-05-30T12:00:00
-    apply_deadline: 2026-06-07T23:59:00
-    results_date: 2026-06-13T13:00:00
-    payment_deadline: 2026-06-16T21:00:00
-    apply_url: https://eplus.jp/hasunosora6th/
-  - name: "Lottery #4: Open Lottery (Round 2)"
-    type: general
-    leg: Saitama
-    apply_open: 2026-06-13T12:00:00
-    apply_deadline: 2026-06-21T23:59:00
-    results_date: 2026-06-26T13:00:00
-    apply_url: https://eplus.jp/hasunosora6th/

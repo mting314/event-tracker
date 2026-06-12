@@ -70,15 +70,17 @@ function initGroups() {
     const showPastChecked = showPast.checked;
     let visible = 0;
     const rows = groups.map((d) => {
-      // Per round, keep only the next upcoming date (so a round isn't repeated
-      // once per Opens/Deadline/Results/Payment). showPast reveals all rows.
-      const byRound = {};
+      // Per performance+round, keep only the next upcoming date (so a round isn't
+      // repeated once per Opens/Deadline/Results/Payment, but a leg-wide round
+      // still shows under each of its shows). showPast reveals all rows.
+      const byKey = {};
       for (const o of d.querySelectorAll('.occ')) {
-        (byRound[o.dataset.round] ||= []).push(o);
+        const k = (o.dataset.perf || '') + '|' + o.dataset.round;
+        (byKey[k] ||= []).push(o);
       }
       let next = null;
-      for (const key in byRound) {
-        const occs = byRound[key];
+      for (const key in byKey) {
+        const occs = byKey[key];
         const future = occs
           .filter((o) => new Date(o.dataset.iso) > now)
           .sort((a, b) => a.dataset.iso.localeCompare(b.dataset.iso));
@@ -88,6 +90,13 @@ function initGroups() {
         });
         if (chosen && (!next || chosen.dataset.iso < next)) next = chosen.dataset.iso;
       }
+      // Collapse a performance whose deadlines are all past (keep ones with no
+      // rounds, and reveal everything under show-past).
+      d.querySelectorAll('.perf-block').forEach((pb) => {
+        const occ = [...pb.querySelectorAll('.occ')];
+        if (!occ.length) return;
+        pb.hidden = showPastChecked ? false : !occ.some((o) => !o.hidden);
+      });
       return { d, next };
     });
 

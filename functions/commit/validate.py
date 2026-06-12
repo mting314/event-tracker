@@ -29,11 +29,15 @@ def validate_event_yaml(slug: str, text: str) -> dict:
         raise ValueError("YAML must be a mapping")
     if not data.get("name"):
         raise ValueError("name is required")
+    # Rounds live under each performance (a top-level `rounds:` is still accepted
+    # as the legacy flat shape). Validate both.
+    rounds = list(data.get("rounds") or [])
     for p in data.get("performances") or []:
         d = str(p.get("date", ""))
         if not _ISO_DATE.match(d):
             raise ValueError(f"performance date {d!r} must be YYYY-MM-DD")
-    for r in data.get("rounds") or []:
+        rounds += list(p.get("rounds") or [])
+    for r in rounds:
         if not r.get("name"):
             raise ValueError("every round needs a name")
         if not any(r.get(k) for k in _DATE_FIELDS):

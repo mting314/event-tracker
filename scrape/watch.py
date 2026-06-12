@@ -59,7 +59,7 @@ def event_is_past(ev, today) -> bool:
     watch, so we skip it (keeps the daily auto-scan cost bounded)."""
     if any(d >= today for d in ev.event_dates):
         return False
-    for r in ev.rounds:
+    for r in ev.all_rounds:
         for f in ROUND_DATE_FIELDS:
             v = getattr(r, f)
             if v is not None and v.date() >= today:
@@ -88,6 +88,14 @@ def round_key(deadline, name, leg) -> str:
     """
     d = _wall(deadline)
     return f"dl:{d}" if d else f"nm:{name or ''}|{leg or ''}"
+
+
+def _flat_rounds(data: dict) -> list[dict]:
+    """All rounds in an ingest dict, whether nested under performances or top-level."""
+    out = list(data.get("rounds") or [])
+    for p in data.get("performances") or []:
+        out += list(p.get("rounds") or [])
+    return out
 
 
 def diff_rounds(parsed: list[dict], existing_rounds: list) -> dict:
@@ -146,12 +154,12 @@ def main(argv=None) -> int:
         if ev is None:
             total_unknown += 1
             print(
-                f"🆕 NEW EVENT (no tracked id={eid}): {parsed['name']} — {len(parsed['rounds'])} rounds"
+                f"🆕 NEW EVENT (no tracked id={eid}): {parsed['name']} — {len(_flat_rounds(parsed))} rounds"
             )
-            drafts.append((eid or "new-event", parsed["rounds"]))
+            drafts.append((eid or "new-event", _flat_rounds(parsed)))
             continue
 
-        d = diff_rounds(parsed.get("rounds", []), ev.rounds)
+        d = diff_rounds(_flat_rounds(parsed), ev.all_rounds)
         n = len(d["new"])
         total_new += n
         print(f"• {eid}: {(str(n) + ' new/updated rounds') if n else 'up to date'}")
@@ -176,7 +184,7 @@ def main(argv=None) -> int:
         except Exception as exc:  # noqa: BLE001 - report and continue
             print(f"⚠️  {url} (auto, {eid}): fetch/parse failed: {exc}")
             continue
-        d = diff_rounds(parsed.get("rounds", []), ev.rounds)
+        d = diff_rounds(_flat_rounds(parsed), ev.all_rounds)
         n = len(d["new"])
         total_new += n
         print(f"• {eid} (auto): {(str(n) + ' new/updated rounds') if n else 'up to date'}")

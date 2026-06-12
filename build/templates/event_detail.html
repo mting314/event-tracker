@@ -18,52 +18,44 @@
     {% if event.performers %}<div><dt>Cast</dt><dd>{{ event.performers|join('、') }}</dd></div>{% endif %}
   </div>
 
-  {% if event.performances %}
-  <h2>Performances</h2>
-  <table class="performances">
-    <thead><tr><th>Date</th><th>Leg</th><th>Venue</th><th>Doors / Starts</th></tr></thead>
-    <tbody>
-      {% for p in event.performances %}
-      <tr>
-        <td class="nowrap">{{ p.date }}{% if p.label %}<div class="sub">{{ p.label }}</div>{% endif %}</td>
-        <td>{{ p.city or '—' }}</td>
-        <td>{{ p.venue or '—' }}{% if p.venue_address %}<div class="sub">{{ p.venue_address }}</div>{% endif %}</td>
-        <td class="nowrap">{% if p.doors or p.starts %}{{ p.doors or '?' }} / {{ p.starts or '?' }}{% else %}—{% endif %}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% endif %}
-
   <p class="links">
     {% if event.eventernote_url %}<a href="{{ event.eventernote_url }}" target="_blank" rel="noopener">eventernote ↗</a>{% endif %}
     {% if event.official_url %}<a href="{{ event.official_url }}" target="_blank" rel="noopener">official site ↗</a>{% endif %}
   </p>
   {% if event.notes %}<p class="notes">{{ event.notes }}</p>{% endif %}
 
-  <h2>Lottery rounds</h2>
-  <table class="rounds">
-    <thead>
-      <tr><th>Round</th><th>Leg</th>{% for f, meta in date_types.items() %}<th>{{ meta[0] }}</th>{% endfor %}<th></th></tr>
-    </thead>
-    <tbody>
-      {% for r in event.rounds %}
-      <tr>
-        <td><strong>{{ r.name }}</strong>{% if r.type %}<div class="sub">{{ r.type }}</div>{% endif %}</td>
-        <td>{% if r.leg %}<span class="tag">{{ r.leg }}</span>{% else %}<span class="muted">all</span>{% endif %}</td>
-        {% for f, meta in date_types.items() %}
-        {% set dt = r[f] %}
-        <td>{% if dt %}<time class="dt countdown-cell" datetime="{{ dt.isoformat() }}">{{ dt.isoformat()|jst_fmt }}</time>{% else %}<span class="muted">—</span>{% endif %}</td>
+  {% if event.performances %}
+  <h2>Performances &amp; deadlines</h2>
+  {% for p in event.performances %}
+  <section class="perf-detail">
+    <h3>{{ p.date }}{% if p.label %} · {{ p.label }}{% endif %}</h3>
+    <p class="sub">{% if p.city %}{{ p.city }} · {% endif %}{{ p.venue or '—' }}{% if p.venue_address %} — {{ p.venue_address }}{% endif %}{% if p.doors or p.starts %} · 開場 {{ p.doors or '?' }} / 開演 {{ p.starts or '?' }}{% endif %}</p>
+    {% if p.rounds %}
+    <table class="rounds">
+      <thead>
+        <tr><th>Round</th>{% for f, meta in date_types.items() %}<th>{{ meta[0] }}</th>{% endfor %}<th></th></tr>
+      </thead>
+      <tbody>
+        {% for r in p.rounds %}
+        <tr>
+          <td><strong>{{ r.name }}</strong>{% if r.type %}<div class="sub">{{ r.type }}</div>{% endif %}{% if r.leg %} <span class="tag">{{ r.leg }}</span>{% endif %}</td>
+          {% for f, meta in date_types.items() %}
+          {% set dt = r[f] %}
+          <td>{% if dt %}<time class="dt countdown-cell" datetime="{{ dt.isoformat() }}">{{ dt.isoformat()|jst_fmt }}</time>{% else %}<span class="muted">—</span>{% endif %}</td>
+          {% endfor %}
+          <td>
+            {% if r.apply_url %}<a class="apply" href="{{ r.apply_url }}" target="_blank" rel="noopener">Apply ↗</a>{% endif %}
+            {% if r.apply_deadline %}<a class="ics" href="#" data-title="{{ event.name }} — {{ r.name }} 締切" data-iso="{{ r.apply_deadline.isoformat() }}">📅 .ics</a>{% endif %}
+          </td>
+        </tr>
+        {% if r.notes %}<tr class="round-notes"><td colspan="{{ date_types|length + 2 }}">{{ r.notes }}</td></tr>{% endif %}
         {% endfor %}
-        <td>
-          {% if r.apply_url %}<a class="apply" href="{{ r.apply_url }}" target="_blank" rel="noopener">Apply ↗</a>{% endif %}
-          {% if r.apply_deadline %}<a class="ics" href="#" data-title="{{ event.name }} — {{ r.name }}{% if r.leg %} ({{ r.leg }}){% endif %} 締切" data-iso="{{ r.apply_deadline.isoformat() }}">📅 .ics</a>{% endif %}
-        </td>
-      </tr>
-      {% if r.notes %}<tr class="round-notes"><td colspan="{{ date_types|length + 3 }}">{{ r.notes }}</td></tr>{% endif %}
-      {% endfor %}
-    </tbody>
-  </table>
+      </tbody>
+    </table>
+    {% else %}<p class="muted">No lottery rounds recorded for this show yet.</p>{% endif %}
+  </section>
+  {% endfor %}
+  {% endif %}
 </article>
 {% endblock %}
 {% block scripts %}<script>initEventDetail();</script>{% endblock %}

@@ -20,10 +20,19 @@ def make_event(eid="ev1", series=("Liella!",), deadline="2026-09-20T23:59:00+09:
         "id": eid,
         "name": "Test Live",
         "series": list(series),
-        "venue": "Tokyo",
         "performers": ["伊達さゆり"],
-        "rounds": [{"name": "1次先行", "apply_deadline": deadline}],
+        "performances": [
+            {
+                "date": "2026-09-20",
+                "venue": "Tokyo",
+                "rounds": [{"name": "1次先行", "apply_deadline": deadline}],
+            }
+        ],
     }
+
+
+def _deadline(ev):
+    return ev["performances"][0]["rounds"][0]["apply_deadline"]
 
 
 @pytest.fixture
@@ -58,7 +67,7 @@ def test_settings_defaults_and_update(db):
 
 def test_single_lead_due_at_3_days_out(db):
     ev = make_event()
-    target = datetime.fromisoformat(ev["rounds"][0]["apply_deadline"])
+    target = datetime.fromisoformat(_deadline(ev))
     subs = [{"kind": "event", "target": "ev1"}]
     now = target - timedelta(days=3, seconds=-1)  # just inside the 3d window
     due = due_for_user([ev], subs, DEFAULT_LEAD_SECONDS, now, lambda k: db.was_sent("u1", k))
@@ -79,7 +88,7 @@ def test_single_lead_due_at_3_days_out(db):
 
 def test_lead_progression_with_dedup(db):
     ev = make_event()
-    target = datetime.fromisoformat(ev["rounds"][0]["apply_deadline"])
+    target = datetime.fromisoformat(_deadline(ev))
     subs = [{"kind": "event", "target": "ev1"}]
     seen = lambda k: db.was_sent("u1", k)
 
@@ -95,7 +104,7 @@ def test_lead_progression_with_dedup(db):
 
 def test_late_subscribe_sends_one_not_a_burst(db):
     ev = make_event()
-    target = datetime.fromisoformat(ev["rounds"][0]["apply_deadline"])
+    target = datetime.fromisoformat(_deadline(ev))
     subs = [{"kind": "event", "target": "ev1"}]
     now = target - timedelta(hours=1)  # all three leads already "due"
     due = due_for_user([ev], subs, DEFAULT_LEAD_SECONDS, now, lambda k: db.was_sent("u1", k))
@@ -106,7 +115,7 @@ def test_late_subscribe_sends_one_not_a_burst(db):
 
 def test_no_reminder_after_deadline(db):
     ev = make_event()
-    target = datetime.fromisoformat(ev["rounds"][0]["apply_deadline"])
+    target = datetime.fromisoformat(_deadline(ev))
     subs = [{"kind": "event", "target": "ev1"}]
     assert (
         due_for_user(
@@ -127,9 +136,25 @@ def test_same_round_name_across_legs_does_not_collide(db):
         "id": "tour1",
         "name": "Tour",
         "series": ["Liella!"],
-        "rounds": [
-            {"name": "Official Advance Lottery", "leg": "Kanagawa", "apply_deadline": target},
-            {"name": "Official Advance Lottery", "leg": "Aichi", "apply_deadline": target},
+        "performances": [
+            {
+                "date": "2026-09-19",
+                "city": "Kanagawa",
+                "rounds": [
+                    {
+                        "name": "Official Advance Lottery",
+                        "leg": "Kanagawa",
+                        "apply_deadline": target,
+                    }
+                ],
+            },
+            {
+                "date": "2026-09-26",
+                "city": "Aichi",
+                "rounds": [
+                    {"name": "Official Advance Lottery", "leg": "Aichi", "apply_deadline": target}
+                ],
+            },
         ],
     }
     subs = [{"kind": "event", "target": "tour1"}]
@@ -146,7 +171,7 @@ def test_same_round_name_across_legs_does_not_collide(db):
 
 def test_series_subscription_matches(db):
     ev = make_event(series=["Aqours"])
-    target = datetime.fromisoformat(ev["rounds"][0]["apply_deadline"])
+    target = datetime.fromisoformat(_deadline(ev))
     subs = [{"kind": "series", "target": "Aqours"}]
     due = due_for_user(
         [ev], subs, DEFAULT_LEAD_SECONDS, target - timedelta(days=3), lambda k: db.was_sent("u1", k)

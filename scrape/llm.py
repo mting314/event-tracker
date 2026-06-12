@@ -42,26 +42,21 @@ SYSTEM = (
     "dates, venues, or names not written there. Omit fields you cannot find.\n"
     "- All datetimes are Japan Standard Time. Output them as naive ISO "
     "'YYYY-MM-DDTHH:MM:SS'. Dates as 'YYYY-MM-DD'.\n"
-    "- 'rounds' are ticket application windows (抽選 lottery / 先行 presale / 一般 general "
+    "- 'performances' are individual shows (date + venue + open/start times).\n"
+    "- Rounds are ticket application windows (抽選 lottery / 先行 presale / 一般 general "
     "/ fanclub / 受付期間). Map 受付期間->apply_open/apply_deadline, 当落発表/抽選結果発表->"
     "results_date, 入金期間->payment_deadline.\n"
+    "- Attach each round to the performance(s) it applies to via that performance's "
+    "'rounds'. If a round covers several shows (e.g. a whole leg), REPEAT it under "
+    "each. Pages like 'DAY1: …受付URL… / DAY2: …' have a different round per day — "
+    "attach each to its day. Use the event-level 'rounds' ONLY for a round you truly "
+    "cannot tie to specific shows.\n"
     "- For each round, set source_quote to the exact source line(s) the dates came "
-    "from, so a human can verify.\n"
-    "- 'performances' are individual shows (date + venue + open/start times)."
+    "from, so a human can verify."
 )
 
 
 # --- extraction schema (LLM-facing): loose, no id, string datetimes ---
-class ExtractedPerformance(BaseModel):
-    date: str
-    city: str | None = None
-    label: str | None = None
-    venue: str | None = None
-    venue_address: str | None = None
-    doors: str | None = None
-    starts: str | None = None
-
-
 class ExtractedRound(BaseModel):
     name: str
     type: str | None = None
@@ -74,6 +69,17 @@ class ExtractedRound(BaseModel):
     source_quote: str | None = None
 
 
+class ExtractedPerformance(BaseModel):
+    date: str
+    city: str | None = None
+    label: str | None = None
+    venue: str | None = None
+    venue_address: str | None = None
+    doors: str | None = None
+    starts: str | None = None
+    rounds: list[ExtractedRound] = []  # lottery rounds for this specific show
+
+
 class ExtractedEvent(BaseModel):
     name: str
     name_en: str | None = None
@@ -83,7 +89,7 @@ class ExtractedEvent(BaseModel):
     categories: list[str] = []
     performers: list[str] = []
     performances: list[ExtractedPerformance] = []
-    rounds: list[ExtractedRound] = []
+    rounds: list[ExtractedRound] = []  # event-wide rounds not tied to one show
     notes: str | None = None
 
 
@@ -108,16 +114,23 @@ def build_prompt(title: str, text: str, url: str | None) -> str:
     )
 
 
+def _fold_quote(r: dict) -> None:
+    """Fold a round's source_quote into notes (in place), so it's verifiable in YAML."""
+    q = r.pop("source_quote", None)
+    if q:
+        r["notes"] = (r.get("notes") + " | " if r.get("notes") else "") + f"src: {q}"
+
+
 def _to_event_dict(ev: ExtractedEvent, url: str | None) -> dict:
-    """Map the validated ExtractedEvent into our ingest dict shape."""
+    """Map the validated ExtractedEvent into our ingest dict shape (rounds nested)."""
     data = ev.model_dump(exclude_none=True, exclude_defaults=True)
     for p in data.get("performances", []):
         if p.get("date"):
             p["date"] = re.split(r"[T ]", str(p["date"]))[0]  # date-only
-    for r in data.get("rounds", []):
-        q = r.pop("source_quote", None)  # fold the verifiable quote into notes
-        if q:
-            r["notes"] = (r.get("notes") + " | " if r.get("notes") else "") + f"src: {q}"
+        for r in p.get("rounds", []):
+            _fold_quote(r)
+    for r in data.get("rounds", []):  # event-wide rounds (nested into perfs downstream)
+        _fold_quote(r)
     data.setdefault("kind", "concert")
     data["source_url"] = url
     return data

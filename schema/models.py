@@ -44,24 +44,6 @@ def _to_jst(value):
     return dt.astimezone(JST)
 
 
-class Performance(BaseModel):
-    """A single show within a tour: one date at one venue.
-
-    Mirrors the-sorter's performance granularity (tourName + date + venue); a
-    multi-day, multi-city tour is many performances under one Event.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    date: date
-    venue: str | None = None
-    venue_address: str | None = None
-    city: str | None = None  # leg label, e.g. "Kanagawa", "Saitama"
-    label: str | None = None  # e.g. "Day 1", "Night Session"
-    doors: str | None = None  # "16:00"
-    starts: str | None = None  # "17:00"
-
-
 class Round(BaseModel):
     """A single lottery / sale round for an event (e.g. 1次先行, 一般販売).
 
@@ -98,6 +80,50 @@ class Round(BaseModel):
         return self
 
 
+class Performance(BaseModel):
+    """A single show within a tour: one date at one venue, plus the lottery
+    ``rounds`` (application windows) for that show.
+
+    Mirrors the-sorter's performance granularity (tourName + date + venue); a
+    multi-day, multi-city tour is many performances under one Event. A round that
+    covers several shows (e.g. a whole leg) is repeated under each.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    date: date
+    venue: str | None = None
+    venue_address: str | None = None
+    city: str | None = None  # leg label, e.g. "Kanagawa", "Saitama"
+    label: str | None = None  # e.g. "Day 1", "Night Session"
+    doors: str | None = None  # "16:00"
+    starts: str | None = None  # "17:00"
+    rounds: list[Round] = []  # lottery/sale rounds for this specific show
+
+
+def nest_rounds(data: dict) -> dict:
+    """Distribute any top-level ``rounds`` into ``performances`` (mutates + returns).
+
+    A round attaches to performances whose ``city``/``label`` matches its ``leg``;
+    with no leg or no match it attaches to *every* performance (a tour-wide round,
+    represented in the nested model by repeating it under each show). No-op when
+    there are no top-level rounds. Accepts the legacy flat shape so old YAML and
+    adapter output keep working.
+    """
+    rounds = data.pop("rounds", None)
+    if not rounds:
+        return data
+    perfs = data.get("performances") or []
+    if not perfs:
+        raise ValueError("rounds present but no performances to attach them to")
+    for r in rounds:
+        leg = r.get("leg")
+        targets = [p for p in perfs if leg and leg in (p.get("city"), p.get("label"))] or perfs
+        for p in targets:
+            p.setdefault("rounds", []).append(dict(r))
+    return data
+
+
 class Event(BaseModel):
     """A trackable event and all of its lottery rounds."""
 
@@ -118,7 +144,19 @@ class Event(BaseModel):
     llfans_id: str | None = None  # ll-fans.jp tour id — stable cross-source join key
     image: str | None = None
     notes: str | None = None
-    rounds: list[Round] = []
+
+    @model_validator(mode="before")
+    @classmethod
+    def _accept_legacy_flat_rounds(cls, data):
+        """Nest a legacy top-level ``rounds:`` list into performances on load."""
+        if isinstance(data, dict) and data.get("rounds"):
+            nest_rounds(data)
+        return data
+
+    @property
+    def all_rounds(self) -> list[Round]:
+        """Every round across all performances (flattened — for diffing/counts)."""
+        return [r for p in self.performances for r in p.rounds]
 
     @property
     def event_dates(self) -> list[date]:
@@ -150,6 +188,17 @@ class Event(BaseModel):
         d = self.model_dump(mode="json", exclude_none=True)
         d["event_dates"] = [dt.isoformat() for dt in self.event_dates]
         d["venues"] = self.venues
+        # Deduped flat rounds (a leg-wide round repeated under each show collapses
+        # to one) — a convenience for the catalog; nested perf.rounds is canonical.
+        seen, flat = set(), []
+        for p in self.performances:
+            for r in p.rounds:
+                key = (r.name, r.leg, r.apply_deadline)
+                if key in seen:
+                    continue
+                seen.add(key)
+                flat.append(r.model_dump(mode="json", exclude_none=True))
+        d["rounds"] = flat
         return d
 
 

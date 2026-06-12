@@ -71,14 +71,22 @@ def _matches(sub: dict, event: dict) -> bool:
 
 
 def occurrences(events: list[dict]):
-    """Yield every dated round action across all events."""
+    """Yield every dated round action across all events. Rounds live under each
+    performance; a round repeated across shows (same name+leg+date) is yielded
+    once per event, so a leg-wide deadline doesn't fire duplicate reminders."""
     for ev in events:
-        for rnd in ev.get("rounds", []):
-            for dtype in DATE_LABELS:
-                iso = rnd.get(dtype)
-                if not iso:
-                    continue
-                yield ev, rnd, dtype, datetime.fromisoformat(iso)
+        seen = set()
+        for perf in ev.get("performances", []):
+            for rnd in perf.get("rounds", []):
+                for dtype in DATE_LABELS:
+                    iso = rnd.get(dtype)
+                    if not iso:
+                        continue
+                    key = (rnd.get("name"), rnd.get("leg"), dtype, iso)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    yield ev, rnd, dtype, datetime.fromisoformat(iso)
 
 
 def humanize(seconds: int) -> str:

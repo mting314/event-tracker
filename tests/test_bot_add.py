@@ -210,23 +210,29 @@ def test_merge_event_data_appends_only_new_deduped():
         "id": "2026-lq",
         "name": "Lust Queen",
         "name_en": "Lust Queen",
-        "performances": [{"date": "2026-09-05", "venue": "X"}],
-        "rounds": [{"name": "R1", "apply_deadline": "2026-06-01T23:59:00+09:00"}],
+        "performances": [
+            {
+                "date": "2026-09-05",
+                "venue": "X",
+                "rounds": [{"name": "R1", "apply_deadline": "2026-06-01T23:59:00+09:00"}],
+            }
+        ],
         "event_dates": ["2026-09-05"],  # derived keys must be dropped
         "venues": ["X"],
+        "rounds": [{"name": "R1", "apply_deadline": "2026-06-01T23:59:00+09:00"}],  # derived mirror
     }
     new = {
         "name": "Lust Queen",
-        "performances": [{"date": "2026-09-05", "venue": "X"}],  # duplicate perf
-        "rounds": [
+        "performances": [{"date": "2026-09-05", "venue": "X"}],  # duplicate show
+        "rounds": [  # flat -> nested into the show by merge
             {"name": "R1 (dup)", "apply_deadline": "2026-06-01T23:59:00"},  # same deadline -> dup
             {"name": "R2", "apply_deadline": "2026-07-01T23:59:00"},  # genuinely new
         ],
     }
     merged, n_r, n_p = bm.merge_event_data(existing, new)
     assert n_r == 1 and n_p == 0
-    assert len(merged["rounds"]) == 2
-    assert "event_dates" not in merged and "venues" not in merged
+    assert len(merged["performances"][0]["rounds"]) == 2  # R1 + R2 under the show
+    assert "event_dates" not in merged and "rounds" not in merged  # derived keys dropped
 
 
 def test_merge_dedupes_performances_despite_venue_and_label_drift():
@@ -553,15 +559,21 @@ async def test_deadlines_lists_future_dates_only(interaction):
         "name": "X Tour",
         "series": [],
         "official_url": "https://example.com/x-tour",
-        "rounds": [
-            {"name": "Past FC", "apply_deadline": "2020-01-01T23:59:00+09:00"},
+        "performances": [
             {
-                "name": "FC先行",
-                "leg": "Tokyo",
-                "apply_deadline": "2030-06-21T23:59:00+09:00",
-                "results_date": "2030-07-01T12:00:00+09:00",
-                "apply_url": "https://apply.example.com/fc",
-            },
+                "date": "2030-09-01",
+                "venue": "V",
+                "rounds": [
+                    {"name": "Past FC", "apply_deadline": "2020-01-01T23:59:00+09:00"},
+                    {
+                        "name": "FC先行",
+                        "leg": "Tokyo",
+                        "apply_deadline": "2030-06-21T23:59:00+09:00",
+                        "results_date": "2030-07-01T12:00:00+09:00",
+                        "apply_url": "https://apply.example.com/fc",
+                    },
+                ],
+            }
         ],
     }
     with patch.object(bm, "_events_cache", [ev]):
@@ -635,12 +647,17 @@ async def test_upcoming_embeds_apply_links(interaction):
         "id": "2026-x",
         "name": "X Tour",
         "series": [],
-        "rounds": [
+        "performances": [
             {
-                "name": "FC先行",
-                "apply_deadline": "2030-06-21T23:59:00+09:00",
-                "apply_url": "https://apply.example.com/fc",
-            },
+                "date": "2030-09-01",
+                "rounds": [
+                    {
+                        "name": "FC先行",
+                        "apply_deadline": "2030-06-21T23:59:00+09:00",
+                        "apply_url": "https://apply.example.com/fc",
+                    }
+                ],
+            }
         ],
     }
     subs = [{"kind": "event", "target": "2026-x"}]

@@ -27,6 +27,7 @@ import requests
 from discord import app_commands
 from discord.ext import tasks
 
+from schema.models import nest_rounds
 from scrape.ingest import ingest_url
 from scrape.util import slugify, to_event_yaml
 
@@ -212,7 +213,15 @@ def build_event_embed(data: dict, slug: str, src: str) -> discord.Embed:
         emb.add_field(
             name=f"Performances ({len(perfs)})", value="\n".join(lines)[:1024], inline=False
         )
-    rounds = data.get("rounds", [])
+    # rounds live under performances (with an event-wide top-level list as fallback);
+    # flatten + dedupe for the review embed.
+    rounds, seen = [], set()
+    for r in data.get("rounds", []) + [r for p in perfs for r in p.get("rounds", [])]:
+        key = (r.get("name"), r.get("leg"), str(r.get("apply_deadline")))
+        if key in seen:
+            continue
+        seen.add(key)
+        rounds.append(r)
     if rounds:
         lines = [
             f"`{_fmt_dt(r.get('apply_deadline'))}` {(r.get('leg') + ': ' if r.get('leg') else '')}"
@@ -275,21 +284,34 @@ def _perf_same(a: dict, b: dict) -> bool:
     return _loose_eq(a.get("label"), b.get("label"))
 
 
-def _merge_perfs(existing: list, new: list) -> tuple[list, int]:
-    """Append only genuinely new performances; for a same-show match keep the
-    existing (richer) record and fill any fields it's missing. Returns (list, n_added)."""
+def _merge_perfs(existing: list, new: list) -> tuple[list, int, int]:
+    """Merge performances (rounds nested under each). For a same-show match, keep the
+    richer record, fill missing fields, and merge its rounds (dedup by deadline);
+    otherwise append the new show. Returns (merged, n_new_perfs, n_new_rounds)."""
     merged = [dict(p) for p in existing]
-    added = 0
+    for p in merged:
+        p["rounds"] = [dict(r) for r in p.get("rounds", [])]
+    n_perfs = n_rounds = 0
     for np in new:
         i = next((i for i, ep in enumerate(merged) if _perf_same(ep, np)), None)
         if i is None:
-            merged.append(dict(np))
-            added += 1
-        else:
-            for k, v in np.items():
-                if v and not merged[i].get(k):
-                    merged[i][k] = v
-    return merged, added
+            mp = dict(np)
+            mp["rounds"] = [dict(r) for r in np.get("rounds", [])]
+            merged.append(mp)
+            n_perfs += 1
+            n_rounds += len(mp["rounds"])
+            continue
+        ep = merged[i]
+        for k, v in np.items():
+            if k != "rounds" and v and not ep.get(k):
+                ep[k] = v
+        have = {_round_key(r) for r in ep.get("rounds", [])}
+        for r in np.get("rounds", []):
+            if _round_key(r) not in have:
+                ep.setdefault("rounds", []).append(dict(r))
+                have.add(_round_key(r))
+                n_rounds += 1
+    return merged, n_perfs, n_rounds
 
 
 def _perf_dates(ev: dict) -> set[str]:
@@ -348,23 +370,22 @@ def find_matching_event(data: dict, slug: str, events: list[dict]) -> dict | Non
 
 
 def merge_event_data(existing: dict, new: dict) -> tuple[dict, int, int]:
-    """Append new rounds/performances from `new` into a copy of `existing`, deduped.
+    """Fold `new` into a copy of `existing` with rounds nested under performances.
     Existing fields are preserved (the new post is usually sparse); only empty
     top-level scalars are filled in. Returns (merged, n_new_rounds, n_new_perfs)."""
-    merged = {k: v for k, v in existing.items() if k not in ("event_dates", "venues")}
-    have_r = {_round_key(r) for r in merged.get("rounds", [])}
-    new_rounds = [r for r in new.get("rounds", []) if _round_key(r) not in have_r]
-    if new_rounds:
-        merged["rounds"] = list(merged.get("rounds", [])) + new_rounds
-    n_p = 0
+    # Drop derived keys (event_dates/venues and the flat `rounds` mirror); the
+    # canonical rounds live under performances.
+    merged = {k: v for k, v in existing.items() if k not in ("event_dates", "venues", "rounds")}
+    new = nest_rounds(dict(new))  # normalize incoming flat rounds -> nested
+    n_p = n_r = 0
     if new.get("performances"):
-        merged["performances"], n_p = _merge_perfs(
+        merged["performances"], n_p, n_r = _merge_perfs(
             merged.get("performances", []), new["performances"]
         )
     for f in ("name_en", "artist", "kind", "official_url", "eventernote_url", "llfans_id"):
         if not merged.get(f) and new.get(f):
             merged[f] = new[f]
-    return merged, len(new_rounds), n_p
+    return merged, n_r, n_p
 
 
 def _validate_draft(slug: str, yaml_text: str) -> dict:

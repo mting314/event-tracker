@@ -86,8 +86,8 @@ def test_extract_event_roundtrips_through_schema():
     raw["id"] = "2026-test-llm"
     ev = Event.model_validate(raw)  # LLM draft is valid in our schema
     assert ev.artist == "TestBand" and ev.source_url.endswith("/1")
-    assert ev.rounds[0].apply_deadline.isoformat() == "2026-06-21T23:59:00+09:00"
-    assert ev.rounds[0].notes and "src:" in ev.rounds[0].notes
+    assert ev.all_rounds[0].apply_deadline.isoformat() == "2026-06-21T23:59:00+09:00"
+    assert ev.all_rounds[0].notes and "src:" in ev.all_rounds[0].notes
 
 
 def test_page_text_strips_chrome():

@@ -14,6 +14,27 @@ performances:
     venue_address: 大分県大分市高砂町2番33号 iichiko総合文化センター
     doors: "13:00"
     starts: "14:00"
+    rounds:
+      - name: アプリ内先行
+        type: presale
+        apply_open: 2026-05-30T12:00:00+09:00
+        apply_deadline: 2026-06-02T23:59:00+09:00
+        notes: "src: アプリ内先行 2026年 5月30日 (土) 12:00 〜 6月2日 (火) 23:59"
+      - name: オフィシャル抽選先行
+        type: lottery
+        apply_open: 2026-06-18T12:00:00+09:00
+        apply_deadline: 2026-06-23T23:59:00+09:00
+        notes: "src: オフィシャル抽選先行 2026年 6月18日 (木) 12:00 〜 6月23日 (火) 23:59"
+      - name: プレイガイド先行
+        type: presale
+        apply_open: 2026-07-08T12:00:00+09:00
+        apply_deadline: 2026-07-14T23:59:00+09:00
+        notes: "src: プレイガイド先行 2026年 7月8日 (水) 12:00 〜 7月14日 (火) 23:59"
+      - name: 一般販売
+        type: general
+        apply_open: 2026-08-01T10:00:00+09:00
+        apply_deadline: 2026-09-04T23:59:00+09:00
+        notes: "src: 一般販売 2026年 8月1日 (土) 10:00 〜 締め切りについては、各公演前日23:59まで。"
   - date: 2026-09-05
     city: 大分
     label: 夜公演
@@ -21,44 +42,25 @@ performances:
     venue_address: 大分県大分市高砂町2番33号 iichiko総合文化センター
     doors: "17:30"
     starts: "18:30"
+    rounds:
+      - name: アプリ内先行
+        type: presale
+        apply_open: 2026-05-30T12:00:00+09:00
+        apply_deadline: 2026-06-02T23:59:00+09:00
+        notes: "src: アプリ内先行 2026年 5月30日 (土) 12:00 〜 6月2日 (火) 23:59"
+      - name: オフィシャル抽選先行
+        type: lottery
+        apply_open: 2026-06-18T12:00:00+09:00
+        apply_deadline: 2026-06-23T23:59:00+09:00
+        notes: "src: オフィシャル抽選先行 2026年 6月18日 (木) 12:00 〜 6月23日 (火) 23:59"
+      - name: プレイガイド先行
+        type: presale
+        apply_open: 2026-07-08T12:00:00+09:00
+        apply_deadline: 2026-07-14T23:59:00+09:00
+        notes: "src: プレイガイド先行 2026年 7月8日 (水) 12:00 〜 7月14日 (火) 23:59"
+      - name: 一般販売
+        type: general
+        apply_open: 2026-08-01T10:00:00+09:00
+        apply_deadline: 2026-09-04T23:59:00+09:00
+        notes: "src: 一般販売 2026年 8月1日 (土) 10:00 〜 締め切りについては、各公演前日23:59まで。"
 source_url: https://pjsekai.sega.jp/unitfanmeeting/unit05/index.html
-rounds:
-  - name: アプリ内先行
-    type: presale
-    apply_open: 2026-05-30T12:00:00
-    apply_deadline: 2026-06-02T23:59:00
-    notes: "src: アプリ内先行
-2026年
-5月30日
-(土) 12:00 〜
-6月2日
-(火) 23:59"
-  - name: オフィシャル抽選先行
-    type: lottery
-    apply_open: 2026-06-18T12:00:00
-    apply_deadline: 2026-06-23T23:59:00
-    notes: "src: オフィシャル抽選先行
-2026年
-6月18日
-(木) 12:00 〜
-6月23日
-(火) 23:59"
-  - name: プレイガイド先行
-    type: presale
-    apply_open: 2026-07-08T12:00:00
-    apply_deadline: 2026-07-14T23:59:00
-    notes: "src: プレイガイド先行
-2026年
-7月8日
-(水) 12:00 〜
-7月14日
-(火) 23:59"
-  - name: 一般販売
-    type: general
-    apply_open: 2026-08-01T10:00:00
-    apply_deadline: 2026-09-04T23:59:00
-    notes: "src: 一般販売
-2026年
-8月1日
-(土) 10:00 〜
-締め切りについては、各公演前日23:59まで。"

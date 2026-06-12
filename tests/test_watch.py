@@ -61,12 +61,13 @@ def test_event_watch_url_prefers_official_then_source():
 def test_event_is_past():
     today = date(2026, 6, 11)
     assert watch.event_is_past(_ev(performances=[{"date": "2030-09-01"}]), today) is False
-    assert (
-        watch.event_is_past(
-            _ev(rounds=[{"name": "r", "apply_deadline": "2030-01-01T00:00"}]), today
-        )
-        is False
+    # past show, but a future round under it -> still watchable
+    future_round = _ev(
+        performances=[
+            {"date": "2020-01-01", "rounds": [{"name": "r", "apply_deadline": "2030-01-01T00:00"}]}
+        ]
     )
+    assert watch.event_is_past(future_round, today) is False
     past = _ev(
         performances=[{"date": "2020-01-01"}],
         rounds=[{"name": "r", "apply_deadline": "2020-01-01T00:00"}],

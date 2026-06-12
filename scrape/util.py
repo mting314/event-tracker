@@ -10,6 +10,8 @@ import re
 from datetime import date, datetime
 from pathlib import Path
 
+from schema.models import nest_rounds
+
 ROOT = Path(__file__).resolve().parent.parent
 EVENTS_DIR = ROOT / "events"
 
@@ -128,12 +130,31 @@ def _iso(v):
     return v.isoformat() if hasattr(v, "isoformat") else v
 
 
+def _round_yaml_lines(r: dict, indent: str) -> list[str]:
+    """YAML lines for one round, list-item indented by `indent` (e.g. '    ')."""
+    out = [f"{indent}- name: {_yaml_str(r.get('name') or 'TODO')}"]
+    pad = indent + "  "
+    for f in ("type", "leg"):
+        if r.get(f):
+            out.append(f"{pad}{f}: {_yaml_str(r[f])}")
+    for f in ("apply_open", "apply_deadline", "results_date", "payment_deadline"):
+        if r.get(f):
+            out.append(f"{pad}{f}: {_iso(r[f])}")
+    if r.get("apply_url"):
+        out.append(f"{pad}apply_url: {r['apply_url']}")
+    if r.get("notes"):
+        out.append(f"{pad}notes: {_yaml_str(r['notes'])}")
+    return out
+
+
 def to_event_yaml(data: dict) -> str:
     """Serialise an ingested event dict to YAML in the current schema.
 
-    Tolerant of partial data from any adapter: accepts `performances` (list of
-    dicts) or legacy `event_dates`, and rounds with datetimes or ISO strings.
+    Rounds are nested under their performance. Accepts either the nested shape
+    (performances[].rounds) or the legacy flat shape (top-level rounds), which is
+    distributed into performances first. Tolerant of datetimes or ISO strings.
     """
+    data = nest_rounds(dict(data))  # legacy flat -> nested; don't mutate caller
     L = []
     L.append(f"name: {_yaml_str(data.get('name') or 'TODO event name')}")
     for f in ("name_en", "artist", "kind"):
@@ -162,6 +183,10 @@ def to_event_yaml(data: dict) -> str:
             for f in ("doors", "starts"):
                 if p.get(f):
                     L.append(f'    {f}: "{p[f]}"')
+            if p.get("rounds"):
+                L.append("    rounds:")
+                for r in p["rounds"]:
+                    L += _round_yaml_lines(r, "      ")
 
     for f in ("eventernote_url", "official_url", "source_url"):
         if data.get(f):
@@ -170,23 +195,6 @@ def to_event_yaml(data: dict) -> str:
         L.append(f"llfans_id: {_yaml_str(str(data['llfans_id']))}")
     if data.get("notes"):
         L.append(f"notes: {_yaml_str(data['notes'])}")
-
-    L.append("rounds:")
-    if data.get("rounds"):
-        for r in data["rounds"]:
-            L.append(f"  - name: {_yaml_str(r.get('name') or 'TODO')}")
-            for f in ("type", "leg"):
-                if r.get(f):
-                    L.append(f"    {f}: {_yaml_str(r[f])}")
-            for f in ("apply_open", "apply_deadline", "results_date", "payment_deadline"):
-                if r.get(f):
-                    L.append(f"    {f}: {_iso(r[f])}")
-            if r.get("apply_url"):
-                L.append(f"    apply_url: {r['apply_url']}")
-            if r.get("notes"):
-                L.append(f"    notes: {_yaml_str(r['notes'])}")
-    else:
-        L.append("  # TODO no rounds parsed — add application windows manually")
     return "\n".join(L) + "\n"
 
 
