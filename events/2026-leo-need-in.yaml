@@ -1,0 +1,104 @@
+name: プロセカユニットファンミーティング Leo/need in 東京
+kind: concert
+categories:
+  - fan meeting
+performers:
+  - 野口 瑠璃子
+  - 礒部 花凜
+  - 中島 由貴
+performances:
+  - date: 2026-08-08
+    city: 東京
+    label: 昼公演
+    venue: LINE CUBE SHIBUYA（渋谷公会堂）
+    venue_address: 〒150-0042 東京都渋谷区宇田川町1-1
+    doors: "13:00"
+    starts: "14:00"
+    rounds:
+      - name: アプリ内先行
+        type: lottery
+        apply_open: 2026-05-01T12:00:00
+        apply_deadline: 2026-05-04T23:59:00
+        notes: "src: アプリ内先行
+2026年
+5月1日
+(金) 12:00 〜
+5月4日
+(月) 23:59"
+      - name: オフィシャル抽選先行
+        type: lottery
+        apply_open: 2026-05-21T12:00:00
+        apply_deadline: 2026-05-26T23:59:00
+        notes: "src: オフィシャル抽選先行
+2026年
+5月21日
+(木) 12:00 〜
+5月26日
+(火) 23:59"
+      - name: プレイガイド先行
+        type: lottery
+        apply_open: 2026-06-10T12:00:00
+        apply_deadline: 2026-06-16T23:59:00
+        notes: "src: プレイガイド先行
+2026年
+6月10日
+(水) 12:00 〜
+6月16日
+(火) 23:59"
+      - name: 一般販売
+        type: general
+        apply_open: 2026-07-04T10:00:00
+        apply_deadline: 2026-08-07T23:59:00
+        notes: "src: 一般販売
+2026年
+7月4日
+(土) 10:00 〜
+締め切りについては、各公演前日23:59まで。"
+  - date: 2026-08-08
+    city: 東京
+    label: 夜公演
+    venue: LINE CUBE SHIBUYA（渋谷公会堂）
+    venue_address: 〒150-0042 東京都渋谷区宇田川町1-1
+    doors: "17:30"
+    starts: "18:30"
+    rounds:
+      - name: アプリ内先行
+        type: lottery
+        apply_open: 2026-05-01T12:00:00
+        apply_deadline: 2026-05-04T23:59:00
+        notes: "src: アプリ内先行
+2026年
+5月1日
+(金) 12:00 〜
+5月4日
+(月) 23:59"
+      - name: オフィシャル抽選先行
+        type: lottery
+        apply_open: 2026-05-21T12:00:00
+        apply_deadline: 2026-05-26T23:59:00
+        notes: "src: オフィシャル抽選先行
+2026年
+5月21日
+(木) 12:00 〜
+5月26日
+(火) 23:59"
+      - name: プレイガイド先行
+        type: lottery
+        apply_open: 2026-06-10T12:00:00
+        apply_deadline: 2026-06-16T23:59:00
+        notes: "src: プレイガイド先行
+2026年
+6月10日
+(水) 12:00 〜
+6月16日
+(火) 23:59"
+      - name: 一般販売
+        type: general
+        apply_open: 2026-07-04T10:00:00
+        apply_deadline: 2026-08-07T23:59:00
+        notes: "src: 一般販売
+2026年
+7月4日
+(土) 10:00 〜
+締め切りについては、各公演前日23:59まで。"
+source_url: https://pjsekai.sega.jp/unitfanmeeting/unit01/index.html
