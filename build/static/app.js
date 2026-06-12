@@ -106,6 +106,7 @@ function initGroups() {
       if (li.hidden) continue;
       visible++;
       const badge = d.querySelector('summary .next-badge');
+      const round = d.querySelector('summary .next-round');
       const cd = d.querySelector('summary .countdown');
       const when = d.querySelector('summary .next-when');
       const occEl = next && [...d.querySelectorAll('.occ')].find((o) => o.dataset.iso === next);
@@ -113,10 +114,12 @@ function initGroups() {
         const src = occEl.querySelector('.badge');
         badge.className = 'next-badge ' + src.className; // copies "badge <css>"
         badge.textContent = src.textContent;
+        if (round) round.textContent = occEl.dataset.round || ''; // which round it is
         cd.dataset.iso = next;
         when.setAttribute('datetime', next);
       } else {
         badge.className = 'next-badge'; badge.textContent = 'past';
+        if (round) round.textContent = '';
         delete cd.dataset.iso; cd.textContent = '';
         when.removeAttribute('datetime'); when.textContent = '';
       }
