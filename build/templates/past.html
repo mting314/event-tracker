@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Past events · LL Lottery Tracker{% endblock %}
+{% block content %}
+<h1>Past events</h1>
+<p class="hint">Archive of past Love Live! events from
+  <a href="https://ll-fans.jp" target="_blank" rel="noopener">LLFans</a> — reference only
+  (no lottery rounds). {{ past|length }} events.</p>
+<div class="filters">
+  <input type="search" id="q-past" placeholder="Search name or series…" autofocus>
+</div>
+
+<table class="catalog" id="past">
+  <thead>
+    <tr><th>Event</th><th>Series</th><th>Dates</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for e in past %}
+    <tr class="evrow"
+        data-haystack="{{ (e.name ~ ' ' ~ (e.series|join(' ')))|lower }}">
+      <td>{{ e.name }}</td>
+      <td>{% for s in e.series %}<span class="tag">{{ s }}</span>{% endfor %}</td>
+      <td class="nowrap">{{ e.starts }}{% if e.ends and e.ends != e.starts %} – {{ e.ends }}{% endif %}</td>
+      <td class="nowrap">
+        {% if e.official_url %}<a href="{{ e.official_url }}" target="_blank" rel="noopener">official ↗</a>{% endif %}
+        <a href="{{ e.llfans_url }}" target="_blank" rel="noopener">LLFans ↗</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p class="empty" id="past-empty" hidden>No matching events.</p>
+{% endblock %}
+{% block scripts %}<script>initPast();</script>{% endblock %}

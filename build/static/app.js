@@ -168,6 +168,25 @@ function initCatalog() {
   apply();
 }
 
+/* --- past archive: name/series search --- */
+function initPast() {
+  const q = document.getElementById('q-past');
+  const empty = document.getElementById('past-empty');
+  const rows = [...document.querySelectorAll('#past .evrow')];
+  const apply = () => {
+    const term = q.value.trim().toLowerCase();
+    let visible = 0;
+    rows.forEach((tr) => {
+      const show = !term || tr.dataset.haystack.includes(term);
+      tr.hidden = !show;
+      if (show) visible++;
+    });
+    if (empty) empty.hidden = visible > 0;
+  };
+  q.addEventListener('input', apply);
+  apply();
+}
+
 /* --- event detail (countdowns on each date cell + .ics) --- */
 function initEventDetail() {
   document.querySelectorAll('.countdown-cell').forEach((el) => {
@@ -184,6 +203,14 @@ function initEventDetail() {
       e.preventDefault();
       downloadICS(a.dataset.title, a.dataset.iso);
     });
+  });
+  // Fade + strike a round whose every date is in the past (fully over).
+  const now = new Date();
+  document.querySelectorAll('table.rounds tr').forEach((tr) => {
+    const cells = [...tr.querySelectorAll('.countdown-cell')];
+    if (cells.length && cells.every((el) => new Date(el.getAttribute('datetime')) < now)) {
+      tr.classList.add('round-passed');
+    }
   });
 }
 

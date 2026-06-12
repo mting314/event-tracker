@@ -83,6 +83,11 @@ official-page matches line up exactly regardless of name drift.
 upcoming LL tour on LLFans, flags which we already track (by `llfans_id` or name),
 and prints an `/add` URL for each new one, so nothing slips through.
 
+**Past archive:** `python -m scrape.backfill` pulls all *past* LL tours from LLFans
+into `data/past_events.json` (name, dates, series, links — no rounds). The site
+renders them as a separate, searchable **Past** tab that links out to LLFans /
+official. It's archive-only: the bot and `events/` are untouched.
+
 **Dispatch policy:** domain-tuned adapters (ll-fans.jp, lovelive-anime.jp,
 eventernote, x) run deterministically and only fall back to the LLM if they find
 nothing.

@@ -139,6 +139,42 @@ def test_discover_flags_tracked_vs_new():
     assert by_id["1000"] is False  # genuinely new
 
 
+def test_backfill_archive_keeps_only_past_newest_first():
+    from scrape import backfill
+
+    tours = [
+        {
+            "id": "1",
+            "name": "old",
+            "startsOn": "2020-01-01",
+            "endsOn": "2020-01-02",
+            "seriesIds": ["1"],
+            "url": "u1",
+        },
+        {
+            "id": "2",
+            "name": "future",
+            "startsOn": "2030-05-01",
+            "endsOn": "2030-05-02",
+            "seriesIds": [],
+            "url": None,
+        },
+        {
+            "id": "3",
+            "name": "recent past",
+            "startsOn": "2026-01-01",
+            "endsOn": "2026-02-01",
+            "seriesIds": [],
+            "url": "u3",
+        },
+    ]
+    with patch.object(llfans, "all_tours", return_value=tours):
+        rows = backfill.build_archive("2026-06-11")
+    assert [r["id"] for r in rows] == ["3", "1"]  # future dropped, newest-first
+    assert rows[1]["series"] == ["ラブライブ！"]
+    assert rows[0]["llfans_url"].endswith("/data/event/3")
+
+
 def test_ingest_routes_llfans_no_llm():
     # ll-fans is a trusted domain adapter -> deterministic, never LLM.
     with (
