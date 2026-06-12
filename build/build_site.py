@@ -20,6 +20,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from schema.models import JST, load_all_events
+from scrape.llfans import SERIES as LLFANS_SERIES
 
 ROOT = Path(__file__).resolve().parent.parent
 EVENTS_DIR = ROOT / "events"
@@ -144,12 +145,16 @@ def main() -> None:
     # The edit API URL (public Cloud Function) is baked into the add page so the
     # editor only ever enters the admin secret. Override via EDIT_API_URL.
     edit_api = os.environ.get("EDIT_API_URL", "https://ll-commit-g6hnlr7cca-uc.a.run.app")
+    # Series dropdown options for the add/edit form: known LL series + any already
+    # used in events/ (so curated tags stay suggestible), sorted.
+    series_options = sorted({s for e in events for s in e.series} | set(LLFANS_SERIES.values()))
     # `base` is the relative path back to dist root, so links work at any depth.
     common = {
         "date_types": DATE_TYPES,
         "event_count": len(events),
         "base": "",
         "edit_api": edit_api,
+        "series_options": series_options,
     }
 
     env.get_template("index.html").stream(groups=groups, **common).dump(

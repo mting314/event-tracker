@@ -19,7 +19,7 @@
     <label>Tour name (EN) <input name="name_en"></label>
     <label>Artist / organizer <input name="artist" placeholder="LustQueen (non-series acts)"></label>
     <label>Kind <input name="kind" list="kind-list" placeholder="concert"></label>
-    <label>Series (comma-sep) <input name="series" placeholder="Liella!"></label>
+    <label>Series (comma-sep) <input name="series" list="series-list" placeholder="Liella!"></label>
     <label>Categories (comma-sep) <input name="categories" placeholder="concert, tour"></label>
     <label>eventernote URL <input name="eventernote_url" type="url"></label>
     <label>Official URL <input name="official_url" type="url"></label>
@@ -28,6 +28,9 @@
   <datalist id="kind-list">
     <option value="concert"><option value="tour"><option value="release">
     <option value="meet-greet"><option value="goods"><option value="stream"><option value="festival">
+  </datalist>
+  <datalist id="series-list">
+    {% for s in series_options|default([]) %}<option value="{{ s }}">{% endfor %}
   </datalist>
   <label class="block">Performers (one per line)<textarea name="performers" rows="3"></textarea></label>
   <label class="block">Notes<textarea name="notes" rows="2"></textarea></label>
