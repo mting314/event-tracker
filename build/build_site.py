@@ -12,6 +12,7 @@ site's client JS) and fetched by the Discord bot. Run with::
 from __future__ import annotations
 
 import json
+import os
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -140,8 +141,16 @@ def main() -> None:
     env.filters["jst_date"] = jst_date
 
     groups = build_index_groups(events)
+    # The edit API URL (public Cloud Function) is baked into the add page so the
+    # editor only ever enters the admin secret. Override via EDIT_API_URL.
+    edit_api = os.environ.get("EDIT_API_URL", "https://ll-commit-g6hnlr7cca-uc.a.run.app")
     # `base` is the relative path back to dist root, so links work at any depth.
-    common = {"date_types": DATE_TYPES, "event_count": len(events), "base": ""}
+    common = {
+        "date_types": DATE_TYPES,
+        "event_count": len(events),
+        "base": "",
+        "edit_api": edit_api,
+    }
 
     env.get_template("index.html").stream(groups=groups, **common).dump(
         str(DIST_DIR / "index.html")

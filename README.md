@@ -100,9 +100,11 @@ locked) from existing data — so add and edit are the same quick flow, no PR.
 
 Saving goes through a small GCP **Cloud Function** (`functions/commit/`): the static
 site can't hold a write token, so the function holds the PAT server-side and is
-guarded by an admin secret; the browser sends `POST {slug, yaml}` + the secret. Set
-the **Edit API URL** + **Admin secret** once in the form's Config (stored in
-`localStorage`). Deploy/update the function with:
+guarded by an admin secret; the browser sends `POST {slug, yaml}` + the secret. The
+function URL is **baked into the build** (`EDIT_API_URL`, public — not a secret), so
+the only thing to enter is the **Admin secret**, once, in the form's Config (stored
+in `localStorage`); the Config block auto-hides after that. Deploy/update the
+function with:
 
 ```bash
 gcloud functions deploy ll-commit --gen2 --region us-central1 --runtime python312 \

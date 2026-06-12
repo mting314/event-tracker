@@ -368,12 +368,17 @@ function initAddForm(eventsUrl) {
   const form = document.getElementById('event-form');
   const out = document.getElementById('yaml-out');
   const errBox = document.getElementById('form-error');
-  const editApi = document.getElementById('edit-api');
+  // The edit API URL is baked into the build (public, not secret); only the admin
+  // secret is entered by the editor and stored once in the browser.
+  const cfg = document.getElementById('gh-config');
+  const EDIT_API = (cfg && cfg.dataset.editApi) || '';
   const editSecret = document.getElementById('edit-secret');
-  editApi.value = localStorage.getItem('editApi') || '';
   editSecret.value = localStorage.getItem('editSecret') || '';
-  editApi.addEventListener('change', () => localStorage.setItem('editApi', editApi.value.trim()));
-  editSecret.addEventListener('change', () => localStorage.setItem('editSecret', editSecret.value.trim()));
+  editSecret.addEventListener('change', () => {
+    localStorage.setItem('editSecret', editSecret.value.trim());
+  });
+  // Once a secret is stored, hide the whole Config block — it's a one-time setup.
+  if (cfg && editSecret.value) cfg.hidden = true;
 
   const perfTpl = document.getElementById('perf-tpl');
   const perfBox = document.getElementById('performances');
@@ -428,11 +433,11 @@ function initAddForm(eventsUrl) {
   document.getElementById('save').addEventListener('click', async () => {
     const r = build();
     if (!r) return;
-    const api = (editApi.value || '').trim();
+    const api = EDIT_API;
     const secret = (editSecret.value || '').trim();
     if (!api || !secret) {
       errBox.hidden = false; errBox.style.color = '';
-      errBox.textContent = '⚠ set Edit API URL + Admin secret in Config to Save directly';
+      errBox.textContent = '⚠ set the Admin secret in Config to Save directly';
       return;
     }
     const btn = document.getElementById('save');
@@ -459,10 +464,10 @@ function initAddForm(eventsUrl) {
   });
   document.getElementById('delete').addEventListener('click', async () => {
     const slug = (form.querySelector('[name="id"]').value || '').trim();
-    const api = (editApi.value || '').trim();
+    const api = EDIT_API;
     const secret = (editSecret.value || '').trim();
     if (!api || !secret) {
-      errBox.hidden = false; errBox.style.color = ''; errBox.textContent = '⚠ set Edit API URL + Admin secret in Config first';
+      errBox.hidden = false; errBox.style.color = ''; errBox.textContent = '⚠ set the Admin secret in Config first';
       return;
     }
     if (!window.confirm(`Delete events/${slug}.yaml? This removes the event from the site.`)) return;
