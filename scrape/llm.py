@@ -52,7 +52,9 @@ SYSTEM = (
     "attach each to its day. Use the event-level 'rounds' ONLY for a round you truly "
     "cannot tie to specific shows.\n"
     "- For each round, set source_quote to the exact source line(s) the dates came "
-    "from, so a human can verify."
+    "from, so a human can verify.\n"
+    "- OMIT any round you cannot assign at least one date to (apply_open / "
+    "apply_deadline / results_date / payment_deadline) — a dateless round is useless."
 )
 
 
@@ -114,11 +116,23 @@ def build_prompt(title: str, text: str, url: str | None) -> str:
     )
 
 
+_ROUND_DATE_FIELDS = ("apply_open", "apply_deadline", "results_date", "payment_deadline")
+
+
 def _fold_quote(r: dict) -> None:
     """Fold a round's source_quote into notes (in place), so it's verifiable in YAML."""
     q = r.pop("source_quote", None)
     if q:
         r["notes"] = (r.get("notes") + " | " if r.get("notes") else "") + f"src: {q}"
+
+
+def _clean_rounds(rounds: list[dict]) -> list[dict]:
+    """Drop rounds with no date (the schema requires one; a dateless round can't be
+    tracked) and fold each kept round's source_quote into notes."""
+    kept = [r for r in rounds if any(r.get(f) for f in _ROUND_DATE_FIELDS)]
+    for r in kept:
+        _fold_quote(r)
+    return kept
 
 
 def _to_event_dict(ev: ExtractedEvent, url: str | None) -> dict:
@@ -127,10 +141,9 @@ def _to_event_dict(ev: ExtractedEvent, url: str | None) -> dict:
     for p in data.get("performances", []):
         if p.get("date"):
             p["date"] = re.split(r"[T ]", str(p["date"]))[0]  # date-only
-        for r in p.get("rounds", []):
-            _fold_quote(r)
-    for r in data.get("rounds", []):  # event-wide rounds (nested into perfs downstream)
-        _fold_quote(r)
+        p["rounds"] = _clean_rounds(p.get("rounds", []))
+    if data.get("rounds"):  # event-wide rounds (nested into perfs downstream)
+        data["rounds"] = _clean_rounds(data["rounds"])
     data.setdefault("kind", "concert")
     data["source_url"] = url
     return data
@@ -182,7 +195,10 @@ def _usage_str(result) -> str:
     so probe both. Returns '' if usage isn't available."""
     try:
         u = result.usage
-        if callable(u):  # pre-v1 pydantic-ai exposed usage() as a method
+        # In current pydantic-ai `usage` is a property (the RunUsage object); pre-v1
+        # it was a method. Only call it if it isn't already the usage object, so we
+        # don't trip the "usage() is deprecated" warning.
+        if callable(u) and not hasattr(u, "input_tokens") and not hasattr(u, "request_tokens"):
             u = u()
     except Exception:  # noqa: BLE001 - usage is logging-only, never fail the call
         return ""

@@ -80,6 +80,25 @@ def test_to_event_dict_normalises():
     assert "source_quote" not in d["rounds"][0]
 
 
+def test_to_event_dict_drops_dateless_rounds():
+    ev = ExtractedEvent(
+        name="Anisama",
+        performances=[
+            ExtractedPerformance(
+                date="2026-07-10",
+                rounds=[
+                    ExtractedRound(name="先行抽選", apply_deadline="2026-06-20T23:59:00"),
+                    ExtractedRound(name="アニサマ×ぴあ先行抽選予約"),  # no dates -> dropped
+                ],
+            )
+        ],
+        rounds=[ExtractedRound(name="event-wide no date")],  # no dates -> dropped
+    )
+    d = _to_event_dict(ev, "https://w.pia.jp/t/anisama26/")
+    assert [r["name"] for r in d["performances"][0]["rounds"]] == ["先行抽選"]
+    assert d.get("rounds", []) == []  # dateless event-wide round dropped
+
+
 def test_extract_event_roundtrips_through_schema():
     data = extract_event("page text", "https://example.jp/1", "Title", agent=_Agent(SAMPLE))
     raw = yaml.safe_load(to_event_yaml(data))
