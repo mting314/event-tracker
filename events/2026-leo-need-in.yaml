@@ -1,5 +1,6 @@
 name: プロセカユニットファンミーティング Leo/need in 東京
-kind: concert
+name_en: Project Sekai Unit Fan Meeting Leo/need in Tokyo
+kind: fan-meeting
 categories:
   - fan meeting
 performers:
@@ -16,6 +17,7 @@ performances:
     starts: "14:00"
     rounds:
       - name: アプリ内先行
+        name_en: In-app presale
         type: lottery
         apply_open: 2026-05-01T12:00:00
         apply_deadline: 2026-05-04T23:59:00
@@ -26,6 +28,7 @@ performances:
 5月4日
 (月) 23:59"
       - name: オフィシャル抽選先行
+        name_en: Official lottery presale
         type: lottery
         apply_open: 2026-05-21T12:00:00
         apply_deadline: 2026-05-26T23:59:00
@@ -36,6 +39,7 @@ performances:
 5月26日
 (火) 23:59"
       - name: プレイガイド先行
+        name_en: Playguide presale
         type: lottery
         apply_open: 2026-06-10T12:00:00
         apply_deadline: 2026-06-16T23:59:00
@@ -46,6 +50,7 @@ performances:
 6月16日
 (火) 23:59"
       - name: 一般販売
+        name_en: General sale
         type: general
         apply_open: 2026-07-04T10:00:00
         apply_deadline: 2026-08-07T23:59:00
@@ -63,6 +68,7 @@ performances:
     starts: "18:30"
     rounds:
       - name: アプリ内先行
+        name_en: In-app presale
         type: lottery
         apply_open: 2026-05-01T12:00:00
         apply_deadline: 2026-05-04T23:59:00
@@ -73,6 +79,7 @@ performances:
 5月4日
 (月) 23:59"
       - name: オフィシャル抽選先行
+        name_en: Official lottery presale
         type: lottery
         apply_open: 2026-05-21T12:00:00
         apply_deadline: 2026-05-26T23:59:00
@@ -83,6 +90,7 @@ performances:
 5月26日
 (火) 23:59"
       - name: プレイガイド先行
+        name_en: Playguide presale
         type: lottery
         apply_open: 2026-06-10T12:00:00
         apply_deadline: 2026-06-16T23:59:00
@@ -93,6 +101,7 @@ performances:
 6月16日
 (火) 23:59"
       - name: 一般販売
+        name_en: General sale
         type: general
         apply_open: 2026-07-04T10:00:00
         apply_deadline: 2026-08-07T23:59:00

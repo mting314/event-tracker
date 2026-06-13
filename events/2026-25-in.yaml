@@ -1,5 +1,6 @@
 name: 25時、ナイトコードで。 in 大分
-kind: concert
+name_en: Nightcord at 25:00 in Oita
+kind: fan-meeting
 series:
   - プロセカユニットファンミーティング
 performers:
@@ -16,21 +17,25 @@ performances:
     starts: "14:00"
     rounds:
       - name: アプリ内先行
+        name_en: In-app presale
         type: presale
         apply_open: 2026-05-30T12:00:00+09:00
         apply_deadline: 2026-06-02T23:59:00+09:00
         notes: "src: アプリ内先行 2026年 5月30日 (土) 12:00 〜 6月2日 (火) 23:59"
       - name: オフィシャル抽選先行
+        name_en: Official lottery presale
         type: lottery
         apply_open: 2026-06-18T12:00:00+09:00
         apply_deadline: 2026-06-23T23:59:00+09:00
         notes: "src: オフィシャル抽選先行 2026年 6月18日 (木) 12:00 〜 6月23日 (火) 23:59"
       - name: プレイガイド先行
+        name_en: Playguide presale
         type: presale
         apply_open: 2026-07-08T12:00:00+09:00
         apply_deadline: 2026-07-14T23:59:00+09:00
         notes: "src: プレイガイド先行 2026年 7月8日 (水) 12:00 〜 7月14日 (火) 23:59"
       - name: 一般販売
+        name_en: General sale
         type: general
         apply_open: 2026-08-01T10:00:00+09:00
         apply_deadline: 2026-09-04T23:59:00+09:00
@@ -44,21 +49,25 @@ performances:
     starts: "18:30"
     rounds:
       - name: アプリ内先行
+        name_en: In-app presale
         type: presale
         apply_open: 2026-05-30T12:00:00+09:00
         apply_deadline: 2026-06-02T23:59:00+09:00
         notes: "src: アプリ内先行 2026年 5月30日 (土) 12:00 〜 6月2日 (火) 23:59"
       - name: オフィシャル抽選先行
+        name_en: Official lottery presale
         type: lottery
         apply_open: 2026-06-18T12:00:00+09:00
         apply_deadline: 2026-06-23T23:59:00+09:00
         notes: "src: オフィシャル抽選先行 2026年 6月18日 (木) 12:00 〜 6月23日 (火) 23:59"
       - name: プレイガイド先行
+        name_en: Playguide presale
         type: presale
         apply_open: 2026-07-08T12:00:00+09:00
         apply_deadline: 2026-07-14T23:59:00+09:00
         notes: "src: プレイガイド先行 2026年 7月8日 (水) 12:00 〜 7月14日 (火) 23:59"
       - name: 一般販売
+        name_en: General sale
         type: general
         apply_open: 2026-08-01T10:00:00+09:00
         apply_deadline: 2026-09-04T23:59:00+09:00

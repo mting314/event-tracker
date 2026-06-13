@@ -1,4 +1,5 @@
 name: LustQueen「The story resumes EXTRA」「pre. Stairway to Queen vol.5」
+name_en: 'LustQueen "The story resumes EXTRA" "pre. Stairway to Queen vol.5"'
 artist: LustQueen
 kind: concert
 performances:
@@ -17,10 +18,12 @@ performances:
 source_url: https://lustqueen.info/news/detail/81252
 rounds:
   - name: "「ゆいなかま」 & 「Apollo Bay Cruiser」 チケット先行受付期間 抽選"
+    name_en: '"Yuinakama" & "Apollo Bay Cruiser" ticket presale application period (lottery)'
     type: presale
     apply_open: 2026-06-05T12:00:00
     apply_deadline: 2026-06-21T23:59:00
   - name: FC先行申し込み
+    name_en: Fanclub presale application
     type: fanclub
     apply_open: 2026-05-09T19:30:00
     apply_deadline: 2026-05-25T23:59:00
