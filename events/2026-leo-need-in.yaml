@@ -1,6 +1,9 @@
 name: プロセカユニットファンミーティング Leo/need in 東京
 name_en: Project Sekai Unit Fan Meeting Leo/need in Tokyo
 kind: fan-meeting
+series:
+  - Project Sekai Unit Fan Meeting
+  - Leo/need
 categories:
   - fan meeting
 performers:

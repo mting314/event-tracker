@@ -160,6 +160,17 @@ tbody tr:hover { background: var(--panel); }
 .evgroup summary::-webkit-details-marker { display: none; }
 .evgroup summary::before { content: "▸"; color: var(--muted); }
 .evgroup[open] summary::before { content: "▾"; }
+/* Franchise "type" colour-coding (Love Live / Project Sekai / Other). */
+.franchise-lovelive { --fr: #5b9cff; }
+.franchise-project-sekai { --fr: #3ec98b; }
+.franchise-other { --fr: #8a8fa3; }
+.evgroups > li[class*="franchise-"] {
+  border-left: 4px solid var(--fr, transparent); border-radius: 4px;
+}
+.fr-dot {
+  display: inline-block; width: .6em; height: .6em; border-radius: 50%;
+  background: var(--fr, var(--muted)); margin-right: .35em; flex: none;
+}
 .section-head {
   margin: 1.75rem 0 .5rem; padding-top: .75rem; border-top: 1px solid #2c2f55;
   font-size: 1.05rem; color: var(--muted);

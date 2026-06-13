@@ -95,6 +95,7 @@ def build_index_groups(events) -> list[dict]:
                 "artist": ev.artist,
                 "series": ev.series,
                 "kind": ev.kind,
+                "franchise": ev.franchise,
                 "venues": ev.venues,
                 "performers": ev.performers,
                 # apply deadlines (ISO) — drives the index "has open round" filter

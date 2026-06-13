@@ -9,6 +9,7 @@
   <h1 class="i18n-field" data-ja="{{ event.name }}" data-en="{{ event.name_en or event.name }}">{{ event.name }}</h1>
   {% if event.name_en %}<p class="sub i18n-field" data-ja="{{ event.name_en }}" data-en="{{ event.name }}">{{ event.name_en }}</p>{% endif %}
 
+  <span class="fr-dot franchise-{{ event.franchise }}" title="{{ event.franchise }}"></span>
   {% if event.kind %}<span class="kind-badge">{{ event.kind }}</span>{% endif %}
 
   <div class="meta-grid">
