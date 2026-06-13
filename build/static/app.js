@@ -29,6 +29,7 @@ const I18N = {
     no_rounds: 'No lottery rounds recorded yet.',
     feed_empty: 'Nothing upcoming. 🎉',
     apply: 'Apply ↗',
+    past_badge: 'past',
     cat_title: 'Event catalog',
     cat_search: 'Search name, artist, series, venue, performer…',
     cat_all_kinds: 'All kinds',
@@ -54,6 +55,7 @@ const I18N = {
     no_rounds: '抽選回はまだ登録されていません。',
     feed_empty: '予定はありません。🎉',
     apply: '申込 ↗',
+    past_badge: '終了',
     cat_title: 'イベント一覧',
     cat_search: '名前・アーティスト・シリーズ・会場・出演者で検索…',
     cat_all_kinds: 'すべての種別',
@@ -212,7 +214,7 @@ function initGroups() {
         cd.dataset.iso = next;
         when.setAttribute('datetime', next);
       } else {
-        badge.className = 'next-badge'; badge.textContent = 'past';
+        badge.className = 'next-badge'; badge.textContent = t('past_badge');
         if (round) round.textContent = '';
         delete cd.dataset.iso; cd.textContent = '';
         when.removeAttribute('datetime'); when.textContent = '';
