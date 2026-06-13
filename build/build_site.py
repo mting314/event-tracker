@@ -156,6 +156,32 @@ def main() -> None:
     env.filters["series_ja"] = lambda s: SERIES.get(s, s)  # canonical EN -> JP display
 
     groups = build_index_groups(events)
+    # Lottery rounds with a deadline, for the index "Open now" section. Whether a
+    # round is *currently* open depends on view time, so the client filters by
+    # apply_open/apply_deadline; here we just emit the candidates (deduped — a
+    # leg-wide round repeated under each show collapses to one).
+    lotteries, _seen = [], set()
+    for ev in events:
+        for r in ev.all_rounds:
+            if not r.apply_deadline:
+                continue
+            key = (ev.id, r.name, r.apply_deadline.isoformat())
+            if key in _seen:
+                continue
+            _seen.add(key)
+            lotteries.append(
+                {
+                    "id": ev.id,
+                    "name": ev.name,
+                    "name_en": ev.name_en or ev.name,
+                    "franchise": ev.franchise,
+                    "round": r.name,
+                    "round_en": r.name_en or r.name,
+                    "apply_open": r.apply_open.isoformat() if r.apply_open else "",
+                    "apply_deadline": r.apply_deadline.isoformat(),
+                    "apply_url": r.apply_url or "",
+                }
+            )
     # The edit API URL (public Cloud Function) is baked into the add page so the
     # editor only ever enters the admin secret. Override via EDIT_API_URL.
     edit_api = os.environ.get("EDIT_API_URL", "https://ll-commit-g6hnlr7cca-uc.a.run.app")
@@ -175,7 +201,7 @@ def main() -> None:
         "kind_options": kind_options,
     }
 
-    env.get_template("index.html").stream(groups=groups, **common).dump(
+    env.get_template("index.html").stream(groups=groups, lotteries=lotteries, **common).dump(
         str(DIST_DIR / "index.html")
     )
     env.get_template("calendar.html").stream(**common).dump(str(DIST_DIR / "calendar.html"))
