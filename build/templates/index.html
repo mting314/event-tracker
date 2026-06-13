@@ -9,13 +9,15 @@
   <ul class="active-list">
     {% for l in lotteries %}
     <li class="franchise-{{ l.franchise }}" data-open="{{ l.apply_open }}" data-deadline="{{ l.apply_deadline }}" hidden>
-      <span class="fr-dot"></span>
-      <a class="active-event i18n-field" href="{{ base }}event/{{ l.id }}.html" data-ja="{{ l.name }}" data-en="{{ l.name_en }}">{{ l.name }}</a>
-      <span class="active-round i18n-field" data-ja="{{ l.round }}" data-en="{{ l.round_en }}">{{ l.round }}</span>
+      <span class="active-main">
+        <span class="fr-dot"></span>
+        <a class="active-event i18n-field" href="{{ base }}event/{{ l.id }}.html" data-ja="{{ l.name }}" data-en="{{ l.name_en }}">{{ l.name }}</a>
+        <span class="active-round i18n-field" data-ja="{{ l.round }}" data-en="{{ l.round_en }}">{{ l.round }}</span>
+      </span>
       <span class="active-when"><span data-i18n="active_closes">closes</span>
         <time class="dt" datetime="{{ l.apply_deadline }}">{{ l.apply_deadline|jst_fmt }}</time>
         <span class="countdown" data-iso="{{ l.apply_deadline }}"></span></span>
-      {% if l.apply_url %}<a class="apply" href="{{ l.apply_url }}" target="_blank" rel="noopener" data-i18n="apply">Apply ↗</a>{% endif %}
+      {% if l.apply_url %}<a class="apply" href="{{ l.apply_url }}" target="_blank" rel="noopener" data-i18n="apply">Apply ↗</a>{% else %}<span></span>{% endif %}
     </li>
     {% endfor %}
   </ul>
