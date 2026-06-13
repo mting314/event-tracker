@@ -38,7 +38,7 @@
       <tbody>
         {% for r in p.rounds %}
         <tr>
-          <td><strong>{{ r.name }}</strong>{% if r.type %}<div class="sub">{{ r.type }}</div>{% endif %}{% if r.leg %} <span class="tag">{{ r.leg }}</span>{% endif %}</td>
+          <td><strong>{{ r.name }}</strong>{% if r.name_en %}<div class="sub">{{ r.name_en }}</div>{% endif %}{% if r.type %}<div class="sub">{{ r.type }}</div>{% endif %}{% if r.leg %} <span class="tag">{{ r.leg }}</span>{% endif %}</td>
           {% for f, meta in date_types.items() %}
           {% set dt = r[f] %}
           <td>{% if dt %}<time class="dt countdown-cell" datetime="{{ dt.isoformat() }}">{{ dt.isoformat()|jst_fmt }}</time>{% else %}<span class="muted">—</span>{% endif %}</td>
