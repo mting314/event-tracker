@@ -24,7 +24,6 @@ const I18N = {
     tz_local: 'Show local time',
     idx_title: 'Upcoming',
     idx_hint: 'One row per event, showing its next deadline. Click to expand rounds & shows.',
-    show_past: 'show past / no upcoming',
     open_event: 'open event page →',
     no_rounds: 'No lottery rounds recorded yet.',
     feed_empty: 'Nothing upcoming. 🎉',
@@ -77,7 +76,6 @@ const I18N = {
     tz_local: '現地時間で表示',
     idx_title: '開催予定',
     idx_hint: 'イベントごとに次の締切を表示。クリックで申込回・公演を展開。',
-    show_past: '過去・予定なしも表示',
     open_event: 'イベントページを開く →',
     no_rounds: '抽選回はまだ登録されていません。',
     feed_empty: '予定はありません。🎉',
@@ -216,7 +214,6 @@ function paintCountdowns() {
 
 /* --- upcoming: one collapsible row per event, summarised by its next deadline --- */
 function initGroups() {
-  const showPast = document.getElementById('show-past');
   const empty = document.getElementById('feed-empty');
   const container = document.getElementById('groups');
   const pastHead = document.getElementById('past-head');
@@ -241,7 +238,6 @@ function initGroups() {
 
   const refresh = () => {
     const now = new Date();
-    const showPastChecked = showPast.checked;
     const term = (q?.value || '').trim().toLowerCase();
     const kindVal = kindSel?.value || '';
     const openChk = !!openOnly?.checked;
@@ -250,30 +246,32 @@ function initGroups() {
     const rows = groups.map((d) => {
       // Per performance+round, keep only the next upcoming date (so a round isn't
       // repeated once per Opens/Deadline/Results/Payment, but a leg-wide round
-      // still shows under each of its shows). showPast reveals all rows.
+      // still shows under each of its shows).
       const byKey = {};
       for (const o of d.querySelectorAll('.occ')) {
         const k = (o.dataset.perf || '') + '|' + o.dataset.round;
         (byKey[k] ||= []).push(o);
       }
       let next = null;
+      const chosenByKey = {};
       for (const key in byKey) {
-        const occs = byKey[key];
-        const future = occs
+        const future = byKey[key]
           .filter((o) => new Date(o.dataset.iso) > now)
           .sort((a, b) => a.dataset.iso.localeCompare(b.dataset.iso));
         const chosen = future[0] || null;
-        occs.forEach((o) => {
-          o.hidden = showPastChecked ? false : o !== chosen;
-        });
+        chosenByKey[key] = chosen;
         if (chosen && (!next || chosen.dataset.iso < next)) next = chosen.dataset.iso;
       }
-      // Collapse a performance whose deadlines are all past (keep ones with no
-      // rounds, and reveal everything under show-past).
+      // A fully-past event (no upcoming deadline) reveals all its past occurrences
+      // when expanded; an upcoming event collapses each round to its next date.
+      const revealAll = !next;
+      for (const key in byKey) {
+        byKey[key].forEach((o) => { o.hidden = revealAll ? false : o !== chosenByKey[key]; });
+      }
       d.querySelectorAll('.perf-block').forEach((pb) => {
         const occ = [...pb.querySelectorAll('.occ')];
         if (!occ.length) return;
-        pb.hidden = showPastChecked ? false : !occ.some((o) => !o.hidden);
+        pb.hidden = revealAll ? false : !occ.some((o) => !o.hidden);
       });
       return { d, next };
     });
@@ -284,10 +282,9 @@ function initGroups() {
       const matchKind = !kindVal || li.dataset.kind === kindVal;
       const matchOpen = !openChk
         || (li.dataset.deadlines || '').split(',').some((dl) => dl && new Date(dl) > now);
-      const passes = matchText && matchKind && matchOpen;
-      // A search/filter reveals every match regardless of upcoming/past; otherwise
-      // show upcoming (or everything when "show past" is on).
-      li.hidden = !(passes && (filtering || next || showPastChecked));
+      // Past events are always shown (in their own section below), so visibility
+      // is just whether the row matches the active filters.
+      li.hidden = !(matchText && matchKind && matchOpen);
       if (li.hidden) continue;
       visible++;
       const badge = d.querySelector('summary .next-badge');
@@ -331,11 +328,13 @@ function initGroups() {
     }
   };
 
-  showPast.addEventListener('change', refresh);
   q?.addEventListener('input', refresh);
   kindSel?.addEventListener('change', refresh);
   openOnly?.addEventListener('change', refresh);
   window.addEventListener('langchange', refresh); // re-pick next-round label + empty text
+  // On back-navigation the browser restores the filter inputs' values but fires
+  // no input/change event, so re-apply filters once form state is restored.
+  window.addEventListener('pageshow', refresh);
   refresh();
   setInterval(paintCountdowns, 60000);
 }
