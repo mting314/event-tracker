@@ -198,6 +198,18 @@ class Event(BaseModel):
             raise ValueError(f"id {v!r} must be a slug: lowercase letters, digits and hyphens")
         return v
 
+    @field_validator("kind", mode="before")
+    @classmethod
+    def _normalise_kind(cls, v):
+        """Lowercase + constrain to the controlled vocab (KINDS); unknown -> 'other'.
+        Empty/blank becomes None (no kind). Keeps Event.kind always in KINDS|{None}."""
+        if v is None:
+            return None
+        v = str(v).strip().lower()
+        if not v:
+            return None
+        return v if v in KINDS else "other"
+
     def public_dict(self) -> dict:
         """JSON-serialisable dict for ``events.json`` (datetimes -> ISO +09:00).
 

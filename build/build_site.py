@@ -148,11 +148,9 @@ def main() -> None:
     # Series dropdown options for the add/edit form: known LL series + any already
     # used in events/ (so curated tags stay suggestible), sorted.
     series_options = sorted({s for e in events for s in e.series} | set(LLFANS_SERIES.values()))
-    # Kind dropdown options: the controlled vocabulary (schema.KINDS), plus any other
-    # kind already used in events/ (appended, so legacy/custom kinds remain selectable).
-    kind_options = list(KINDS) + sorted(
-        {e.kind for e in events if e.kind} - set(KINDS)
-    )
+    # Kind dropdown options: the controlled vocabulary (schema.KINDS). The Event.kind
+    # validator coerces any unknown kind to 'other', so KINDS is exhaustive here.
+    kind_options = list(KINDS)
     # `base` is the relative path back to dist root, so links work at any depth.
     common = {
         "date_types": DATE_TYPES,

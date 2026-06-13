@@ -151,9 +151,8 @@ def _to_event_dict(ev: ExtractedEvent, url: str | None) -> dict:
         p["rounds"] = _clean_rounds(p.get("rounds", []))
     if data.get("rounds"):  # event-wide rounds (nested into perfs downstream)
         data["rounds"] = _clean_rounds(data["rounds"])
-    if data.get("kind"):  # normalise to the controlled vocab's casing
-        data["kind"] = str(data["kind"]).strip().lower()
-    data.setdefault("kind", "concert")
+    # Normalise to the controlled vocab's casing; default when missing/blank.
+    data["kind"] = (str(data.get("kind") or "").strip().lower()) or "concert"
     data["source_url"] = url
     return data
 
