@@ -18,17 +18,16 @@
     <label>Slug / id <input name="id" placeholder="2026-liella-7th" required></label>
     <label>Tour name (EN) <input name="name_en"></label>
     <label>Artist / organizer <input name="artist" placeholder="LustQueen (non-series acts)"></label>
-    <label>Kind <input name="kind" list="kind-list" placeholder="concert"></label>
+    <label>Kind <select name="kind">
+      <option value="">(unset)</option>
+      {% for k in kind_options|default([]) %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
+    </select></label>
     <label>Series (comma-sep) <input name="series" list="series-list" placeholder="Liella!"></label>
     <label>Categories (comma-sep) <input name="categories" placeholder="concert, tour"></label>
     <label>eventernote URL <input name="eventernote_url" type="url"></label>
     <label>Official URL <input name="official_url" type="url"></label>
     <label>Source URL <input name="source_url" type="url" placeholder="where this was ingested from"></label>
   </div>
-  <datalist id="kind-list">
-    <option value="concert"><option value="tour"><option value="release">
-    <option value="meet-greet"><option value="goods"><option value="stream"><option value="festival">
-  </datalist>
   <datalist id="series-list">
     {% for s in series_options|default([]) %}<option value="{{ s }}">{% endfor %}
   </datalist>
@@ -73,7 +72,8 @@
 <template id="round-tpl">
   <fieldset class="round">
     <div class="grid2">
-      <label>Round name <input name="r_name" placeholder="Official Advance Lottery" required></label>
+      <label>Round name <input name="r_name" placeholder="1次先行抽選" required></label>
+      <label>Round name (EN) <input name="r_name_en" placeholder="1st-round advance lottery"></label>
       <label>Type <input name="r_type" placeholder="presale / general / fanclub"></label>
       <label>Leg <input name="r_leg" placeholder="Kanagawa (blank = whole tour)"></label>
       <label>Apply opens (JST) <input name="r_apply_open" type="datetime-local"></label>

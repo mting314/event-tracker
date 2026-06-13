@@ -20,6 +20,7 @@ performances:
     starts: "16:30"
     rounds:
       - name: ラブライブ！先行
+        name_en: Love Live! presale
         type: presale
         leg: μ's
         apply_open: 2026-05-08T12:00:00+09:00
@@ -27,6 +28,7 @@ performances:
         results_date: 2026-06-20T13:00:00+09:00
         payment_deadline: 2026-06-23T21:00:00+09:00
       - name: "ラブライブ！サンシャイン!!先行"
+        name_en: Love Live! Sunshine!! presale
         type: presale
         leg: Aqours
         apply_open: 2026-05-08T12:00:00+09:00
@@ -34,6 +36,7 @@ performances:
         results_date: 2026-06-20T13:00:00+09:00
         payment_deadline: 2026-06-23T21:00:00+09:00
       - name: ラブライブ！虹ヶ咲学園スクールアイドル同好会先行
+        name_en: Love Live! Nijigasaki High School Idol Club presale
         type: presale
         leg: Nijigasaki
         apply_open: 2026-05-15T12:00:00+09:00
@@ -41,6 +44,7 @@ performances:
         results_date: 2026-06-20T13:00:00+09:00
         payment_deadline: 2026-06-23T21:00:00+09:00
       - name: "ラブライブ！スーパースター!!先行"
+        name_en: Love Live! Superstar!! presale
         type: presale
         leg: "Liella!"
         apply_open: 2026-07-08T12:00:00+09:00
@@ -48,6 +52,7 @@ performances:
         results_date: 2026-07-25T13:00:00+09:00
         payment_deadline: 2026-07-28T21:00:00+09:00
       - name: ラブライブ！蓮ノ空女学院スクールアイドルクラブ先行
+        name_en: Love Live! Hasunosora Girls' High School Idol Club presale
         type: presale
         leg: Hasunosora
         apply_open: 2026-05-08T12:00:00+09:00
@@ -55,6 +60,7 @@ performances:
         results_date: 2026-07-25T13:00:00+09:00
         payment_deadline: 2026-07-28T21:00:00+09:00
       - name: "イキヅライブ！ LOVELIVE! BLUEBIRD先行"
+        name_en: Love Live! Bluebird presale
         type: presale
         leg: "Ikizulive!"
         apply_open: 2026-06-20T12:00:00+09:00
@@ -62,12 +68,14 @@ performances:
         results_date: 2026-07-25T13:00:00+09:00
         payment_deadline: 2026-07-28T21:00:00+09:00
       - name: 1次抽選
+        name_en: 1st-round lottery
         type: upgrade
         apply_open: 2026-08-15T12:00:00+09:00
         apply_deadline: 2026-09-13T23:59:00+09:00
         results_date: 2026-09-19T13:00:00+09:00
         payment_deadline: 2026-09-22T21:00:00+09:00
       - name: 2次抽選
+        name_en: 2nd-round lottery
         type: upgrade
         apply_open: 2026-09-19T12:00:00+09:00
         apply_deadline: 2026-09-23T23:59:00+09:00
@@ -80,6 +88,7 @@ performances:
     starts: "15:30"
     rounds:
       - name: ラブライブ！先行
+        name_en: Love Live! presale
         type: presale
         leg: μ's
         apply_open: 2026-05-08T12:00:00+09:00
@@ -87,6 +96,7 @@ performances:
         results_date: 2026-06-20T13:00:00+09:00
         payment_deadline: 2026-06-23T21:00:00+09:00
       - name: "ラブライブ！サンシャイン!!先行"
+        name_en: Love Live! Sunshine!! presale
         type: presale
         leg: Aqours
         apply_open: 2026-05-08T12:00:00+09:00
@@ -94,6 +104,7 @@ performances:
         results_date: 2026-06-20T13:00:00+09:00
         payment_deadline: 2026-06-23T21:00:00+09:00
       - name: ラブライブ！虹ヶ咲学園スクールアイドル同好会先行
+        name_en: Love Live! Nijigasaki High School Idol Club presale
         type: presale
         leg: Nijigasaki
         apply_open: 2026-05-15T12:00:00+09:00
@@ -101,6 +112,7 @@ performances:
         results_date: 2026-06-20T13:00:00+09:00
         payment_deadline: 2026-06-23T21:00:00+09:00
       - name: "ラブライブ！スーパースター!!先行"
+        name_en: Love Live! Superstar!! presale
         type: presale
         leg: "Liella!"
         apply_open: 2026-07-08T12:00:00+09:00
@@ -108,6 +120,7 @@ performances:
         results_date: 2026-07-25T13:00:00+09:00
         payment_deadline: 2026-07-28T21:00:00+09:00
       - name: ラブライブ！蓮ノ空女学院スクールアイドルクラブ先行
+        name_en: Love Live! Hasunosora Girls' High School Idol Club presale
         type: presale
         leg: Hasunosora
         apply_open: 2026-05-08T12:00:00+09:00
@@ -115,6 +128,7 @@ performances:
         results_date: 2026-07-25T13:00:00+09:00
         payment_deadline: 2026-07-28T21:00:00+09:00
       - name: "イキヅライブ！ LOVELIVE! BLUEBIRD先行"
+        name_en: Love Live! Bluebird presale
         type: presale
         leg: "Ikizulive!"
         apply_open: 2026-06-20T12:00:00+09:00
@@ -122,12 +136,14 @@ performances:
         results_date: 2026-07-25T13:00:00+09:00
         payment_deadline: 2026-07-28T21:00:00+09:00
       - name: 1次抽選
+        name_en: 1st-round lottery
         type: upgrade
         apply_open: 2026-08-15T12:00:00+09:00
         apply_deadline: 2026-09-13T23:59:00+09:00
         results_date: 2026-09-19T13:00:00+09:00
         payment_deadline: 2026-09-22T21:00:00+09:00
       - name: 2次抽選
+        name_en: 2nd-round lottery
         type: upgrade
         apply_open: 2026-09-19T12:00:00+09:00
         apply_deadline: 2026-09-23T23:59:00+09:00

@@ -317,7 +317,8 @@ function collectEvent(form) {
   });
   const rounds = [...form.querySelectorAll('#rounds fieldset')].map((fs) => {
     const rg = (n) => fs.querySelector(`[name="${n}"]`).value.trim();
-    return { name: rg('r_name'), type: rg('r_type') || null, leg: rg('r_leg') || null,
+    return { name: rg('r_name'), name_en: rg('r_name_en') || null,
+      type: rg('r_type') || null, leg: rg('r_leg') || null,
       apply_open: dtLocalToYaml(rg('r_apply_open')),
       apply_deadline: dtLocalToYaml(rg('r_apply_deadline')),
       results_date: dtLocalToYaml(rg('r_results_date')),
@@ -376,6 +377,7 @@ function buildYaml(ev) {
     L.push('rounds:');
     ev.rounds.forEach((r) => {
       L.push(`  - name: ${yamlScalar(r.name)}`);
+      if (r.name_en) L.push(`    name_en: ${yamlScalar(r.name_en)}`);
       if (r.type) L.push(`    type: ${yamlScalar(r.type)}`);
       if (r.leg) L.push(`    leg: ${yamlScalar(r.leg)}`);
       ROUND_DATE_KEYS.forEach((k) => { if (r[k]) L.push(`    ${k}: ${r[k]}`); });
@@ -433,7 +435,8 @@ function initAddForm(eventsUrl) {
     const node = tpl.content.cloneNode(true);
     if (data) {
       const set = (n, v) => { if (v) node.querySelector(`[name="${n}"]`).value = v; };
-      set('r_name', data.name); set('r_type', data.type); set('r_leg', data.leg);
+      set('r_name', data.name); set('r_name_en', data.name_en);
+      set('r_type', data.type); set('r_leg', data.leg);
       set('r_apply_open', isoToJstInput(data.apply_open));
       set('r_apply_deadline', isoToJstInput(data.apply_deadline));
       set('r_results_date', isoToJstInput(data.results_date));

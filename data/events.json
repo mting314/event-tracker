@@ -1,10 +1,11 @@
 {
-  "generated_at": "2026-06-12T14:15:26.864170+09:00",
+  "generated_at": "2026-06-13T15:22:08.634602+09:00",
   "events": [
     {
       "id": "2026-25-in",
       "name": "25時、ナイトコードで。 in 大分",
-      "kind": "concert",
+      "name_en": "Nightcord at 25:00 in Oita",
+      "kind": "fan-meeting",
       "source_url": "https://pjsekai.sega.jp/unitfanmeeting/unit05/index.html",
       "series": [
         "プロセカユニットファンミーティング"
@@ -27,6 +28,7 @@
           "rounds": [
             {
               "name": "アプリ内先行",
+              "name_en": "In-app presale",
               "type": "presale",
               "apply_open": "2026-05-30T12:00:00+09:00",
               "apply_deadline": "2026-06-02T23:59:00+09:00",
@@ -34,6 +36,7 @@
             },
             {
               "name": "オフィシャル抽選先行",
+              "name_en": "Official lottery presale",
               "type": "lottery",
               "apply_open": "2026-06-18T12:00:00+09:00",
               "apply_deadline": "2026-06-23T23:59:00+09:00",
@@ -41,6 +44,7 @@
             },
             {
               "name": "プレイガイド先行",
+              "name_en": "Playguide presale",
               "type": "presale",
               "apply_open": "2026-07-08T12:00:00+09:00",
               "apply_deadline": "2026-07-14T23:59:00+09:00",
@@ -48,6 +52,7 @@
             },
             {
               "name": "一般販売",
+              "name_en": "General sale",
               "type": "general",
               "apply_open": "2026-08-01T10:00:00+09:00",
               "apply_deadline": "2026-09-04T23:59:00+09:00",
@@ -66,6 +71,7 @@
           "rounds": [
             {
               "name": "アプリ内先行",
+              "name_en": "In-app presale",
               "type": "presale",
               "apply_open": "2026-05-30T12:00:00+09:00",
               "apply_deadline": "2026-06-02T23:59:00+09:00",
@@ -73,6 +79,7 @@
             },
             {
               "name": "オフィシャル抽選先行",
+              "name_en": "Official lottery presale",
               "type": "lottery",
               "apply_open": "2026-06-18T12:00:00+09:00",
               "apply_deadline": "2026-06-23T23:59:00+09:00",
@@ -80,6 +87,7 @@
             },
             {
               "name": "プレイガイド先行",
+              "name_en": "Playguide presale",
               "type": "presale",
               "apply_open": "2026-07-08T12:00:00+09:00",
               "apply_deadline": "2026-07-14T23:59:00+09:00",
@@ -87,6 +95,7 @@
             },
             {
               "name": "一般販売",
+              "name_en": "General sale",
               "type": "general",
               "apply_open": "2026-08-01T10:00:00+09:00",
               "apply_deadline": "2026-09-04T23:59:00+09:00",
@@ -104,6 +113,7 @@
       "rounds": [
         {
           "name": "アプリ内先行",
+          "name_en": "In-app presale",
           "type": "presale",
           "apply_open": "2026-05-30T12:00:00+09:00",
           "apply_deadline": "2026-06-02T23:59:00+09:00",
@@ -111,6 +121,7 @@
         },
         {
           "name": "オフィシャル抽選先行",
+          "name_en": "Official lottery presale",
           "type": "lottery",
           "apply_open": "2026-06-18T12:00:00+09:00",
           "apply_deadline": "2026-06-23T23:59:00+09:00",
@@ -118,6 +129,7 @@
         },
         {
           "name": "プレイガイド先行",
+          "name_en": "Playguide presale",
           "type": "presale",
           "apply_open": "2026-07-08T12:00:00+09:00",
           "apply_deadline": "2026-07-14T23:59:00+09:00",
@@ -125,6 +137,7 @@
         },
         {
           "name": "一般販売",
+          "name_en": "General sale",
           "type": "general",
           "apply_open": "2026-08-01T10:00:00+09:00",
           "apply_deadline": "2026-09-04T23:59:00+09:00",
@@ -1002,6 +1015,150 @@
       ]
     },
     {
+      "id": "2026-leo-need-in",
+      "name": "プロセカユニットファンミーティング Leo/need in 東京",
+      "name_en": "Project Sekai Unit Fan Meeting Leo/need in Tokyo",
+      "kind": "fan-meeting",
+      "source_url": "https://pjsekai.sega.jp/unitfanmeeting/unit01/index.html",
+      "series": [],
+      "categories": [
+        "fan meeting"
+      ],
+      "performers": [
+        "野口 瑠璃子",
+        "礒部 花凜",
+        "中島 由貴"
+      ],
+      "performances": [
+        {
+          "date": "2026-08-08",
+          "venue": "LINE CUBE SHIBUYA（渋谷公会堂）",
+          "venue_address": "〒150-0042 東京都渋谷区宇田川町1-1",
+          "city": "東京",
+          "label": "昼公演",
+          "doors": "13:00",
+          "starts": "14:00",
+          "rounds": [
+            {
+              "name": "アプリ内先行",
+              "name_en": "In-app presale",
+              "type": "lottery",
+              "apply_open": "2026-05-01T12:00:00+09:00",
+              "apply_deadline": "2026-05-04T23:59:00+09:00",
+              "notes": "src: アプリ内先行 2026年 5月1日 (金) 12:00 〜 5月4日 (月) 23:59"
+            },
+            {
+              "name": "オフィシャル抽選先行",
+              "name_en": "Official lottery presale",
+              "type": "lottery",
+              "apply_open": "2026-05-21T12:00:00+09:00",
+              "apply_deadline": "2026-05-26T23:59:00+09:00",
+              "notes": "src: オフィシャル抽選先行 2026年 5月21日 (木) 12:00 〜 5月26日 (火) 23:59"
+            },
+            {
+              "name": "プレイガイド先行",
+              "name_en": "Playguide presale",
+              "type": "lottery",
+              "apply_open": "2026-06-10T12:00:00+09:00",
+              "apply_deadline": "2026-06-16T23:59:00+09:00",
+              "notes": "src: プレイガイド先行 2026年 6月10日 (水) 12:00 〜 6月16日 (火) 23:59"
+            },
+            {
+              "name": "一般販売",
+              "name_en": "General sale",
+              "type": "general",
+              "apply_open": "2026-07-04T10:00:00+09:00",
+              "apply_deadline": "2026-08-07T23:59:00+09:00",
+              "notes": "src: 一般販売 2026年 7月4日 (土) 10:00 〜 締め切りについては、各公演前日23:59まで。"
+            }
+          ]
+        },
+        {
+          "date": "2026-08-08",
+          "venue": "LINE CUBE SHIBUYA（渋谷公会堂）",
+          "venue_address": "〒150-0042 東京都渋谷区宇田川町1-1",
+          "city": "東京",
+          "label": "夜公演",
+          "doors": "17:30",
+          "starts": "18:30",
+          "rounds": [
+            {
+              "name": "アプリ内先行",
+              "name_en": "In-app presale",
+              "type": "lottery",
+              "apply_open": "2026-05-01T12:00:00+09:00",
+              "apply_deadline": "2026-05-04T23:59:00+09:00",
+              "notes": "src: アプリ内先行 2026年 5月1日 (金) 12:00 〜 5月4日 (月) 23:59"
+            },
+            {
+              "name": "オフィシャル抽選先行",
+              "name_en": "Official lottery presale",
+              "type": "lottery",
+              "apply_open": "2026-05-21T12:00:00+09:00",
+              "apply_deadline": "2026-05-26T23:59:00+09:00",
+              "notes": "src: オフィシャル抽選先行 2026年 5月21日 (木) 12:00 〜 5月26日 (火) 23:59"
+            },
+            {
+              "name": "プレイガイド先行",
+              "name_en": "Playguide presale",
+              "type": "lottery",
+              "apply_open": "2026-06-10T12:00:00+09:00",
+              "apply_deadline": "2026-06-16T23:59:00+09:00",
+              "notes": "src: プレイガイド先行 2026年 6月10日 (水) 12:00 〜 6月16日 (火) 23:59"
+            },
+            {
+              "name": "一般販売",
+              "name_en": "General sale",
+              "type": "general",
+              "apply_open": "2026-07-04T10:00:00+09:00",
+              "apply_deadline": "2026-08-07T23:59:00+09:00",
+              "notes": "src: 一般販売 2026年 7月4日 (土) 10:00 〜 締め切りについては、各公演前日23:59まで。"
+            }
+          ]
+        }
+      ],
+      "event_dates": [
+        "2026-08-08"
+      ],
+      "venues": [
+        "LINE CUBE SHIBUYA（渋谷公会堂）"
+      ],
+      "rounds": [
+        {
+          "name": "アプリ内先行",
+          "name_en": "In-app presale",
+          "type": "lottery",
+          "apply_open": "2026-05-01T12:00:00+09:00",
+          "apply_deadline": "2026-05-04T23:59:00+09:00",
+          "notes": "src: アプリ内先行 2026年 5月1日 (金) 12:00 〜 5月4日 (月) 23:59"
+        },
+        {
+          "name": "オフィシャル抽選先行",
+          "name_en": "Official lottery presale",
+          "type": "lottery",
+          "apply_open": "2026-05-21T12:00:00+09:00",
+          "apply_deadline": "2026-05-26T23:59:00+09:00",
+          "notes": "src: オフィシャル抽選先行 2026年 5月21日 (木) 12:00 〜 5月26日 (火) 23:59"
+        },
+        {
+          "name": "プレイガイド先行",
+          "name_en": "Playguide presale",
+          "type": "lottery",
+          "apply_open": "2026-06-10T12:00:00+09:00",
+          "apply_deadline": "2026-06-16T23:59:00+09:00",
+          "notes": "src: プレイガイド先行 2026年 6月10日 (水) 12:00 〜 6月16日 (火) 23:59"
+        },
+        {
+          "name": "一般販売",
+          "name_en": "General sale",
+          "type": "general",
+          "apply_open": "2026-07-04T10:00:00+09:00",
+          "apply_deadline": "2026-08-07T23:59:00+09:00",
+          "notes": "src: 一般販売 2026年 7月4日 (土) 10:00 〜 締め切りについては、各公演前日23:59まで。"
+        }
+      ]
+    },
+    {
       "id": "2026-liella-7th",
       "name": "Liella! 7th LoveLive! ~Fly! MUSIC WORLD♪~",
       "name_en": "Liella! 7th LoveLive! ~Fly! MUSIC WORLD♪~",
@@ -1368,7 +1525,7 @@
       "id": "2026-liella-sports-festival",
       "name": "Liella! Sports Festival",
       "name_en": "Liella! Sports Festival",
-      "kind": "event",
+      "kind": "festival",
       "series": [
         "Liella!"
       ],
@@ -1558,6 +1715,7 @@
           "rounds": [
             {
               "name": "ラブライブ！先行",
+              "name_en": "Love Live! presale",
               "type": "presale",
               "leg": "μ's",
               "apply_open": "2026-05-08T12:00:00+09:00",
@@ -1567,6 +1725,7 @@
             },
             {
               "name": "ラブライブ！サンシャイン!!先行",
+              "name_en": "Love Live! Sunshine!! presale",
               "type": "presale",
               "leg": "Aqours",
               "apply_open": "2026-05-08T12:00:00+09:00",
@@ -1576,6 +1735,7 @@
             },
             {
               "name": "ラブライブ！虹ヶ咲学園スクールアイドル同好会先行",
+              "name_en": "Love Live! Nijigasaki High School Idol Club presale",
               "type": "presale",
               "leg": "Nijigasaki",
               "apply_open": "2026-05-15T12:00:00+09:00",
@@ -1585,6 +1745,7 @@
             },
             {
               "name": "ラブライブ！スーパースター!!先行",
+              "name_en": "Love Live! Superstar!! presale",
               "type": "presale",
               "leg": "Liella!",
               "apply_open": "2026-07-08T12:00:00+09:00",
@@ -1594,6 +1755,7 @@
             },
             {
               "name": "ラブライブ！蓮ノ空女学院スクールアイドルクラブ先行",
+              "name_en": "Love Live! Hasunosora Girls' High School Idol Club presale",
               "type": "presale",
               "leg": "Hasunosora",
               "apply_open": "2026-05-08T12:00:00+09:00",
@@ -1603,6 +1765,7 @@
             },
             {
               "name": "イキヅライブ！ LOVELIVE! BLUEBIRD先行",
+              "name_en": "Love Live! Bluebird presale",
               "type": "presale",
               "leg": "Ikizulive!",
               "apply_open": "2026-06-20T12:00:00+09:00",
@@ -1612,6 +1775,7 @@
             },
             {
               "name": "1次抽選",
+              "name_en": "1st-round lottery",
               "type": "upgrade",
               "apply_open": "2026-08-15T12:00:00+09:00",
               "apply_deadline": "2026-09-13T23:59:00+09:00",
@@ -1620,6 +1784,7 @@
             },
             {
               "name": "2次抽選",
+              "name_en": "2nd-round lottery",
               "type": "upgrade",
               "apply_open": "2026-09-19T12:00:00+09:00",
               "apply_deadline": "2026-09-23T23:59:00+09:00",
@@ -1637,6 +1802,7 @@
           "rounds": [
             {
               "name": "ラブライブ！先行",
+              "name_en": "Love Live! presale",
               "type": "presale",
               "leg": "μ's",
               "apply_open": "2026-05-08T12:00:00+09:00",
@@ -1646,6 +1812,7 @@
             },
             {
               "name": "ラブライブ！サンシャイン!!先行",
+              "name_en": "Love Live! Sunshine!! presale",
               "type": "presale",
               "leg": "Aqours",
               "apply_open": "2026-05-08T12:00:00+09:00",
@@ -1655,6 +1822,7 @@
             },
             {
               "name": "ラブライブ！虹ヶ咲学園スクールアイドル同好会先行",
+              "name_en": "Love Live! Nijigasaki High School Idol Club presale",
               "type": "presale",
               "leg": "Nijigasaki",
               "apply_open": "2026-05-15T12:00:00+09:00",
@@ -1664,6 +1832,7 @@
             },
             {
               "name": "ラブライブ！スーパースター!!先行",
+              "name_en": "Love Live! Superstar!! presale",
               "type": "presale",
               "leg": "Liella!",
               "apply_open": "2026-07-08T12:00:00+09:00",
@@ -1673,6 +1842,7 @@
             },
             {
               "name": "ラブライブ！蓮ノ空女学院スクールアイドルクラブ先行",
+              "name_en": "Love Live! Hasunosora Girls' High School Idol Club presale",
               "type": "presale",
               "leg": "Hasunosora",
               "apply_open": "2026-05-08T12:00:00+09:00",
@@ -1682,6 +1852,7 @@
             },
             {
               "name": "イキヅライブ！ LOVELIVE! BLUEBIRD先行",
+              "name_en": "Love Live! Bluebird presale",
               "type": "presale",
               "leg": "Ikizulive!",
               "apply_open": "2026-06-20T12:00:00+09:00",
@@ -1691,6 +1862,7 @@
             },
             {
               "name": "1次抽選",
+              "name_en": "1st-round lottery",
               "type": "upgrade",
               "apply_open": "2026-08-15T12:00:00+09:00",
               "apply_deadline": "2026-09-13T23:59:00+09:00",
@@ -1699,6 +1871,7 @@
             },
             {
               "name": "2次抽選",
+              "name_en": "2nd-round lottery",
               "type": "upgrade",
               "apply_open": "2026-09-19T12:00:00+09:00",
               "apply_deadline": "2026-09-23T23:59:00+09:00",
@@ -1720,6 +1893,7 @@
       "rounds": [
         {
           "name": "ラブライブ！先行",
+          "name_en": "Love Live! presale",
           "type": "presale",
           "leg": "μ's",
           "apply_open": "2026-05-08T12:00:00+09:00",
@@ -1729,6 +1903,7 @@
         },
         {
           "name": "ラブライブ！サンシャイン!!先行",
+          "name_en": "Love Live! Sunshine!! presale",
           "type": "presale",
           "leg": "Aqours",
           "apply_open": "2026-05-08T12:00:00+09:00",
@@ -1738,6 +1913,7 @@
         },
         {
           "name": "ラブライブ！虹ヶ咲学園スクールアイドル同好会先行",
+          "name_en": "Love Live! Nijigasaki High School Idol Club presale",
           "type": "presale",
           "leg": "Nijigasaki",
           "apply_open": "2026-05-15T12:00:00+09:00",
@@ -1747,6 +1923,7 @@
         },
         {
           "name": "ラブライブ！スーパースター!!先行",
+          "name_en": "Love Live! Superstar!! presale",
           "type": "presale",
           "leg": "Liella!",
           "apply_open": "2026-07-08T12:00:00+09:00",
@@ -1756,6 +1933,7 @@
         },
         {
           "name": "ラブライブ！蓮ノ空女学院スクールアイドルクラブ先行",
+          "name_en": "Love Live! Hasunosora Girls' High School Idol Club presale",
           "type": "presale",
           "leg": "Hasunosora",
           "apply_open": "2026-05-08T12:00:00+09:00",
@@ -1765,6 +1943,7 @@
         },
         {
           "name": "イキヅライブ！ LOVELIVE! BLUEBIRD先行",
+          "name_en": "Love Live! Bluebird presale",
           "type": "presale",
           "leg": "Ikizulive!",
           "apply_open": "2026-06-20T12:00:00+09:00",
@@ -1774,6 +1953,7 @@
         },
         {
           "name": "1次抽選",
+          "name_en": "1st-round lottery",
           "type": "upgrade",
           "apply_open": "2026-08-15T12:00:00+09:00",
           "apply_deadline": "2026-09-13T23:59:00+09:00",
@@ -1782,6 +1962,7 @@
         },
         {
           "name": "2次抽選",
+          "name_en": "2nd-round lottery",
           "type": "upgrade",
           "apply_open": "2026-09-19T12:00:00+09:00",
           "apply_deadline": "2026-09-23T23:59:00+09:00",
@@ -1791,7 +1972,8 @@
     },
     {
       "id": "2026-lustqueen-9-apollo-bay-cruiser",
-      "name": "LustQueen 9月公演「ゆいなかま」&「Apollo Bay Cruiser」会員限定チケット先行受付開始！",
+      "name": "LustQueen「The story resumes EXTRA」「pre. Stairway to Queen vol.5」",
+      "name_en": "LustQueen \"The story resumes EXTRA\" \"pre. Stairway to Queen vol.5\"",
       "artist": "LustQueen",
       "kind": "concert",
       "source_url": "https://lustqueen.info/news/detail/81252",
@@ -1809,12 +1991,14 @@
           "rounds": [
             {
               "name": "「ゆいなかま」 & 「Apollo Bay Cruiser」 チケット先行受付期間 抽選",
+              "name_en": "\"Yuinakama\" & \"Apollo Bay Cruiser\" ticket presale application period (lottery)",
               "type": "presale",
               "apply_open": "2026-06-05T12:00:00+09:00",
               "apply_deadline": "2026-06-21T23:59:00+09:00"
             },
             {
               "name": "FC先行申し込み",
+              "name_en": "Fanclub presale application",
               "type": "fanclub",
               "apply_open": "2026-05-09T19:30:00+09:00",
               "apply_deadline": "2026-05-25T23:59:00+09:00",
@@ -1833,12 +2017,14 @@
           "rounds": [
             {
               "name": "「ゆいなかま」 & 「Apollo Bay Cruiser」 チケット先行受付期間 抽選",
+              "name_en": "\"Yuinakama\" & \"Apollo Bay Cruiser\" ticket presale application period (lottery)",
               "type": "presale",
               "apply_open": "2026-06-05T12:00:00+09:00",
               "apply_deadline": "2026-06-21T23:59:00+09:00"
             },
             {
               "name": "FC先行申し込み",
+              "name_en": "Fanclub presale application",
               "type": "fanclub",
               "apply_open": "2026-05-09T19:30:00+09:00",
               "apply_deadline": "2026-05-25T23:59:00+09:00",
@@ -1858,12 +2044,14 @@
       "rounds": [
         {
           "name": "「ゆいなかま」 & 「Apollo Bay Cruiser」 チケット先行受付期間 抽選",
+          "name_en": "\"Yuinakama\" & \"Apollo Bay Cruiser\" ticket presale application period (lottery)",
           "type": "presale",
           "apply_open": "2026-06-05T12:00:00+09:00",
           "apply_deadline": "2026-06-21T23:59:00+09:00"
         },
         {
           "name": "FC先行申し込み",
+          "name_en": "Fanclub presale application",
           "type": "fanclub",
           "apply_open": "2026-05-09T19:30:00+09:00",
           "apply_deadline": "2026-05-25T23:59:00+09:00",

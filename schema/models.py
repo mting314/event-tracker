@@ -20,6 +20,24 @@ JST = timezone(timedelta(hours=9))
 # scheduler and the site to know what to remind about / display.
 ROUND_DATE_FIELDS = ("apply_open", "apply_deadline", "results_date", "payment_deadline")
 
+# Controlled vocabulary for Event.kind — one bucket per event type seen across
+# eventernote/official sources. Single source of truth: the LLM prompt, the
+# editor's Kind dropdown, and the catalog filter all derive from this.
+KINDS = (
+    "concert",  # lives, one-man lives, band/symphony shows
+    "tour",  # multi-city / multi-date tours
+    "festival",  # multi-act festivals (フェス)
+    "release",  # 発売記念 / リリースイベント
+    "meet-greet",  # サイン会 / 握手会 / ミート＆グリート / お見送り会
+    "fan-meeting",  # ファンミーティング / FAN MEETING / サロン
+    "talk",  # トークイベント / 公開録音
+    "stage",  # 舞台 / ミュージカル
+    "screening",  # 上映会 / プレミア / 先行上映
+    "goods",  # goods-only sales events (物販)
+    "stream",  # online / 配信
+    "other",  # anything that fits none of the above
+)
+
 _SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -54,6 +72,7 @@ class Round(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     name: str
+    name_en: str | None = None  # best-effort English rendering (LLM/editor)
     type: str | None = None  # fanclub / presale / general / ...
     leg: str | None = None  # which performances this applies to, e.g. "Kanagawa"
     apply_open: datetime | None = None
@@ -133,7 +152,7 @@ class Event(BaseModel):
     name: str  # the tour/event name, as announced (Japanese)
     name_en: str | None = None
     artist: str | None = None  # band/group/organizer when not a tagged series
-    kind: str | None = None  # concert | release | meet-greet | goods | stream | ...
+    kind: str | None = None  # one of KINDS (concert, tour, release, meet-greet, …)
     source_url: str | None = None  # where this entry was ingested from (provenance)
     series: list[str] = []  # tags: ["Liella!"], ["Aqours"], or any franchise/group
     categories: list[str] = []  # free-form tags
@@ -178,6 +197,18 @@ class Event(BaseModel):
         if not _SLUG_RE.match(v):
             raise ValueError(f"id {v!r} must be a slug: lowercase letters, digits and hyphens")
         return v
+
+    @field_validator("kind", mode="before")
+    @classmethod
+    def _normalise_kind(cls, v):
+        """Lowercase + constrain to the controlled vocab (KINDS); unknown -> 'other'.
+        Empty/blank becomes None (no kind). Keeps Event.kind always in KINDS|{None}."""
+        if v is None:
+            return None
+        v = str(v).strip().lower()
+        if not v:
+            return None
+        return v if v in KINDS else "other"
 
     def public_dict(self) -> dict:
         """JSON-serialisable dict for ``events.json`` (datetimes -> ISO +09:00).

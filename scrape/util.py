@@ -134,6 +134,8 @@ def _round_yaml_lines(r: dict, indent: str) -> list[str]:
     """YAML lines for one round, list-item indented by `indent` (e.g. '    ')."""
     out = [f"{indent}- name: {_yaml_str(r.get('name') or 'TODO')}"]
     pad = indent + "  "
+    if r.get("name_en"):
+        out.append(f"{pad}name_en: {_yaml_str(r['name_en'])}")
     for f in ("type", "leg"):
         if r.get(f):
             out.append(f"{pad}{f}: {_yaml_str(r[f])}")

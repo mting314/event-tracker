@@ -19,7 +19,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from schema.models import JST, load_all_events
+from schema.models import JST, KINDS, load_all_events
 from scrape.llfans import SERIES as LLFANS_SERIES
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -148,6 +148,9 @@ def main() -> None:
     # Series dropdown options for the add/edit form: known LL series + any already
     # used in events/ (so curated tags stay suggestible), sorted.
     series_options = sorted({s for e in events for s in e.series} | set(LLFANS_SERIES.values()))
+    # Kind dropdown options: the controlled vocabulary (schema.KINDS). The Event.kind
+    # validator coerces any unknown kind to 'other', so KINDS is exhaustive here.
+    kind_options = list(KINDS)
     # `base` is the relative path back to dist root, so links work at any depth.
     common = {
         "date_types": DATE_TYPES,
@@ -155,6 +158,7 @@ def main() -> None:
         "base": "",
         "edit_api": edit_api,
         "series_options": series_options,
+        "kind_options": kind_options,
     }
 
     env.get_template("index.html").stream(groups=groups, **common).dump(
