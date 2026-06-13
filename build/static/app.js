@@ -219,6 +219,8 @@ function initGroups() {
   const showPast = document.getElementById('show-past');
   const empty = document.getElementById('feed-empty');
   const container = document.getElementById('groups');
+  const pastHead = document.getElementById('past-head');
+  const pastContainer = document.getElementById('past-groups');
   const groups = [...container.querySelectorAll('.evgroup')];
   // Merged-in catalog filters (search / kind / has-open-round).
   const q = document.getElementById('q');
@@ -310,11 +312,16 @@ function initGroups() {
       }
     }
 
-    // soonest-next first; hidden/no-next sink to the bottom
-    rows
-      .filter((r) => !r.d.closest('li').hidden)
-      .sort((a, b) => (a.next || '9999').localeCompare(b.next || '9999'))
+    // Split into Upcoming (has a next deadline, soonest first) and a separate
+    // Past section (no upcoming deadline). Hidden rows stay put.
+    const shown = rows.filter((r) => !r.d.closest('li').hidden);
+    shown
+      .filter((r) => r.next)
+      .sort((a, b) => a.next.localeCompare(b.next))
       .forEach((r) => container.appendChild(r.d.closest('li')));
+    const past = shown.filter((r) => !r.next);
+    past.forEach((r) => pastContainer.appendChild(r.d.closest('li')));
+    if (pastHead) pastHead.hidden = past.length === 0;
 
     paintCountdowns();
     applyTz(document.getElementById('tz-local')?.checked);
