@@ -20,7 +20,7 @@
   <tbody>
     {% for ev in events %}
     <tr class="evrow"
-        data-haystack="{{ (ev.name ~ ' ' ~ (ev.name_en or '') ~ ' ' ~ (ev.artist or '') ~ ' ' ~ (ev.series|join(' ')) ~ ' ' ~ (ev.venues|join(' ')) ~ ' ' ~ (ev.performers|join(' ')))|lower }}"
+        data-haystack="{{ (ev.name ~ ' ' ~ (ev.name_en or '') ~ ' ' ~ (ev.artist or '') ~ ' ' ~ (ev.series|join(' ')) ~ ' ' ~ (ev.series|map('series_ja')|join(' ')) ~ ' ' ~ (ev.venues|join(' ')) ~ ' ' ~ (ev.performers|join(' ')))|lower }}"
         data-kind="{{ ev.kind or '' }}"
         data-deadlines="{% for r in ev.rounds %}{{ r.apply_deadline or '' }},{% endfor %}">
       <td><a class="i18n-field" href="{{ base }}event/{{ ev.id }}.html" data-ja="{{ ev.name }}" data-en="{{ ev.name_en or ev.name }}">{{ ev.name }}</a>

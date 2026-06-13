@@ -65,7 +65,10 @@ SERIES = {
 }
 
 # Raw value -> canonical SERIES key, for standardizing existing/ingested tags.
+# Covers both Japanese source strings and the long-form English names the LLM
+# extractor (scrape.glossary.SERIES_EN) emits, so freshly-ingested tags normalize.
 _SERIES_ALIASES = {
+    # Japanese source forms
     "プロセカユニットファンミーティング": "Project Sekai Unit Fan Meeting",
     "ラブライブ！": "Love Live!",
     "ラブライブ！サンシャイン!!": "Love Live! Sunshine!!",
@@ -73,6 +76,13 @@ _SERIES_ALIASES = {
     "ラブライブ！スーパースター!!": "Love Live! Superstar!!",
     "蓮ノ空女学院スクールアイドルクラブ": "Hasunosora",
     "蓮ノ空女学院": "Hasunosora",
+    # long-form English forms emitted by the LLM extractor's glossary
+    "Nijigasaki High School Idol Club": "Nijigasaki",
+    "Love Live! Nijigasaki High School Idol Club": "Nijigasaki",
+    "Hasunosora Girls' High School Idol Club": "Hasunosora",
+    "Hasunosora Girls' High School": "Hasunosora",
+    "Love Live! Hasunosora Girls' High School Idol Club": "Hasunosora",
+    "Yohane the Parhelion -SUNSHINE in the MIRROR-": "Yohane the Parhelion",
 }
 
 _SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")

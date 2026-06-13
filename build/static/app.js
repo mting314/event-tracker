@@ -152,8 +152,10 @@ function applyLang(lang) {
   });
   // active-language link button (bold), the-sorter style
   document.querySelectorAll('.lang-btn').forEach((b) => {
-    if (b.dataset.lang === lang) b.setAttribute('data-active', 'true');
+    const on = b.dataset.lang === lang;
+    if (on) b.setAttribute('data-active', 'true');
     else b.removeAttribute('data-active');
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
 }
 
@@ -221,10 +223,16 @@ function initGroups() {
   const container = document.getElementById('groups');
   const groups = [...container.querySelectorAll('.evgroup')];
 
-  // The event-name link lives inside <summary>; a click should navigate, not
-  // toggle the row open/closed.
+  // The event-name link lives inside <summary>; a plain click should navigate,
+  // not toggle the row. preventDefault cancels BOTH the native nav and the
+  // <summary> toggle (one event), so navigate manually. Modified clicks
+  // (cmd/ctrl/shift → new tab/window) fall through to native behaviour.
   container.addEventListener('click', (e) => {
-    if (e.target.closest('.evname')) e.stopPropagation();
+    const a = e.target.closest('.evname');
+    if (!a) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    window.location.href = a.href;
   });
 
   const refresh = () => {
