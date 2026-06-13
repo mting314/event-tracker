@@ -5,7 +5,7 @@ series; a background loop DMs you (and optionally posts to a channel) before eac
 tracked date. Run with environment variables:
 
     DISCORD_TOKEN     bot token (required)
-    EVENTS_SOURCE     events.json URL or path (default: local data/events.json)
+    EVENTS_SOURCE     events.json URL or path (default: local artifact, else compiled from events/*.yaml)
     DB_PATH           sqlite path (default: bot/tracker.db)
     SITE_URL          base site URL for links (optional)
     CHECK_INTERVAL_MIN  scheduler cadence in minutes (default 15)

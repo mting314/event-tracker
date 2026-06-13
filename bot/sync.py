@@ -29,7 +29,8 @@ def load_events(source: str | None = None) -> list[dict]:
         return json.loads(Path(source).read_text(encoding="utf-8")).get("events", [])
     if LOCAL.exists():
         return json.loads(LOCAL.read_text(encoding="utf-8")).get("events", [])
-    # events.json is a derived artifact; recompile it from the YAML source of truth.
+    # events.json is a derived artifact; compile the list in-memory from the YAML
+    # source of truth (not written to disk — deploy/build_site owns that copy).
     from schema.models import load_all_events
 
     return [e.public_dict() for e in load_all_events(ROOT / "events")]
