@@ -42,7 +42,7 @@ uv run python -m http.server --directory site/dist   # then open http://localhos
 | `schema/models.py` | pydantic models (`Event` = tour, `Performance`, `Round`) + JST normalisation |
 | `build/build_site.py` | Validate → `data/events.json` → render `site/dist/` |
 | `build/templates/`, `build/static/` | Jinja templates + CSS/JS |
-| `data/events.json` | Compiled artifact (site JS + bot both read it) |
+| `data/events.json` | Derived artifact compiled from `events/*.yaml` (gitignored; rebuilt at deploy, fetched-by-URL by the bot, compiled-on-demand in dev) |
 | `scrape/` | URL → draft YAML helpers (milestone 2) |
 | `bot/` | Discord bot (milestones 4–5) |
 | `.github/workflows/deploy.yml` | CI: build + deploy to GitHub Pages on push |
