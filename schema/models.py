@@ -38,6 +38,53 @@ KINDS = (
     "other",  # anything that fits none of the above
 )
 
+# Controlled series/group vocabulary. The canonical key is the English/stylized name
+# (groups are already Latin); the value is the Japanese display form for localization.
+# Single source of truth for the series datalist + the site's JP/EN series tags.
+SERIES = {
+    # franchises
+    "Love Live!": "ラブライブ！",
+    "Love Live! Sunshine!!": "ラブライブ！サンシャイン!!",
+    "Nijigasaki": "虹ヶ咲",
+    "Love Live! Superstar!!": "ラブライブ！スーパースター!!",
+    "Hasunosora": "蓮ノ空",
+    "Yohane the Parhelion": "幻日のヨハネ",
+    "Ikizulive!": "イキヅライブ！",
+    "Love Live! Bluebird": "イキヅライブ！ LOVELIVE! BLUEBIRD",  # review
+    "School Idol Musical": "スクールアイドルミュージカル",
+    # groups / sub-units (Latin in both languages)
+    "μ's": "μ's",
+    "Aqours": "Aqours",
+    "Liella!": "Liella!",
+    "Guilty Kiss": "Guilty Kiss",
+    "Saint Snow": "Saint Snow",
+    # Project Sekai
+    "Project Sekai Unit Fan Meeting": "プロセカユニットファンミーティング",
+    "Leo/need": "Leo/need",
+    "Nightcord at 25:00": "25時、ナイトコードで。",
+}
+
+# Raw value -> canonical SERIES key, for standardizing existing/ingested tags.
+# Covers both Japanese source strings and the long-form English names the LLM
+# extractor (scrape.glossary.SERIES_EN) emits, so freshly-ingested tags normalize.
+_SERIES_ALIASES = {
+    # Japanese source forms
+    "プロセカユニットファンミーティング": "Project Sekai Unit Fan Meeting",
+    "ラブライブ！": "Love Live!",
+    "ラブライブ！サンシャイン!!": "Love Live! Sunshine!!",
+    "虹ヶ咲学園スクールアイドル同好会": "Nijigasaki",
+    "ラブライブ！スーパースター!!": "Love Live! Superstar!!",
+    "蓮ノ空女学院スクールアイドルクラブ": "Hasunosora",
+    "蓮ノ空女学院": "Hasunosora",
+    # long-form English forms emitted by the LLM extractor's glossary
+    "Nijigasaki High School Idol Club": "Nijigasaki",
+    "Love Live! Nijigasaki High School Idol Club": "Nijigasaki",
+    "Hasunosora Girls' High School Idol Club": "Hasunosora",
+    "Hasunosora Girls' High School": "Hasunosora",
+    "Love Live! Hasunosora Girls' High School Idol Club": "Hasunosora",
+    "Yohane the Parhelion -SUNSHINE in the MIRROR-": "Yohane the Parhelion",
+}
+
 _SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -209,6 +256,14 @@ class Event(BaseModel):
         if not v:
             return None
         return v if v in KINDS else "other"
+
+    @field_validator("series", mode="before")
+    @classmethod
+    def _normalise_series(cls, v):
+        """Standardize each series tag to its canonical SERIES key (unknown kept)."""
+        if not v:
+            return v
+        return [_SERIES_ALIASES.get(s, s) for s in v]
 
     def public_dict(self) -> dict:
         """JSON-serialisable dict for ``events.json`` (datetimes -> ISO +09:00).

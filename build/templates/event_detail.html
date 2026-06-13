@@ -3,19 +3,19 @@
 {% block content %}
 <article class="event-detail">
   <div class="event-head">
-    <a class="crumb" href="{{ base }}catalog.html">← Catalog</a>
-    <a class="btn primary edit-btn" href="{{ base }}add.html?edit={{ event.id }}">✎ Edit event</a>
+    <a class="crumb" href="{{ base }}catalog.html" data-i18n="detail_back">← Catalog</a>
+    <a class="btn primary edit-btn" href="{{ base }}add.html?edit={{ event.id }}" data-i18n="detail_edit">✎ Edit event</a>
   </div>
-  <h1>{{ event.name }}</h1>
-  {% if event.name_en %}<p class="sub">{{ event.name_en }}</p>{% endif %}
+  <h1 class="i18n-field" data-ja="{{ event.name }}" data-en="{{ event.name_en or event.name }}">{{ event.name }}</h1>
+  {% if event.name_en %}<p class="sub i18n-field" data-ja="{{ event.name_en }}" data-en="{{ event.name }}">{{ event.name_en }}</p>{% endif %}
 
   {% if event.kind %}<span class="kind-badge">{{ event.kind }}</span>{% endif %}
 
   <div class="meta-grid">
-    {% if event.artist %}<div><dt>Artist</dt><dd>{{ event.artist }}</dd></div>{% endif %}
-    {% if event.series %}<div><dt>Series</dt><dd>{% for s in event.series %}<span class="tag">{{ s }}</span>{% endfor %}</dd></div>{% endif %}
-    {% if event.event_dates %}<div><dt>Dates</dt><dd>{{ event.event_dates[0] }}{% if event.event_dates|length > 1 %} – {{ event.event_dates[-1] }}{% endif %}</dd></div>{% endif %}
-    {% if event.performers %}<div><dt>Cast</dt><dd>{{ event.performers|join('、') }}</dd></div>{% endif %}
+    {% if event.artist %}<div><dt data-i18n="detail_artist">Artist</dt><dd>{{ event.artist }}</dd></div>{% endif %}
+    {% if event.series %}<div><dt data-i18n="detail_series">Series</dt><dd>{% for s in event.series %}<span class="tag i18n-field" data-en="{{ s }}" data-ja="{{ s|series_ja }}">{{ s }}</span>{% endfor %}</dd></div>{% endif %}
+    {% if event.event_dates %}<div><dt data-i18n="detail_dates">Dates</dt><dd>{{ event.event_dates[0] }}{% if event.event_dates|length > 1 %} – {{ event.event_dates[-1] }}{% endif %}</dd></div>{% endif %}
+    {% if event.performers %}<div><dt data-i18n="detail_cast">Cast</dt><dd>{{ event.performers|join('、') }}</dd></div>{% endif %}
   </div>
 
   <p class="links">
@@ -25,7 +25,7 @@
   {% if event.notes %}<p class="notes">{{ event.notes }}</p>{% endif %}
 
   {% if event.performances %}
-  <h2>Performances &amp; deadlines</h2>
+  <h2 data-i18n="detail_perfs">Performances &amp; deadlines</h2>
   {% for p in event.performances %}
   <section class="perf-detail">
     <h3>{{ p.date }}{% if p.label %} · {{ p.label }}{% endif %}</h3>
@@ -33,18 +33,18 @@
     {% if p.rounds %}
     <table class="rounds">
       <thead>
-        <tr><th>Round</th>{% for f, meta in date_types.items() %}<th>{{ meta[0] }}</th>{% endfor %}<th></th></tr>
+        <tr><th data-i18n="th_round">Round</th>{% for f, meta in date_types.items() %}<th class="i18n-field" data-ja="{{ meta.ja }}" data-en="{{ meta.en }}">{{ meta.ja }}</th>{% endfor %}<th></th></tr>
       </thead>
       <tbody>
         {% for r in p.rounds %}
         <tr>
-          <td><strong>{{ r.name }}</strong>{% if r.name_en %}<div class="sub">{{ r.name_en }}</div>{% endif %}{% if r.type %}<div class="sub">{{ r.type }}</div>{% endif %}{% if r.leg %} <span class="tag">{{ r.leg }}</span>{% endif %}</td>
+          <td><strong class="i18n-field" data-ja="{{ r.name }}" data-en="{{ r.name_en or r.name }}">{{ r.name }}</strong>{% if r.name_en %}<div class="sub i18n-field" data-ja="{{ r.name_en }}" data-en="{{ r.name }}">{{ r.name_en }}</div>{% endif %}{% if r.type %}<div class="sub">{{ r.type }}</div>{% endif %}{% if r.leg %} <span class="tag">{{ r.leg }}</span>{% endif %}</td>
           {% for f, meta in date_types.items() %}
           {% set dt = r[f] %}
           <td>{% if dt %}<time class="dt countdown-cell" datetime="{{ dt.isoformat() }}">{{ dt.isoformat()|jst_fmt }}</time>{% else %}<span class="muted">—</span>{% endif %}</td>
           {% endfor %}
           <td>
-            {% if r.apply_url %}<a class="apply" href="{{ r.apply_url }}" target="_blank" rel="noopener">Apply ↗</a>{% endif %}
+            {% if r.apply_url %}<a class="apply" href="{{ r.apply_url }}" target="_blank" rel="noopener" data-i18n="apply">Apply ↗</a>{% endif %}
             {% if r.apply_deadline %}<a class="ics" href="#" data-title="{{ event.name }} — {{ r.name }} 締切" data-iso="{{ r.apply_deadline.isoformat() }}">📅 .ics</a>{% endif %}
           </td>
         </tr>
@@ -52,7 +52,7 @@
         {% endfor %}
       </tbody>
     </table>
-    {% else %}<p class="muted">No lottery rounds recorded for this show yet.</p>{% endif %}
+    {% else %}<p class="muted" data-i18n="no_rounds_show">No lottery rounds recorded for this show yet.</p>{% endif %}
   </section>
   {% endfor %}
   {% endif %}

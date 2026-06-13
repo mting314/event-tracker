@@ -14,6 +14,164 @@ function fmtLocal(iso) {
   return new Date(iso).toLocaleString('sv-SE', LOCAL_OPTS) + ' ' + tz;
 }
 
+/* --- i18n: JP/EN localization (same shape as the-sorter: locale resource
+   bundles + a persisted language toggle + per-record localized fields).
+   UI chrome uses [data-i18n] keys into I18N; per-record data (event/round names,
+   badges) uses .i18n-field elements carrying data-ja / data-en. --- */
+const I18N = {
+  en: {
+    nav_catalog: 'Catalog', nav_calendar: 'Calendar', nav_past: 'Past', nav_add: '+ Add',
+    tz_local: 'Show local time',
+    idx_title: 'Upcoming',
+    idx_hint: 'One row per event, showing its next deadline. Click to expand rounds & shows.',
+    show_past: 'show past / no upcoming',
+    open_event: 'open event page →',
+    no_rounds: 'No lottery rounds recorded yet.',
+    feed_empty: 'Nothing upcoming. 🎉',
+    apply: 'Apply ↗',
+    past_badge: 'past',
+    cat_title: 'Event catalog',
+    cat_search: 'Search name, artist, series, venue, performer…',
+    cat_all_kinds: 'All kinds',
+    cat_empty: 'No matching events.',
+    open_round: 'has open round',
+    th_event: 'Event', th_series_artist: 'Series / Artist', th_kind: 'Kind',
+    th_venue: 'Venue', th_dates: 'Dates', th_rounds: 'Rounds', th_series: 'Series',
+    cal_title: 'Calendar',
+    past_title: 'Past events',
+    past_search: 'Search name or series…',
+    detail_back: '← Catalog', detail_edit: '✎ Edit event',
+    detail_artist: 'Artist', detail_series: 'Series', detail_dates: 'Dates', detail_cast: 'Cast',
+    detail_perfs: 'Performances & deadlines', th_round: 'Round',
+    no_rounds_show: 'No lottery rounds recorded for this show yet.',
+    footer_a: 'Tracking', footer_b: 'events · all times JST unless toggled · curated from',
+    footer_c: 'official sources',
+    past_hint_a: 'Archive of past Love Live! events from',
+    past_hint_b: '— reference only (no lottery rounds).', past_hint_c: 'events.',
+    // add / edit form
+    add_title: 'Add an event (tour)', edit_title_prefix: 'Edit event: ',
+    add_hint: 'An event is a whole tour. Add each show as a performance, and lottery rounds '
+      + "(tag a round's leg if it only applies to part of the tour). Preview the YAML, then "
+      + 'open a prefilled GitHub PR or download the file.',
+    cfg_summary: 'Config (set the admin secret once — stored in your browser)',
+    cfg_secret: 'Admin secret',
+    f_name_ph: 'Tour name (JP)…',
+    f_slug: 'Slug / id', f_name_en: 'Tour name (EN)', f_artist: 'Artist / organizer',
+    f_kind: 'Kind', f_series: 'Series (comma-sep)', f_categories: 'Categories (comma-sep)',
+    f_eventernote: 'eventernote URL', f_official: 'Official URL', f_source: 'Source URL',
+    f_source_ph: 'where this was ingested from',
+    f_performers: 'Performers (one per line)', f_notes: 'Notes',
+    sec_perfs: 'Performances', sec_perfs_note: '(one per show / day)', btn_add_perf: '+ Add performance',
+    sec_rounds: 'Lottery rounds', sec_rounds_note: '(times are JST)', btn_add_round: '+ Add round',
+    btn_save: '💾 Save', btn_preview: 'Preview YAML', btn_copy: 'Copy',
+    btn_download: 'Download .yaml', btn_delete: '🗑 Delete event',
+    f_date: 'Date (YYYY-MM-DD)', f_leg_city: 'Leg / city', f_label: 'Label', f_venue: 'Venue',
+    f_venue_addr: 'Venue address', f_doors: 'Doors', f_starts: 'Starts',
+    btn_remove_perf: '✕ remove performance',
+    f_round_name: 'Round name', f_round_name_en: 'Round name (EN)', f_type: 'Type', f_round_leg: 'Leg',
+    f_apply_open: 'Apply opens (JST)', f_apply_deadline: 'Apply deadline (JST)',
+    f_results: 'Results (JST)', f_payment: 'Payment deadline (JST)', f_apply_url: 'Apply URL',
+    btn_remove_round: '✕ remove round',
+  },
+  ja: {
+    nav_catalog: 'カタログ', nav_calendar: 'カレンダー', nav_past: '過去', nav_add: '＋追加',
+    tz_local: '現地時間で表示',
+    idx_title: '開催予定',
+    idx_hint: 'イベントごとに次の締切を表示。クリックで申込回・公演を展開。',
+    show_past: '過去・予定なしも表示',
+    open_event: 'イベントページを開く →',
+    no_rounds: '抽選回はまだ登録されていません。',
+    feed_empty: '予定はありません。🎉',
+    apply: '申込 ↗',
+    past_badge: '終了',
+    cat_title: 'イベント一覧',
+    cat_search: '名前・アーティスト・シリーズ・会場・出演者で検索…',
+    cat_all_kinds: 'すべての種別',
+    cat_empty: '該当するイベントはありません。',
+    open_round: '受付中あり',
+    th_event: 'イベント', th_series_artist: 'シリーズ / アーティスト', th_kind: '種別',
+    th_venue: '会場', th_dates: '日程', th_rounds: '抽選回数', th_series: 'シリーズ',
+    cal_title: 'カレンダー',
+    past_title: '過去のイベント',
+    past_search: '名前・シリーズで検索…',
+    detail_back: '← 一覧', detail_edit: '✎ 編集',
+    detail_artist: 'アーティスト', detail_series: 'シリーズ', detail_dates: '日程', detail_cast: '出演',
+    detail_perfs: '公演・締切', th_round: '抽選回',
+    no_rounds_show: 'この公演の抽選回はまだ登録されていません。',
+    footer_a: '追跡中:', footer_b: '件 · 時刻は特記なき限りJST · 出典:',
+    footer_c: '公式情報',
+    past_hint_a: '過去のラブライブ！イベント（出典:',
+    past_hint_b: '）参考用・抽選情報なし。', past_hint_c: '件',
+    // add / edit form
+    add_title: 'イベントを追加（ツアー）', edit_title_prefix: '編集: ',
+    add_hint: 'イベントはツアー全体です。各公演を performance として追加し、抽選回を登録します'
+      + '（ツアーの一部のみに適用される回には leg を設定）。YAMLをプレビューしてから、'
+      + 'プリフィル済みのGitHub PRを開くかファイルをダウンロードします。',
+    cfg_summary: '設定（管理シークレットを一度だけ設定 — ブラウザに保存）',
+    cfg_secret: '管理シークレット',
+    f_name_ph: 'ツアー名（日本語）…',
+    f_slug: 'スラッグ / ID', f_name_en: 'ツアー名（英語）', f_artist: 'アーティスト / 主催',
+    f_kind: '種別', f_series: 'シリーズ（カンマ区切り）', f_categories: 'カテゴリ（カンマ区切り）',
+    f_eventernote: 'eventernote URL', f_official: '公式URL', f_source: 'ソースURL',
+    f_source_ph: '取得元',
+    f_performers: '出演者（1行に1人）', f_notes: '備考',
+    sec_perfs: '公演', sec_perfs_note: '（公演・日ごとに1つ）', btn_add_perf: '＋公演を追加',
+    sec_rounds: '抽選回', sec_rounds_note: '（時刻はJST）', btn_add_round: '＋抽選回を追加',
+    btn_save: '💾 保存', btn_preview: 'YAMLプレビュー', btn_copy: 'コピー',
+    btn_download: 'YAMLをダウンロード', btn_delete: '🗑 イベントを削除',
+    f_date: '日付（YYYY-MM-DD）', f_leg_city: 'レグ / 都市', f_label: 'ラベル', f_venue: '会場',
+    f_venue_addr: '会場住所', f_doors: '開場', f_starts: '開演',
+    btn_remove_perf: '✕ 公演を削除',
+    f_round_name: '抽選回名', f_round_name_en: '抽選回名（英語）', f_type: '種別', f_round_leg: 'レグ',
+    f_apply_open: '受付開始（JST）', f_apply_deadline: '受付締切（JST）',
+    f_results: '結果発表（JST）', f_payment: '入金締切（JST）', f_apply_url: '申込URL',
+    btn_remove_round: '✕ 抽選回を削除',
+  },
+};
+
+let _lang = (() => {
+  const saved = localStorage.getItem('lang');
+  if (saved === 'en' || saved === 'ja') return saved;
+  return (navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'en';
+})();
+
+/** Pick the active-language string, falling back to whichever is present. */
+function pick(ja, en) { return _lang === 'en' ? (en || ja || '') : (ja || en || ''); }
+function t(key) { return (I18N[_lang] && I18N[_lang][key]) || I18N.en[key] || key; }
+
+function applyLang(lang) {
+  _lang = lang;
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+    el.setAttribute('placeholder', t(el.dataset.i18nPlaceholder));
+  });
+  document.querySelectorAll('.i18n-field').forEach((el) => {
+    el.textContent = _lang === 'en' ? (el.dataset.en || el.dataset.ja || '')
+      : (el.dataset.ja || el.dataset.en || '');
+  });
+  // active-language link button (bold), the-sorter style
+  document.querySelectorAll('.lang-btn').forEach((b) => {
+    const on = b.dataset.lang === lang;
+    if (on) b.setAttribute('data-active', 'true');
+    else b.removeAttribute('data-active');
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+
+function setLang(lang) {
+  localStorage.setItem('lang', lang);
+  applyLang(lang);
+  window.dispatchEvent(new Event('langchange')); // re-render JS-built views
+}
+
+(function initLang() {
+  applyLang(_lang);
+  document.querySelectorAll('.lang-btn').forEach((b) => {
+    b.addEventListener('click', () => setLang(b.dataset.lang));
+  });
+})();
+
 /* --- timezone toggle (applies to every <time class="dt">) --- */
 function applyTz(local) {
   document.querySelectorAll('time.dt').forEach((el) => {
@@ -65,6 +223,18 @@ function initGroups() {
   const container = document.getElementById('groups');
   const groups = [...container.querySelectorAll('.evgroup')];
 
+  // The event-name link lives inside <summary>; a plain click should navigate,
+  // not toggle the row. preventDefault cancels BOTH the native nav and the
+  // <summary> toggle (one event), so navigate manually. Modified clicks
+  // (cmd/ctrl/shift → new tab/window) fall through to native behaviour.
+  container.addEventListener('click', (e) => {
+    const a = e.target.closest('.evname');
+    if (!a) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    window.location.href = a.href;
+  });
+
   const refresh = () => {
     const now = new Date();
     const showPastChecked = showPast.checked;
@@ -112,13 +282,15 @@ function initGroups() {
       const occEl = next && [...d.querySelectorAll('.occ')].find((o) => o.dataset.iso === next);
       if (occEl) {
         const src = occEl.querySelector('.badge');
-        badge.className = 'next-badge ' + src.className; // copies "badge <css>"
+        // copy "badge <css>" for colour, but NOT i18n-field — next-badge has no
+        // data-ja/en of its own and applyLang would blank it.
+        badge.className = ('next-badge ' + src.className).replace(/\s*\bi18n-field\b/g, '');
         badge.textContent = src.textContent;
-        if (round) round.textContent = occEl.dataset.round || ''; // which round it is
+        if (round) round.textContent = pick(occEl.dataset.round, occEl.dataset.roundEn); // which round
         cd.dataset.iso = next;
         when.setAttribute('datetime', next);
       } else {
-        badge.className = 'next-badge'; badge.textContent = 'past';
+        badge.className = 'next-badge'; badge.textContent = t('past_badge');
         if (round) round.textContent = '';
         delete cd.dataset.iso; cd.textContent = '';
         when.removeAttribute('datetime'); when.textContent = '';
@@ -137,6 +309,7 @@ function initGroups() {
   };
 
   showPast.addEventListener('change', refresh);
+  window.addEventListener('langchange', refresh); // re-pick next-round label per language
   refresh();
   setInterval(paintCountdowns, 60000);
 }
@@ -250,11 +423,12 @@ async function initCalendar(url) {
   for (const ev of events) {
     for (const r of ev.rounds || []) {
       for (const [f, cls] of Object.entries(CAL_FIELDS)) {
-        if (r[f]) items.push({ date: jstDay(r[f]), cls, label: `${ev.name} ${r.name}`, id: ev.id });
+        if (r[f]) items.push({ date: jstDay(r[f]), cls, id: ev.id,
+          ja: `${ev.name} ${r.name}`, en: `${ev.name_en || ev.name} ${r.name_en || r.name}` });
       }
     }
     for (const d of ev.event_dates || []) {
-      items.push({ date: d, cls: 'event', label: ev.name, id: ev.id });
+      items.push({ date: d, cls: 'event', id: ev.id, ja: ev.name, en: ev.name_en || ev.name });
     }
   }
   let cur = new Date();
@@ -262,7 +436,7 @@ async function initCalendar(url) {
   const render = () => {
     const y = cur.getFullYear(), mo = cur.getMonth();
     document.getElementById('cal-label').textContent =
-      cur.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+      cur.toLocaleString(_lang === 'ja' ? 'ja-JP' : 'en-US', { month: 'long', year: 'numeric' });
     const grid = document.getElementById('calendar-grid');
     grid.innerHTML = '';
     ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach((d) => {
@@ -280,8 +454,9 @@ async function initCalendar(url) {
       cell.append(num);
       items.filter((it) => it.date === iso).forEach((it) => {
         const a = document.createElement('a');
-        a.className = `cal-ev ${it.cls}`; a.textContent = it.label;
-        a.title = it.label; a.href = `event/${it.id}.html`;
+        const label = pick(it.ja, it.en);
+        a.className = `cal-ev ${it.cls}`; a.textContent = label;
+        a.title = label; a.href = `event/${it.id}.html`;
         cell.append(a);
       });
       grid.append(cell);
@@ -289,6 +464,7 @@ async function initCalendar(url) {
   };
   document.getElementById('cal-prev').onclick = () => { cur.setMonth(cur.getMonth() - 1); render(); };
   document.getElementById('cal-next').onclick = () => { cur.setMonth(cur.getMonth() + 1); render(); };
+  window.addEventListener('langchange', render); // re-label per language
   render();
 }
 
@@ -423,6 +599,7 @@ function initAddForm(eventsUrl) {
       set('p_doors', data.doors); set('p_starts', data.starts);
     }
     perfBox.append(node);
+    applyLang(_lang); // localize the freshly-cloned labels
   };
   document.getElementById('add-perf').addEventListener('click', () => addPerf());
   perfBox.addEventListener('click', (e) => {
@@ -444,6 +621,7 @@ function initAddForm(eventsUrl) {
       set('r_apply_url', data.apply_url); set('r_notes', data.notes);
     }
     roundsBox.append(node);
+    applyLang(_lang); // localize the freshly-cloned labels
   };
   document.getElementById('add-round').addEventListener('click', () => addRound());
   roundsBox.addEventListener('click', (e) => {
@@ -539,7 +717,11 @@ function initAddForm(eventsUrl) {
     fetch(eventsUrl).then((r) => r.json()).then(({ events }) => {
       const ev = events.find((e) => e.id === editId);
       if (!ev) return;
-      document.getElementById('form-title').textContent = `Edit event: ${ev.id}`;
+      const titleEl = document.getElementById('form-title');
+      titleEl.removeAttribute('data-i18n'); // dynamic edit title (has the id), not a static key
+      const setEditTitle = () => { titleEl.textContent = t('edit_title_prefix') + ev.id; };
+      setEditTitle();
+      window.addEventListener('langchange', setEditTitle); // keep the prefix localized on toggle
       const set = (n, v) => { if (v != null) form.querySelector(`[name="${n}"]`).value = v; };
       set('id', ev.id); set('name', ev.name); set('name_en', ev.name_en);
       set('artist', ev.artist); set('kind', ev.kind);

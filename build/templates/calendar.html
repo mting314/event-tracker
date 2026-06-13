@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Calendar · LL Lottery Tracker{% endblock %}
 {% block content %}
-<h1>Calendar</h1>
+<h1 data-i18n="cal_title">Calendar</h1>
 <div class="cal-controls">
   <button id="cal-prev">←</button>
   <span id="cal-label"></span>
   <button id="cal-next">→</button>
 </div>
 <div class="legend">
-  <span class="badge deadline">締切 Deadline</span>
-  <span class="badge opens">申込開始 Opens</span>
-  <span class="badge results">発表 Results</span>
-  <span class="badge payment">入金 Payment</span>
-  <span class="badge event">公演 Event day</span>
+  <span class="badge deadline i18n-field" data-ja="締切" data-en="Deadline">締切</span>
+  <span class="badge opens i18n-field" data-ja="申込開始" data-en="Opens">申込開始</span>
+  <span class="badge results i18n-field" data-ja="発表" data-en="Results">発表</span>
+  <span class="badge payment i18n-field" data-ja="入金" data-en="Payment">入金</span>
+  <span class="badge event i18n-field" data-ja="公演" data-en="Event day">公演</span>
 </div>
 <div class="calendar-wrap">
   <div id="calendar-grid" class="calendar-grid"></div>

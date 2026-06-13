@@ -1,53 +1,53 @@
 {% extends "base.html" %}
 {% block title %}Add / edit event · LL Lottery Tracker{% endblock %}
 {% block content %}
-<h1 id="form-title">Add an event (tour)</h1>
-<p class="hint">An event is a whole <strong>tour</strong>. Add each show as a performance,
-  and lottery rounds (tag a round's <em>leg</em> if it only applies to part of the tour).
+<h1 id="form-title" data-i18n="add_title">Add an event (tour)</h1>
+<p class="hint" data-i18n="add_hint">An event is a whole tour. Add each show as a performance,
+  and lottery rounds (tag a round's leg if it only applies to part of the tour).
   Preview the YAML, then open a prefilled GitHub PR or download the file.</p>
 
 <details class="gh-config" id="gh-config" data-edit-api="{{ edit_api }}">
-  <summary>Config (set the admin secret once — stored in your browser)</summary>
-  <label>Admin secret <input id="edit-secret" type="password"></label>
+  <summary data-i18n="cfg_summary">Config (set the admin secret once — stored in your browser)</summary>
+  <label><span data-i18n="cfg_secret">Admin secret</span> <input id="edit-secret" type="password"></label>
 </details>
 
 <form id="event-form" autocomplete="off">
   <input class="title-input" name="name" required placeholder="Tour name (JP)…"
-         aria-label="Tour name (JP)">
+         data-i18n-placeholder="f_name_ph" aria-label="Tour name (JP)">
   <div class="grid2">
-    <label>Slug / id <input name="id" placeholder="2026-liella-7th" required></label>
-    <label>Tour name (EN) <input name="name_en"></label>
-    <label>Artist / organizer <input name="artist" placeholder="LustQueen (non-series acts)"></label>
-    <label>Kind <select name="kind">
+    <label><span data-i18n="f_slug">Slug / id</span> <input name="id" placeholder="2026-liella-7th" required></label>
+    <label><span data-i18n="f_name_en">Tour name (EN)</span> <input name="name_en"></label>
+    <label><span data-i18n="f_artist">Artist / organizer</span> <input name="artist" placeholder="LustQueen (non-series acts)"></label>
+    <label><span data-i18n="f_kind">Kind</span> <select name="kind">
       <option value="">(unset)</option>
       {% for k in kind_options|default([]) %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
     </select></label>
-    <label>Series (comma-sep) <input name="series" list="series-list" placeholder="Liella!"></label>
-    <label>Categories (comma-sep) <input name="categories" placeholder="concert, tour"></label>
-    <label>eventernote URL <input name="eventernote_url" type="url"></label>
-    <label>Official URL <input name="official_url" type="url"></label>
-    <label>Source URL <input name="source_url" type="url" placeholder="where this was ingested from"></label>
+    <label><span data-i18n="f_series">Series (comma-sep)</span> <input name="series" list="series-list" placeholder="Liella!"></label>
+    <label><span data-i18n="f_categories">Categories (comma-sep)</span> <input name="categories" placeholder="concert, tour"></label>
+    <label><span data-i18n="f_eventernote">eventernote URL</span> <input name="eventernote_url" type="url"></label>
+    <label><span data-i18n="f_official">Official URL</span> <input name="official_url" type="url"></label>
+    <label><span data-i18n="f_source">Source URL</span> <input name="source_url" type="url" placeholder="where this was ingested from" data-i18n-placeholder="f_source_ph"></label>
   </div>
   <datalist id="series-list">
     {% for s in series_options|default([]) %}<option value="{{ s }}">{% endfor %}
   </datalist>
-  <label class="block">Performers (one per line)<textarea name="performers" rows="3"></textarea></label>
-  <label class="block">Notes<textarea name="notes" rows="2"></textarea></label>
+  <label class="block"><span data-i18n="f_performers">Performers (one per line)</span><textarea name="performers" rows="3"></textarea></label>
+  <label class="block"><span data-i18n="f_notes">Notes</span><textarea name="notes" rows="2"></textarea></label>
 
-  <h2>Performances <small>(one per show / day)</small></h2>
+  <h2><span data-i18n="sec_perfs">Performances</span> <small data-i18n="sec_perfs_note">(one per show / day)</small></h2>
   <div id="performances"></div>
-  <button type="button" id="add-perf" class="btn">+ Add performance</button>
+  <button type="button" id="add-perf" class="btn" data-i18n="btn_add_perf">+ Add performance</button>
 
-  <h2>Lottery rounds <small>(times are JST)</small></h2>
+  <h2><span data-i18n="sec_rounds">Lottery rounds</span> <small data-i18n="sec_rounds_note">(times are JST)</small></h2>
   <div id="rounds"></div>
-  <button type="button" id="add-round" class="btn">+ Add round</button>
+  <button type="button" id="add-round" class="btn" data-i18n="btn_add_round">+ Add round</button>
 
   <div class="actions">
-    <button type="button" id="save" class="btn primary">💾 Save</button>
-    <button type="button" id="build" class="btn">Preview YAML</button>
-    <button type="button" id="copy" class="btn">Copy</button>
-    <button type="button" id="download" class="btn">Download .yaml</button>
-    <button type="button" id="delete" class="btn danger" hidden>🗑 Delete event</button>
+    <button type="button" id="save" class="btn primary" data-i18n="btn_save">💾 Save</button>
+    <button type="button" id="build" class="btn" data-i18n="btn_preview">Preview YAML</button>
+    <button type="button" id="copy" class="btn" data-i18n="btn_copy">Copy</button>
+    <button type="button" id="download" class="btn" data-i18n="btn_download">Download .yaml</button>
+    <button type="button" id="delete" class="btn danger" hidden data-i18n="btn_delete">🗑 Delete event</button>
   </div>
   <p id="form-error" class="form-error" hidden></p>
 </form>
@@ -57,33 +57,33 @@
 <template id="perf-tpl">
   <fieldset class="round">
     <div class="grid2">
-      <label>Date (YYYY-MM-DD) <input name="p_date" placeholder="2026-02-07" required></label>
-      <label>Leg / city <input name="p_city" placeholder="Kanagawa"></label>
-      <label>Label <input name="p_label" placeholder="Day 1"></label>
-      <label>Venue <input name="p_venue"></label>
-      <label>Venue address <input name="p_venue_address"></label>
-      <label>Doors <input name="p_doors" placeholder="16:00"></label>
-      <label>Starts <input name="p_starts" placeholder="17:00"></label>
+      <label><span data-i18n="f_date">Date (YYYY-MM-DD)</span> <input name="p_date" placeholder="2026-02-07" required></label>
+      <label><span data-i18n="f_leg_city">Leg / city</span> <input name="p_city" placeholder="Kanagawa"></label>
+      <label><span data-i18n="f_label">Label</span> <input name="p_label" placeholder="Day 1"></label>
+      <label><span data-i18n="f_venue">Venue</span> <input name="p_venue"></label>
+      <label><span data-i18n="f_venue_addr">Venue address</span> <input name="p_venue_address"></label>
+      <label><span data-i18n="f_doors">Doors</span> <input name="p_doors" placeholder="16:00"></label>
+      <label><span data-i18n="f_starts">Starts</span> <input name="p_starts" placeholder="17:00"></label>
     </div>
-    <button type="button" class="btn remove-perf">✕ remove performance</button>
+    <button type="button" class="btn remove-perf" data-i18n="btn_remove_perf">✕ remove performance</button>
   </fieldset>
 </template>
 
 <template id="round-tpl">
   <fieldset class="round">
     <div class="grid2">
-      <label>Round name <input name="r_name" placeholder="1次先行抽選" required></label>
-      <label>Round name (EN) <input name="r_name_en" placeholder="1st-round advance lottery"></label>
-      <label>Type <input name="r_type" placeholder="presale / general / fanclub"></label>
-      <label>Leg <input name="r_leg" placeholder="Kanagawa (blank = whole tour)"></label>
-      <label>Apply opens (JST) <input name="r_apply_open" type="datetime-local"></label>
-      <label>Apply deadline (JST) <input name="r_apply_deadline" type="datetime-local"></label>
-      <label>Results (JST) <input name="r_results_date" type="datetime-local"></label>
-      <label>Payment deadline (JST) <input name="r_payment_deadline" type="datetime-local"></label>
-      <label>Apply URL <input name="r_apply_url" type="url"></label>
-      <label>Notes <input name="r_notes"></label>
+      <label><span data-i18n="f_round_name">Round name</span> <input name="r_name" placeholder="1次先行抽選" required></label>
+      <label><span data-i18n="f_round_name_en">Round name (EN)</span> <input name="r_name_en" placeholder="1st-round advance lottery"></label>
+      <label><span data-i18n="f_type">Type</span> <input name="r_type" placeholder="presale / general / fanclub"></label>
+      <label><span data-i18n="f_round_leg">Leg</span> <input name="r_leg" placeholder="Kanagawa (blank = whole tour)"></label>
+      <label><span data-i18n="f_apply_open">Apply opens (JST)</span> <input name="r_apply_open" type="datetime-local"></label>
+      <label><span data-i18n="f_apply_deadline">Apply deadline (JST)</span> <input name="r_apply_deadline" type="datetime-local"></label>
+      <label><span data-i18n="f_results">Results (JST)</span> <input name="r_results_date" type="datetime-local"></label>
+      <label><span data-i18n="f_payment">Payment deadline (JST)</span> <input name="r_payment_deadline" type="datetime-local"></label>
+      <label><span data-i18n="f_apply_url">Apply URL</span> <input name="r_apply_url" type="url"></label>
+      <label><span data-i18n="f_notes">Notes</span> <input name="r_notes"></label>
     </div>
-    <button type="button" class="btn remove-round">✕ remove round</button>
+    <button type="button" class="btn remove-round" data-i18n="btn_remove_round">✕ remove round</button>
   </fieldset>
 </template>
 {% endblock %}

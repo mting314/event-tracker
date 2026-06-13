@@ -10,21 +10,26 @@
   <header class="topbar">
     <a class="brand" href="{{ base|default('') }}index.html">🎫 LL Lottery Tracker</a>
     <nav>
-      <a href="{{ base|default('') }}catalog.html">Catalog</a>
-      <a href="{{ base|default('') }}calendar.html">Calendar</a>
-      <a href="{{ base|default('') }}past.html">Past</a>
-      <a href="{{ base|default('') }}add.html">+ Add</a>
+      <a href="{{ base|default('') }}catalog.html" data-i18n="nav_catalog">Catalog</a>
+      <a href="{{ base|default('') }}calendar.html" data-i18n="nav_calendar">Calendar</a>
+      <a href="{{ base|default('') }}past.html" data-i18n="nav_past">Past</a>
+      <a href="{{ base|default('') }}add.html" data-i18n="nav_add">+ Add</a>
     </nav>
     <label class="tz-toggle">
-      <input type="checkbox" id="tz-local"> Show local time
+      <input type="checkbox" id="tz-local"> <span data-i18n="tz_local">Show local time</span>
     </label>
+    <div class="lang-toggle" role="group" aria-label="Language / 言語">
+      <button type="button" class="lang-btn" data-lang="en">English</button>
+      <span class="lang-sep" aria-hidden="true">|</span>
+      <button type="button" class="lang-btn" data-lang="ja">日本語</button>
+    </div>
   </header>
   <main>
     {% block content %}{% endblock %}
   </main>
   <footer>
-    <p>Tracking {{ event_count }} events · all times JST unless toggled · curated from
-      <a href="https://www.eventernote.com/">eventernote</a> &amp; official sources</p>
+    <p><span data-i18n="footer_a">Tracking</span> {{ event_count }} <span data-i18n="footer_b">events · all times JST unless toggled · curated from</span>
+      <a href="https://www.eventernote.com/">eventernote</a> &amp; <span data-i18n="footer_c">official sources</span></p>
   </footer>
   <script src="{{ base|default('') }}static/app.js"></script>
   {% block scripts %}{% endblock %}

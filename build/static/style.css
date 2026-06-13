@@ -32,6 +32,16 @@ a:hover { text-decoration: underline; }
 .brand { font-weight: 700; font-size: 1.1rem; }
 .topbar nav { display: flex; gap: 1rem; }
 .tz-toggle { margin-left: auto; color: var(--muted); font-size: .85rem; }
+/* Language toggle — matches the-sorter (Park UI Button variant="link"): plain
+   currentColor text, semibold, no underline/background; active = bold. */
+.lang-toggle { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; }
+.lang-sep { color: inherit; }
+.lang-btn {
+  appearance: none; background: none; border: none; padding: 0; min-width: 0; height: auto;
+  cursor: pointer; font-family: inherit; font-size: .875rem; font-weight: 600;
+  color: inherit; vertical-align: baseline; white-space: nowrap;
+}
+.lang-btn[data-active] { font-weight: 700; }
 
 main { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
 h1 { font-size: 1.5rem; }
@@ -150,7 +160,8 @@ tbody tr:hover { background: var(--panel); }
 .evgroup summary::-webkit-details-marker { display: none; }
 .evgroup summary::before { content: "▸"; color: var(--muted); }
 .evgroup[open] summary::before { content: "▾"; }
-.evgroup .evname { font-weight: 600; }
+.evgroup .evname { font-weight: 600; color: var(--text); text-decoration: none; }
+.evgroup .evname:hover { color: var(--accent, #ff5fa2); text-decoration: underline; }
 .evgroup .next-badge:empty { display: none; }
 .evgroup .next-when { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; font-size: .85rem; }
 .evbody { padding: .2rem .8rem .7rem 1.6rem; border-top: 1px solid #2c2f55; }

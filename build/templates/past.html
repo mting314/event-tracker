@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Past events · LL Lottery Tracker{% endblock %}
 {% block content %}
-<h1>Past events</h1>
-<p class="hint">Archive of past Love Live! events from
-  <a href="https://ll-fans.jp" target="_blank" rel="noopener">LLFans</a> — reference only
-  (no lottery rounds). {{ past|length }} events.</p>
+<h1 data-i18n="past_title">Past events</h1>
+<p class="hint"><span data-i18n="past_hint_a">Archive of past Love Live! events from</span>
+  <a href="https://ll-fans.jp" target="_blank" rel="noopener">LLFans</a> <span data-i18n="past_hint_b">— reference only
+  (no lottery rounds).</span> {{ past|length }} <span data-i18n="past_hint_c">events.</span></p>
 <div class="filters">
-  <input type="search" id="q-past" placeholder="Search name or series…" autofocus>
+  <input type="search" id="q-past" placeholder="Search name or series…" data-i18n-placeholder="past_search" autofocus>
 </div>
 
 <table class="catalog" id="past">
   <thead>
-    <tr><th>Event</th><th>Series</th><th>Dates</th><th></th></tr>
+    <tr><th data-i18n="th_event">Event</th><th data-i18n="th_series">Series</th><th data-i18n="th_dates">Dates</th><th></th></tr>
   </thead>
   <tbody>
     {% for e in past %}
@@ -28,6 +28,6 @@
     {% endfor %}
   </tbody>
 </table>
-<p class="empty" id="past-empty" hidden>No matching events.</p>
+<p class="empty" id="past-empty" hidden data-i18n="cat_empty">No matching events.</p>
 {% endblock %}
 {% block scripts %}<script>initPast();</script>{% endblock %}

@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Upcoming · LL Lottery Tracker{% endblock %}
 {% block content %}
-<h1>Upcoming</h1>
-<p class="hint">One row per event, showing its next deadline. Click to expand rounds &amp; shows.
-  <label><input type="checkbox" id="show-past"> show past / no upcoming</label>
+<h1 data-i18n="idx_title">Upcoming</h1>
+<p class="hint"><span data-i18n="idx_hint">One row per event, showing its next deadline. Click to expand rounds &amp; shows.</span>
+  <label><input type="checkbox" id="show-past"> <span data-i18n="show_past">show past / no upcoming</span></label>
 </p>
 
 <ul class="evgroups" id="groups">
@@ -14,13 +14,13 @@
         <span class="next-badge"></span>
         <span class="next-round"></span>
         <span class="countdown"></span>
-        <span class="evname">{{ g.name }}</span>
-        {% for s in g.series %}<span class="tag">{{ s }}</span>{% endfor %}
+        <a class="evname i18n-field" href="{{ base }}event/{{ g.id }}.html" data-ja="{{ g.name }}" data-en="{{ g.name_en }}">{{ g.name }}</a>
+        {% for s in g.series %}<span class="tag i18n-field" data-en="{{ s }}" data-ja="{{ s|series_ja }}">{{ s }}</span>{% endfor %}
         {% if g.kind %}<span class="kind-badge">{{ g.kind }}</span>{% endif %}
         <time class="next-when dt"></time>
       </summary>
       <div class="evbody">
-        <p class="crumb"><a href="{{ base }}event/{{ g.id }}.html">open event page →</a></p>
+        <p class="crumb"><a href="{{ base }}event/{{ g.id }}.html" data-i18n="open_event">open event page →</a></p>
         {% if g.performances %}
         <ul class="perf-rows">
           {% for p in g.performances %}
@@ -41,12 +41,12 @@
             <table class="rounds-mini">
               <tbody>
                 {% for o in p.occurrences %}
-                <tr class="occ" data-iso="{{ o.iso }}" data-round="{{ o.round }}" data-perf="{{ pidx }}-{{ p.date }}">
-                  <td><span class="badge {{ o.css }}">{{ o.label }}</span></td>
-                  <td class="occ-round">{{ o.round }}</td>
+                <tr class="occ" data-iso="{{ o.iso }}" data-round="{{ o.round }}" data-round-en="{{ o.round_en }}" data-perf="{{ pidx }}-{{ p.date }}">
+                  <td><span class="badge i18n-field {{ o.css }}" data-ja="{{ o.label_ja }}" data-en="{{ o.label_en }}">{{ o.label_ja }}</span></td>
+                  <td class="occ-round i18n-field" data-ja="{{ o.round }}" data-en="{{ o.round_en }}">{{ o.round }}</td>
                   <td><time class="dt" datetime="{{ o.iso }}">{{ o.iso|jst_fmt }}</time>
                     <span class="countdown" data-iso="{{ o.iso }}"></span></td>
-                  <td>{% if o.apply_url %}<a class="apply" href="{{ o.apply_url }}" target="_blank" rel="noopener">Apply ↗</a>{% endif %}</td>
+                  <td>{% if o.apply_url %}<a class="apply" href="{{ o.apply_url }}" target="_blank" rel="noopener" data-i18n="apply">Apply ↗</a>{% endif %}</td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -56,12 +56,12 @@
           {% endfor %}
         </ul>
         {% endif %}
-        {% if not g.occurrences %}<p class="muted">No lottery rounds recorded yet.</p>{% endif %}
+        {% if not g.occurrences %}<p class="muted" data-i18n="no_rounds">No lottery rounds recorded yet.</p>{% endif %}
       </div>
     </details>
   </li>
   {% endfor %}
 </ul>
-<p class="empty" id="feed-empty" hidden>Nothing upcoming. 🎉</p>
+<p class="empty" id="feed-empty" hidden data-i18n="feed_empty">Nothing upcoming. 🎉</p>
 {% endblock %}
 {% block scripts %}<script>initGroups();</script>{% endblock %}

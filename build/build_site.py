@@ -19,8 +19,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from schema.models import JST, KINDS, load_all_events
-from scrape.llfans import SERIES as LLFANS_SERIES
+from schema.models import JST, KINDS, SERIES, load_all_events
 
 ROOT = Path(__file__).resolve().parent.parent
 EVENTS_DIR = ROOT / "events"
@@ -30,27 +29,32 @@ STATIC_DIR = ROOT / "build" / "static"
 DIST_DIR = ROOT / "site" / "dist"
 
 # date_type -> (bilingual label, short css class)
+# field -> bilingual label + css class. The site localizes ja/en client-side.
 DATE_TYPES = {
-    "apply_open": ("申込開始 · Opens", "opens"),
-    "apply_deadline": ("申込締切 · Deadline", "deadline"),
-    "results_date": ("結果発表 · Results", "results"),
-    "payment_deadline": ("入金締切 · Payment", "payment"),
+    "apply_open": {"ja": "申込開始", "en": "Opens", "css": "opens"},
+    "apply_deadline": {"ja": "申込締切", "en": "Deadline", "css": "deadline"},
+    "results_date": {"ja": "結果発表", "en": "Results", "css": "results"},
+    "payment_deadline": {"ja": "入金締切", "en": "Payment", "css": "payment"},
 }
 
 
 def _round_occurrences(rnd) -> list[dict]:
     """The dated actions (opens/deadline/results/payment) for one round."""
+    leg = f" · {rnd.leg}" if rnd.leg else ""
+    round_en = (rnd.name_en or rnd.name) + leg
     out = []
-    for field, (label, css) in DATE_TYPES.items():
+    for field, meta in DATE_TYPES.items():
         dt = getattr(rnd, field)
         if dt is None:
             continue
         out.append(
             {
                 "iso": dt.isoformat(),
-                "label": label,
-                "css": css,
-                "round": rnd.name + (f" · {rnd.leg}" if rnd.leg else ""),
+                "label_ja": meta["ja"],
+                "label_en": meta["en"],
+                "css": meta["css"],
+                "round": rnd.name + leg,
+                "round_en": round_en,
                 "apply_url": rnd.apply_url,
             }
         )
@@ -87,6 +91,7 @@ def build_index_groups(events) -> list[dict]:
             {
                 "id": ev.id,
                 "name": ev.name,
+                "name_en": ev.name_en or ev.name,
                 "series": ev.series,
                 "kind": ev.kind,
                 "performances": perfs,
@@ -140,14 +145,15 @@ def main() -> None:
     )
     env.filters["jst_fmt"] = jst_fmt
     env.filters["jst_date"] = jst_date
+    env.filters["series_ja"] = lambda s: SERIES.get(s, s)  # canonical EN -> JP display
 
     groups = build_index_groups(events)
     # The edit API URL (public Cloud Function) is baked into the add page so the
     # editor only ever enters the admin secret. Override via EDIT_API_URL.
     edit_api = os.environ.get("EDIT_API_URL", "https://ll-commit-g6hnlr7cca-uc.a.run.app")
-    # Series dropdown options for the add/edit form: known LL series + any already
-    # used in events/ (so curated tags stay suggestible), sorted.
-    series_options = sorted({s for e in events for s in e.series} | set(LLFANS_SERIES.values()))
+    # Series dropdown options for the add/edit form: the canonical SERIES vocabulary
+    # plus any other tag already used in events/ (so curated tags stay suggestible).
+    series_options = sorted(set(SERIES) | {s for e in events for s in e.series})
     # Kind dropdown options: the controlled vocabulary (schema.KINDS). The Event.kind
     # validator coerces any unknown kind to 'other', so KINDS is exhaustive here.
     kind_options = list(KINDS)

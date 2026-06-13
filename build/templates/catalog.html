@@ -1,30 +1,31 @@
 {% extends "base.html" %}
 {% block title %}Catalog · LL Lottery Tracker{% endblock %}
 {% block content %}
-<h1>Event catalog</h1>
+<h1 data-i18n="cat_title">Event catalog</h1>
 {% set kinds = events|map(attribute='kind')|select|unique|list %}
 <div class="filters">
-  <input type="search" id="q" placeholder="Search name, artist, series, venue, performer…" autofocus>
+  <input type="search" id="q" placeholder="Search name, artist, series, venue, performer…"
+         data-i18n-placeholder="cat_search" autofocus>
   <select id="kind">
-    <option value="">All kinds</option>
+    <option value="" data-i18n="cat_all_kinds">All kinds</option>
     {% for k in kinds %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
   </select>
-  <label><input type="checkbox" id="open-only"> has open round</label>
+  <label><input type="checkbox" id="open-only"> <span data-i18n="open_round">has open round</span></label>
 </div>
 
 <table class="catalog" id="catalog">
   <thead>
-    <tr><th>Event</th><th>Series / Artist</th><th>Kind</th><th>Venue</th><th>Dates</th><th>Rounds</th></tr>
+    <tr><th data-i18n="th_event">Event</th><th data-i18n="th_series_artist">Series / Artist</th><th data-i18n="th_kind">Kind</th><th data-i18n="th_venue">Venue</th><th data-i18n="th_dates">Dates</th><th data-i18n="th_rounds">Rounds</th></tr>
   </thead>
   <tbody>
     {% for ev in events %}
     <tr class="evrow"
-        data-haystack="{{ (ev.name ~ ' ' ~ (ev.name_en or '') ~ ' ' ~ (ev.artist or '') ~ ' ' ~ (ev.series|join(' ')) ~ ' ' ~ (ev.venues|join(' ')) ~ ' ' ~ (ev.performers|join(' ')))|lower }}"
+        data-haystack="{{ (ev.name ~ ' ' ~ (ev.name_en or '') ~ ' ' ~ (ev.artist or '') ~ ' ' ~ (ev.series|join(' ')) ~ ' ' ~ (ev.series|map('series_ja')|join(' ')) ~ ' ' ~ (ev.venues|join(' ')) ~ ' ' ~ (ev.performers|join(' ')))|lower }}"
         data-kind="{{ ev.kind or '' }}"
         data-deadlines="{% for r in ev.rounds %}{{ r.apply_deadline or '' }},{% endfor %}">
-      <td><a href="{{ base }}event/{{ ev.id }}.html">{{ ev.name }}</a>
-        {% if ev.name_en %}<div class="sub">{{ ev.name_en }}</div>{% endif %}</td>
-      <td>{% for s in ev.series %}<span class="tag">{{ s }}</span>{% endfor %}{% if ev.artist %}<span class="sub">{{ ev.artist }}</span>{% endif %}</td>
+      <td><a class="i18n-field" href="{{ base }}event/{{ ev.id }}.html" data-ja="{{ ev.name }}" data-en="{{ ev.name_en or ev.name }}">{{ ev.name }}</a>
+        {% if ev.name_en %}<div class="sub i18n-field" data-ja="{{ ev.name_en }}" data-en="{{ ev.name }}">{{ ev.name_en }}</div>{% endif %}</td>
+      <td>{% for s in ev.series %}<span class="tag i18n-field" data-en="{{ s }}" data-ja="{{ s|series_ja }}">{{ s }}</span>{% endfor %}{% if ev.artist %}<span class="sub">{{ ev.artist }}</span>{% endif %}</td>
       <td>{% if ev.kind %}<span class="kind-badge">{{ ev.kind }}</span>{% endif %}</td>
       <td>{% if ev.venues %}{{ ev.venues[0] }}{% if ev.venues|length > 1 %} <span class="sub">+{{ ev.venues|length - 1 }}</span>{% endif %}{% else %}—{% endif %}</td>
       <td>{% if ev.event_dates %}<span class="nowrap">{{ ev.event_dates[0][:10] }}{% if ev.event_dates|length > 1 %} – {{ ev.event_dates[-1][:10] }}{% endif %}</span>{% endif %}</td>
@@ -33,6 +34,6 @@
     {% endfor %}
   </tbody>
 </table>
-<p class="empty" id="catalog-empty" hidden>No matching events.</p>
+<p class="empty" id="catalog-empty" hidden data-i18n="cat_empty">No matching events.</p>
 {% endblock %}
 {% block scripts %}<script>initCatalog();</script>{% endblock %}
