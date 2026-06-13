@@ -20,7 +20,7 @@ function fmtLocal(iso) {
    badges) uses .i18n-field elements carrying data-ja / data-en. --- */
 const I18N = {
   en: {
-    nav_catalog: 'Catalog', nav_calendar: 'Calendar', nav_past: 'Past', nav_add: '+ Add',
+    nav_events: 'Events', nav_calendar: 'Calendar', nav_past: 'Past', nav_add: '+ Add',
     tz_local: 'Show local time',
     idx_title: 'Upcoming',
     idx_hint: 'One row per event, showing its next deadline. Click to expand rounds & shows.',
@@ -35,12 +35,11 @@ const I18N = {
     cat_all_kinds: 'All kinds',
     cat_empty: 'No matching events.',
     open_round: 'has open round',
-    th_event: 'Event', th_series_artist: 'Series / Artist', th_kind: 'Kind',
-    th_venue: 'Venue', th_dates: 'Dates', th_rounds: 'Rounds', th_series: 'Series',
+    th_event: 'Event', th_dates: 'Dates', th_series: 'Series',
     cal_title: 'Calendar',
     past_title: 'Past events',
     past_search: 'Search name or series…',
-    detail_back: '← Catalog', detail_edit: '✎ Edit event',
+    detail_back: '← Events', detail_edit: '✎ Edit event',
     detail_artist: 'Artist', detail_series: 'Series', detail_dates: 'Dates', detail_cast: 'Cast',
     detail_perfs: 'Performances & deadlines', th_round: 'Round',
     no_rounds_show: 'No lottery rounds recorded for this show yet.',
@@ -74,7 +73,7 @@ const I18N = {
     btn_remove_round: '✕ remove round',
   },
   ja: {
-    nav_catalog: 'カタログ', nav_calendar: 'カレンダー', nav_past: '過去', nav_add: '＋追加',
+    nav_events: 'イベント', nav_calendar: 'カレンダー', nav_past: '過去', nav_add: '＋追加',
     tz_local: '現地時間で表示',
     idx_title: '開催予定',
     idx_hint: 'イベントごとに次の締切を表示。クリックで申込回・公演を展開。',
@@ -89,12 +88,11 @@ const I18N = {
     cat_all_kinds: 'すべての種別',
     cat_empty: '該当するイベントはありません。',
     open_round: '受付中あり',
-    th_event: 'イベント', th_series_artist: 'シリーズ / アーティスト', th_kind: '種別',
-    th_venue: '会場', th_dates: '日程', th_rounds: '抽選回数', th_series: 'シリーズ',
+    th_event: 'イベント', th_dates: '日程', th_series: 'シリーズ',
     cal_title: 'カレンダー',
     past_title: '過去のイベント',
     past_search: '名前・シリーズで検索…',
-    detail_back: '← 一覧', detail_edit: '✎ 編集',
+    detail_back: '← イベント', detail_edit: '✎ 編集',
     detail_artist: 'アーティスト', detail_series: 'シリーズ', detail_dates: '日程', detail_cast: '出演',
     detail_perfs: '公演・締切', th_round: '抽選回',
     no_rounds_show: 'この公演の抽選回はまだ登録されていません。',
@@ -222,6 +220,10 @@ function initGroups() {
   const empty = document.getElementById('feed-empty');
   const container = document.getElementById('groups');
   const groups = [...container.querySelectorAll('.evgroup')];
+  // Merged-in catalog filters (search / kind / has-open-round).
+  const q = document.getElementById('q');
+  const kindSel = document.getElementById('kind');
+  const openOnly = document.getElementById('open-only');
 
   // The event-name link lives inside <summary>; a plain click should navigate,
   // not toggle the row. preventDefault cancels BOTH the native nav and the
@@ -238,6 +240,10 @@ function initGroups() {
   const refresh = () => {
     const now = new Date();
     const showPastChecked = showPast.checked;
+    const term = (q?.value || '').trim().toLowerCase();
+    const kindVal = kindSel?.value || '';
+    const openChk = !!openOnly?.checked;
+    const filtering = !!(term || kindVal || openChk); // a search/filter reveals all matches
     let visible = 0;
     const rows = groups.map((d) => {
       // Per performance+round, keep only the next upcoming date (so a round isn't
@@ -272,7 +278,14 @@ function initGroups() {
 
     for (const { d, next } of rows) {
       const li = d.closest('li');
-      li.hidden = !next && !showPastChecked;
+      const matchText = !term || (li.dataset.haystack || '').includes(term);
+      const matchKind = !kindVal || li.dataset.kind === kindVal;
+      const matchOpen = !openChk
+        || (li.dataset.deadlines || '').split(',').some((dl) => dl && new Date(dl) > now);
+      const passes = matchText && matchKind && matchOpen;
+      // A search/filter reveals every match regardless of upcoming/past; otherwise
+      // show upcoming (or everything when "show past" is on).
+      li.hidden = !(passes && (filtering || next || showPastChecked));
       if (li.hidden) continue;
       visible++;
       const badge = d.querySelector('summary .next-badge');
@@ -305,44 +318,21 @@ function initGroups() {
 
     paintCountdowns();
     applyTz(document.getElementById('tz-local')?.checked);
-    if (empty) empty.hidden = visible > 0;
+    if (empty) {
+      empty.textContent = filtering ? t('cat_empty') : t('feed_empty');
+      empty.hidden = visible > 0;
+    }
   };
 
   showPast.addEventListener('change', refresh);
-  window.addEventListener('langchange', refresh); // re-pick next-round label per language
+  q?.addEventListener('input', refresh);
+  kindSel?.addEventListener('change', refresh);
+  openOnly?.addEventListener('change', refresh);
+  window.addEventListener('langchange', refresh); // re-pick next-round label + empty text
   refresh();
   setInterval(paintCountdowns, 60000);
 }
 
-/* --- catalog search/filter --- */
-function initCatalog() {
-  const q = document.getElementById('q');
-  const openOnly = document.getElementById('open-only');
-  const kind = document.getElementById('kind');
-  const empty = document.getElementById('catalog-empty');
-  const rows = [...document.querySelectorAll('#catalog .evrow')];
-  const apply = () => {
-    const term = q.value.trim().toLowerCase();
-    const now = new Date();
-    let visible = 0;
-    rows.forEach((tr) => {
-      const matchText = !term || tr.dataset.haystack.includes(term);
-      const matchKind = !kind.value || tr.dataset.kind === kind.value;
-      let hasOpen = true;
-      if (openOnly.checked) {
-        hasOpen = tr.dataset.deadlines.split(',').some((d) => d && new Date(d) > now);
-      }
-      const show = matchText && matchKind && hasOpen;
-      tr.hidden = !show;
-      if (show) visible++;
-    });
-    if (empty) empty.hidden = visible > 0;
-  };
-  q.addEventListener('input', apply);
-  openOnly.addEventListener('change', apply);
-  kind.addEventListener('change', apply);
-  apply();
-}
 
 /* --- past archive: name/series search --- */
 function initPast() {
