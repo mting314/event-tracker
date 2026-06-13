@@ -175,18 +175,24 @@ tbody tr:hover { background: var(--panel); }
 .type-legend { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin: .25rem 0 1rem; font-size: .85rem; }
 .type-legend label { display: inline-flex; align-items: center; gap: .35rem; color: var(--muted); cursor: pointer; }
 .type-legend .fr-dot { margin-right: 0; }
-/* "Open now" section */
+/* "Open now" section — a shared grid (subgrid rows) so the "closes …" and Apply
+   columns line up across every row regardless of name length. */
 #active-lotteries { margin: 1rem 0 1.25rem; }
-.active-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .3rem; }
+.active-list {
+  list-style: none; padding: 0; margin: 0;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; row-gap: .3rem;
+}
 .active-list li {
-  display: flex; align-items: center; flex-wrap: wrap; gap: .25rem .6rem;
+  display: grid; grid-template-columns: subgrid; grid-column: 1 / -1;
+  align-items: center; column-gap: .8rem;
   padding: .4rem .6rem; background: var(--panel); border-radius: 6px;
   border-left: 4px solid var(--fr, transparent);
 }
-.active-list .active-event { font-weight: 600; color: var(--text); text-decoration: none; }
-.active-list .active-event:hover { color: var(--accent, #ff5fa2); text-decoration: underline; }
-.active-list .active-round { color: var(--muted); }
-.active-list .active-when { margin-left: auto; color: var(--muted); font-size: .85rem; }
+.active-main { display: flex; align-items: center; gap: .35rem; min-width: 0; }
+.active-main .active-event { font-weight: 600; color: var(--text); text-decoration: none; }
+.active-main .active-event:hover { color: var(--accent, #ff5fa2); text-decoration: underline; }
+.active-main .active-round { color: var(--muted); }
+.active-when { color: var(--muted); font-size: .85rem; white-space: nowrap; }
 .section-head {
   margin: 1.75rem 0 .5rem; padding-top: .75rem; border-top: 1px solid #2c2f55;
   font-size: 1.05rem; color: var(--muted);
