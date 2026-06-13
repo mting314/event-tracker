@@ -14,8 +14,8 @@
         <span class="next-badge"></span>
         <span class="next-round"></span>
         <span class="countdown"></span>
-        <span class="evname i18n-field" data-ja="{{ g.name }}" data-en="{{ g.name_en }}">{{ g.name }}</span>
-        {% for s in g.series %}<span class="tag">{{ s }}</span>{% endfor %}
+        <a class="evname i18n-field" href="{{ base }}event/{{ g.id }}.html" data-ja="{{ g.name }}" data-en="{{ g.name_en }}">{{ g.name }}</a>
+        {% for s in g.series %}<span class="tag i18n-field" data-en="{{ s }}" data-ja="{{ s|series_ja }}">{{ s }}</span>{% endfor %}
         {% if g.kind %}<span class="kind-badge">{{ g.kind }}</span>{% endif %}
         <time class="next-when dt"></time>
       </summary>

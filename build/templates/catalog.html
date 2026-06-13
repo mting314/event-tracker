@@ -25,7 +25,7 @@
         data-deadlines="{% for r in ev.rounds %}{{ r.apply_deadline or '' }},{% endfor %}">
       <td><a class="i18n-field" href="{{ base }}event/{{ ev.id }}.html" data-ja="{{ ev.name }}" data-en="{{ ev.name_en or ev.name }}">{{ ev.name }}</a>
         {% if ev.name_en %}<div class="sub i18n-field" data-ja="{{ ev.name_en }}" data-en="{{ ev.name }}">{{ ev.name_en }}</div>{% endif %}</td>
-      <td>{% for s in ev.series %}<span class="tag">{{ s }}</span>{% endfor %}{% if ev.artist %}<span class="sub">{{ ev.artist }}</span>{% endif %}</td>
+      <td>{% for s in ev.series %}<span class="tag i18n-field" data-en="{{ s }}" data-ja="{{ s|series_ja }}">{{ s }}</span>{% endfor %}{% if ev.artist %}<span class="sub">{{ ev.artist }}</span>{% endif %}</td>
       <td>{% if ev.kind %}<span class="kind-badge">{{ ev.kind }}</span>{% endif %}</td>
       <td>{% if ev.venues %}{{ ev.venues[0] }}{% if ev.venues|length > 1 %} <span class="sub">+{{ ev.venues|length - 1 }}</span>{% endif %}{% else %}—{% endif %}</td>
       <td>{% if ev.event_dates %}<span class="nowrap">{{ ev.event_dates[0][:10] }}{% if ev.event_dates|length > 1 %} – {{ ev.event_dates[-1][:10] }}{% endif %}</span>{% endif %}</td>

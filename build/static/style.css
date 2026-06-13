@@ -32,10 +32,14 @@ a:hover { text-decoration: underline; }
 .brand { font-weight: 700; font-size: 1.1rem; }
 .topbar nav { display: flex; gap: 1rem; }
 .tz-toggle { margin-left: auto; color: var(--muted); font-size: .85rem; }
-.lang-select {
-  background: var(--panel-2); color: var(--text); border: 1px solid #2c2f55;
-  border-radius: 6px; padding: .25rem .4rem; font-size: .85rem; font-family: inherit; cursor: pointer;
+.lang-toggle { display: flex; align-items: center; gap: .4rem; font-size: .85rem; }
+.lang-sep { color: var(--muted); }
+.lang-btn {
+  background: none; border: none; padding: 0; cursor: pointer; font: inherit;
+  font-size: .85rem; color: var(--muted); text-decoration: underline;
 }
+.lang-btn:hover { color: var(--text); }
+.lang-btn[data-active] { color: var(--accent, #ff5fa2); font-weight: 700; text-decoration: none; }
 
 main { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
 h1 { font-size: 1.5rem; }
@@ -154,7 +158,8 @@ tbody tr:hover { background: var(--panel); }
 .evgroup summary::-webkit-details-marker { display: none; }
 .evgroup summary::before { content: "▸"; color: var(--muted); }
 .evgroup[open] summary::before { content: "▾"; }
-.evgroup .evname { font-weight: 600; }
+.evgroup .evname { font-weight: 600; color: var(--text); text-decoration: none; }
+.evgroup .evname:hover { color: var(--accent, #ff5fa2); text-decoration: underline; }
 .evgroup .next-badge:empty { display: none; }
 .evgroup .next-when { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; font-size: .85rem; }
 .evbody { padding: .2rem .8rem .7rem 1.6rem; border-top: 1px solid #2c2f55; }

@@ -150,17 +150,23 @@ function applyLang(lang) {
     el.textContent = _lang === 'en' ? (el.dataset.en || el.dataset.ja || '')
       : (el.dataset.ja || el.dataset.en || '');
   });
+  // active-language link button (bold), the-sorter style
+  document.querySelectorAll('.lang-btn').forEach((b) => {
+    if (b.dataset.lang === lang) b.setAttribute('data-active', 'true');
+    else b.removeAttribute('data-active');
+  });
+}
+
+function setLang(lang) {
+  localStorage.setItem('lang', lang);
+  applyLang(lang);
+  window.dispatchEvent(new Event('langchange')); // re-render JS-built views
 }
 
 (function initLang() {
   applyLang(_lang);
-  const sel = document.getElementById('lang-select');
-  if (!sel) return;
-  sel.value = _lang;
-  sel.addEventListener('change', () => {
-    localStorage.setItem('lang', sel.value);
-    applyLang(sel.value);
-    window.dispatchEvent(new Event('langchange')); // re-render JS-built views
+  document.querySelectorAll('.lang-btn').forEach((b) => {
+    b.addEventListener('click', () => setLang(b.dataset.lang));
   });
 })();
 
@@ -214,6 +220,12 @@ function initGroups() {
   const empty = document.getElementById('feed-empty');
   const container = document.getElementById('groups');
   const groups = [...container.querySelectorAll('.evgroup')];
+
+  // The event-name link lives inside <summary>; a click should navigate, not
+  // toggle the row open/closed.
+  container.addEventListener('click', (e) => {
+    if (e.target.closest('.evname')) e.stopPropagation();
+  });
 
   const refresh = () => {
     const now = new Date();

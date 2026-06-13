@@ -13,7 +13,7 @@
 
   <div class="meta-grid">
     {% if event.artist %}<div><dt data-i18n="detail_artist">Artist</dt><dd>{{ event.artist }}</dd></div>{% endif %}
-    {% if event.series %}<div><dt data-i18n="detail_series">Series</dt><dd>{% for s in event.series %}<span class="tag">{{ s }}</span>{% endfor %}</dd></div>{% endif %}
+    {% if event.series %}<div><dt data-i18n="detail_series">Series</dt><dd>{% for s in event.series %}<span class="tag i18n-field" data-en="{{ s }}" data-ja="{{ s|series_ja }}">{{ s }}</span>{% endfor %}</dd></div>{% endif %}
     {% if event.event_dates %}<div><dt data-i18n="detail_dates">Dates</dt><dd>{{ event.event_dates[0] }}{% if event.event_dates|length > 1 %} – {{ event.event_dates[-1] }}{% endif %}</dd></div>{% endif %}
     {% if event.performers %}<div><dt data-i18n="detail_cast">Cast</dt><dd>{{ event.performers|join('、') }}</dd></div>{% endif %}
   </div>

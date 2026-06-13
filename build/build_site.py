@@ -19,8 +19,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from schema.models import JST, KINDS, load_all_events
-from scrape.llfans import SERIES as LLFANS_SERIES
+from schema.models import JST, KINDS, SERIES, load_all_events
 
 ROOT = Path(__file__).resolve().parent.parent
 EVENTS_DIR = ROOT / "events"
@@ -146,14 +145,15 @@ def main() -> None:
     )
     env.filters["jst_fmt"] = jst_fmt
     env.filters["jst_date"] = jst_date
+    env.filters["series_ja"] = lambda s: SERIES.get(s, s)  # canonical EN -> JP display
 
     groups = build_index_groups(events)
     # The edit API URL (public Cloud Function) is baked into the add page so the
     # editor only ever enters the admin secret. Override via EDIT_API_URL.
     edit_api = os.environ.get("EDIT_API_URL", "https://ll-commit-g6hnlr7cca-uc.a.run.app")
-    # Series dropdown options for the add/edit form: known LL series + any already
-    # used in events/ (so curated tags stay suggestible), sorted.
-    series_options = sorted({s for e in events for s in e.series} | set(LLFANS_SERIES.values()))
+    # Series dropdown options for the add/edit form: the canonical SERIES vocabulary
+    # plus any other tag already used in events/ (so curated tags stay suggestible).
+    series_options = sorted(set(SERIES) | {s for e in events for s in e.series})
     # Kind dropdown options: the controlled vocabulary (schema.KINDS). The Event.kind
     # validator coerces any unknown kind to 'other', so KINDS is exhaustive here.
     kind_options = list(KINDS)

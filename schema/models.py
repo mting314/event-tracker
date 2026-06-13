@@ -38,6 +38,43 @@ KINDS = (
     "other",  # anything that fits none of the above
 )
 
+# Controlled series/group vocabulary. The canonical key is the English/stylized name
+# (groups are already Latin); the value is the Japanese display form for localization.
+# Single source of truth for the series datalist + the site's JP/EN series tags.
+SERIES = {
+    # franchises
+    "Love Live!": "ラブライブ！",
+    "Love Live! Sunshine!!": "ラブライブ！サンシャイン!!",
+    "Nijigasaki": "虹ヶ咲",
+    "Love Live! Superstar!!": "ラブライブ！スーパースター!!",
+    "Hasunosora": "蓮ノ空",
+    "Yohane the Parhelion": "幻日のヨハネ",
+    "Ikizulive!": "イキヅライブ！",
+    "Love Live! Bluebird": "イキヅライブ！ LOVELIVE! BLUEBIRD",  # review
+    "School Idol Musical": "スクールアイドルミュージカル",
+    # groups / sub-units (Latin in both languages)
+    "μ's": "μ's",
+    "Aqours": "Aqours",
+    "Liella!": "Liella!",
+    "Guilty Kiss": "Guilty Kiss",
+    "Saint Snow": "Saint Snow",
+    # Project Sekai
+    "Project Sekai Unit Fan Meeting": "プロセカユニットファンミーティング",
+    "Leo/need": "Leo/need",
+    "Nightcord at 25:00": "25時、ナイトコードで。",
+}
+
+# Raw value -> canonical SERIES key, for standardizing existing/ingested tags.
+_SERIES_ALIASES = {
+    "プロセカユニットファンミーティング": "Project Sekai Unit Fan Meeting",
+    "ラブライブ！": "Love Live!",
+    "ラブライブ！サンシャイン!!": "Love Live! Sunshine!!",
+    "虹ヶ咲学園スクールアイドル同好会": "Nijigasaki",
+    "ラブライブ！スーパースター!!": "Love Live! Superstar!!",
+    "蓮ノ空女学院スクールアイドルクラブ": "Hasunosora",
+    "蓮ノ空女学院": "Hasunosora",
+}
+
 _SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -209,6 +246,14 @@ class Event(BaseModel):
         if not v:
             return None
         return v if v in KINDS else "other"
+
+    @field_validator("series", mode="before")
+    @classmethod
+    def _normalise_series(cls, v):
+        """Standardize each series tag to its canonical SERIES key (unknown kept)."""
+        if not v:
+            return v
+        return [_SERIES_ALIASES.get(s, s) for s in v]
 
     def public_dict(self) -> dict:
         """JSON-serialisable dict for ``events.json`` (datetimes -> ISO +09:00).

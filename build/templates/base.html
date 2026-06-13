@@ -18,10 +18,11 @@
     <label class="tz-toggle">
       <input type="checkbox" id="tz-local"> <span data-i18n="tz_local">Show local time</span>
     </label>
-    <select id="lang-select" class="lang-select" aria-label="Language / 言語">
-      <option value="en">English</option>
-      <option value="ja">日本語</option>
-    </select>
+    <div class="lang-toggle" role="group" aria-label="Language / 言語">
+      <button type="button" class="lang-btn" data-lang="en">English</button>
+      <span class="lang-sep" aria-hidden="true">|</span>
+      <button type="button" class="lang-btn" data-lang="ja">日本語</button>
+    </div>
   </header>
   <main>
     {% block content %}{% endblock %}
