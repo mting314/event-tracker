@@ -32,14 +32,16 @@ a:hover { text-decoration: underline; }
 .brand { font-weight: 700; font-size: 1.1rem; }
 .topbar nav { display: flex; gap: 1rem; }
 .tz-toggle { margin-left: auto; color: var(--muted); font-size: .85rem; }
-.lang-toggle { display: flex; align-items: center; gap: .4rem; font-size: .85rem; }
-.lang-sep { color: var(--muted); }
+/* Language toggle — matches the-sorter (Park UI Button variant="link"): plain
+   currentColor text, semibold, no underline/background; active = bold. */
+.lang-toggle { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; }
+.lang-sep { color: inherit; }
 .lang-btn {
-  background: none; border: none; padding: 0; cursor: pointer; font: inherit;
-  font-size: .85rem; color: var(--muted); text-decoration: underline;
+  appearance: none; background: none; border: none; padding: 0; min-width: 0; height: auto;
+  cursor: pointer; font-family: inherit; font-size: .875rem; font-weight: 600;
+  color: inherit; vertical-align: baseline; white-space: nowrap;
 }
-.lang-btn:hover { color: var(--text); }
-.lang-btn[data-active] { color: var(--accent, #ff5fa2); font-weight: 700; text-decoration: none; }
+.lang-btn[data-active] { font-weight: 700; }
 
 main { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
 h1 { font-size: 1.5rem; }
