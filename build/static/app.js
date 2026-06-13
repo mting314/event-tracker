@@ -14,6 +14,98 @@ function fmtLocal(iso) {
   return new Date(iso).toLocaleString('sv-SE', LOCAL_OPTS) + ' ' + tz;
 }
 
+/* --- i18n: JP/EN localization (same shape as the-sorter: locale resource
+   bundles + a persisted language toggle + per-record localized fields).
+   UI chrome uses [data-i18n] keys into I18N; per-record data (event/round names,
+   badges) uses .i18n-field elements carrying data-ja / data-en. --- */
+const I18N = {
+  en: {
+    nav_catalog: 'Catalog', nav_calendar: 'Calendar', nav_past: 'Past', nav_add: '+ Add',
+    tz_local: 'Show local time',
+    idx_title: 'Upcoming',
+    idx_hint: 'One row per event, showing its next deadline. Click to expand rounds & shows.',
+    show_past: 'show past / no upcoming',
+    open_event: 'open event page →',
+    no_rounds: 'No lottery rounds recorded yet.',
+    feed_empty: 'Nothing upcoming. 🎉',
+    apply: 'Apply ↗',
+    cat_title: 'Event catalog',
+    cat_search: 'Search name, artist, series, venue, performer…',
+    cat_all_kinds: 'All kinds',
+    cat_empty: 'No matching events.',
+    open_round: 'has open round',
+    th_event: 'Event', th_series_artist: 'Series / Artist', th_kind: 'Kind',
+    th_venue: 'Venue', th_dates: 'Dates', th_rounds: 'Rounds', th_series: 'Series',
+    cal_title: 'Calendar',
+    past_title: 'Past events',
+    past_search: 'Search name or series…',
+    detail_back: '← Catalog', detail_edit: '✎ Edit event',
+    detail_artist: 'Artist', detail_series: 'Series', detail_dates: 'Dates', detail_cast: 'Cast',
+    detail_perfs: 'Performances & deadlines', th_round: 'Round',
+    no_rounds_show: 'No lottery rounds recorded for this show yet.',
+  },
+  ja: {
+    nav_catalog: 'カタログ', nav_calendar: 'カレンダー', nav_past: '過去', nav_add: '＋追加',
+    tz_local: '現地時間で表示',
+    idx_title: '開催予定',
+    idx_hint: 'イベントごとに次の締切を表示。クリックで申込回・公演を展開。',
+    show_past: '過去・予定なしも表示',
+    open_event: 'イベントページを開く →',
+    no_rounds: '抽選回はまだ登録されていません。',
+    feed_empty: '予定はありません。🎉',
+    apply: '申込 ↗',
+    cat_title: 'イベント一覧',
+    cat_search: '名前・アーティスト・シリーズ・会場・出演者で検索…',
+    cat_all_kinds: 'すべての種別',
+    cat_empty: '該当するイベントはありません。',
+    open_round: '受付中あり',
+    th_event: 'イベント', th_series_artist: 'シリーズ / アーティスト', th_kind: '種別',
+    th_venue: '会場', th_dates: '日程', th_rounds: '抽選回数', th_series: 'シリーズ',
+    cal_title: 'カレンダー',
+    past_title: '過去のイベント',
+    past_search: '名前・シリーズで検索…',
+    detail_back: '← 一覧', detail_edit: '✎ 編集',
+    detail_artist: 'アーティスト', detail_series: 'シリーズ', detail_dates: '日程', detail_cast: '出演',
+    detail_perfs: '公演・締切', th_round: '抽選回',
+    no_rounds_show: 'この公演の抽選回はまだ登録されていません。',
+  },
+};
+
+let _lang = (() => {
+  const saved = localStorage.getItem('lang');
+  if (saved === 'en' || saved === 'ja') return saved;
+  return (navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'en';
+})();
+
+/** Pick the active-language string, falling back to whichever is present. */
+function pick(ja, en) { return _lang === 'en' ? (en || ja || '') : (ja || en || ''); }
+function t(key) { return (I18N[_lang] && I18N[_lang][key]) || I18N.en[key] || key; }
+
+function applyLang(lang) {
+  _lang = lang;
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+    el.setAttribute('placeholder', t(el.dataset.i18nPlaceholder));
+  });
+  document.querySelectorAll('.i18n-field').forEach((el) => {
+    el.textContent = _lang === 'en' ? (el.dataset.en || el.dataset.ja || '')
+      : (el.dataset.ja || el.dataset.en || '');
+  });
+}
+
+(function initLang() {
+  applyLang(_lang);
+  const sel = document.getElementById('lang-select');
+  if (!sel) return;
+  sel.value = _lang;
+  sel.addEventListener('change', () => {
+    localStorage.setItem('lang', sel.value);
+    applyLang(sel.value);
+    window.dispatchEvent(new Event('langchange')); // re-render JS-built views
+  });
+})();
+
 /* --- timezone toggle (applies to every <time class="dt">) --- */
 function applyTz(local) {
   document.querySelectorAll('time.dt').forEach((el) => {
@@ -112,9 +204,11 @@ function initGroups() {
       const occEl = next && [...d.querySelectorAll('.occ')].find((o) => o.dataset.iso === next);
       if (occEl) {
         const src = occEl.querySelector('.badge');
-        badge.className = 'next-badge ' + src.className; // copies "badge <css>"
+        // copy "badge <css>" for colour, but NOT i18n-field — next-badge has no
+        // data-ja/en of its own and applyLang would blank it.
+        badge.className = ('next-badge ' + src.className).replace(/\s*\bi18n-field\b/g, '');
         badge.textContent = src.textContent;
-        if (round) round.textContent = occEl.dataset.round || ''; // which round it is
+        if (round) round.textContent = pick(occEl.dataset.round, occEl.dataset.roundEn); // which round
         cd.dataset.iso = next;
         when.setAttribute('datetime', next);
       } else {
@@ -137,6 +231,7 @@ function initGroups() {
   };
 
   showPast.addEventListener('change', refresh);
+  window.addEventListener('langchange', refresh); // re-pick next-round label per language
   refresh();
   setInterval(paintCountdowns, 60000);
 }
@@ -250,11 +345,12 @@ async function initCalendar(url) {
   for (const ev of events) {
     for (const r of ev.rounds || []) {
       for (const [f, cls] of Object.entries(CAL_FIELDS)) {
-        if (r[f]) items.push({ date: jstDay(r[f]), cls, label: `${ev.name} ${r.name}`, id: ev.id });
+        if (r[f]) items.push({ date: jstDay(r[f]), cls, id: ev.id,
+          ja: `${ev.name} ${r.name}`, en: `${ev.name_en || ev.name} ${r.name_en || r.name}` });
       }
     }
     for (const d of ev.event_dates || []) {
-      items.push({ date: d, cls: 'event', label: ev.name, id: ev.id });
+      items.push({ date: d, cls: 'event', id: ev.id, ja: ev.name, en: ev.name_en || ev.name });
     }
   }
   let cur = new Date();
@@ -262,7 +358,7 @@ async function initCalendar(url) {
   const render = () => {
     const y = cur.getFullYear(), mo = cur.getMonth();
     document.getElementById('cal-label').textContent =
-      cur.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+      cur.toLocaleString(_lang === 'ja' ? 'ja-JP' : 'en-US', { month: 'long', year: 'numeric' });
     const grid = document.getElementById('calendar-grid');
     grid.innerHTML = '';
     ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach((d) => {
@@ -280,8 +376,9 @@ async function initCalendar(url) {
       cell.append(num);
       items.filter((it) => it.date === iso).forEach((it) => {
         const a = document.createElement('a');
-        a.className = `cal-ev ${it.cls}`; a.textContent = it.label;
-        a.title = it.label; a.href = `event/${it.id}.html`;
+        const label = pick(it.ja, it.en);
+        a.className = `cal-ev ${it.cls}`; a.textContent = label;
+        a.title = label; a.href = `event/${it.id}.html`;
         cell.append(a);
       });
       grid.append(cell);
@@ -289,6 +386,7 @@ async function initCalendar(url) {
   };
   document.getElementById('cal-prev').onclick = () => { cur.setMonth(cur.getMonth() - 1); render(); };
   document.getElementById('cal-next').onclick = () => { cur.setMonth(cur.getMonth() + 1); render(); };
+  window.addEventListener('langchange', render); // re-label per language
   render();
 }
 

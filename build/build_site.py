@@ -30,27 +30,32 @@ STATIC_DIR = ROOT / "build" / "static"
 DIST_DIR = ROOT / "site" / "dist"
 
 # date_type -> (bilingual label, short css class)
+# field -> bilingual label + css class. The site localizes ja/en client-side.
 DATE_TYPES = {
-    "apply_open": ("申込開始 · Opens", "opens"),
-    "apply_deadline": ("申込締切 · Deadline", "deadline"),
-    "results_date": ("結果発表 · Results", "results"),
-    "payment_deadline": ("入金締切 · Payment", "payment"),
+    "apply_open": {"ja": "申込開始", "en": "Opens", "css": "opens"},
+    "apply_deadline": {"ja": "申込締切", "en": "Deadline", "css": "deadline"},
+    "results_date": {"ja": "結果発表", "en": "Results", "css": "results"},
+    "payment_deadline": {"ja": "入金締切", "en": "Payment", "css": "payment"},
 }
 
 
 def _round_occurrences(rnd) -> list[dict]:
     """The dated actions (opens/deadline/results/payment) for one round."""
+    leg = f" · {rnd.leg}" if rnd.leg else ""
+    round_en = (rnd.name_en or rnd.name) + leg
     out = []
-    for field, (label, css) in DATE_TYPES.items():
+    for field, meta in DATE_TYPES.items():
         dt = getattr(rnd, field)
         if dt is None:
             continue
         out.append(
             {
                 "iso": dt.isoformat(),
-                "label": label,
-                "css": css,
-                "round": rnd.name + (f" · {rnd.leg}" if rnd.leg else ""),
+                "label_ja": meta["ja"],
+                "label_en": meta["en"],
+                "css": meta["css"],
+                "round": rnd.name + leg,
+                "round_en": round_en,
                 "apply_url": rnd.apply_url,
             }
         )
@@ -87,6 +92,7 @@ def build_index_groups(events) -> list[dict]:
             {
                 "id": ev.id,
                 "name": ev.name,
+                "name_en": ev.name_en or ev.name,
                 "series": ev.series,
                 "kind": ev.kind,
                 "performances": perfs,

@@ -10,14 +10,18 @@
   <header class="topbar">
     <a class="brand" href="{{ base|default('') }}index.html">🎫 LL Lottery Tracker</a>
     <nav>
-      <a href="{{ base|default('') }}catalog.html">Catalog</a>
-      <a href="{{ base|default('') }}calendar.html">Calendar</a>
-      <a href="{{ base|default('') }}past.html">Past</a>
-      <a href="{{ base|default('') }}add.html">+ Add</a>
+      <a href="{{ base|default('') }}catalog.html" data-i18n="nav_catalog">Catalog</a>
+      <a href="{{ base|default('') }}calendar.html" data-i18n="nav_calendar">Calendar</a>
+      <a href="{{ base|default('') }}past.html" data-i18n="nav_past">Past</a>
+      <a href="{{ base|default('') }}add.html" data-i18n="nav_add">+ Add</a>
     </nav>
     <label class="tz-toggle">
-      <input type="checkbox" id="tz-local"> Show local time
+      <input type="checkbox" id="tz-local"> <span data-i18n="tz_local">Show local time</span>
     </label>
+    <select id="lang-select" class="lang-select" aria-label="Language / 言語">
+      <option value="en">English</option>
+      <option value="ja">日本語</option>
+    </select>
   </header>
   <main>
     {% block content %}{% endblock %}
