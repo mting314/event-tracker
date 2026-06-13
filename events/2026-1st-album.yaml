@@ -1,0 +1,37 @@
+name: ペイトン尚未 1st Album「らしさ」発売記念トーク＋お見送り会
+artist: ペイトン尚未
+kind: concert
+categories:
+  - Voice actor
+performances:
+  - date: 2026-07-06
+    city: 東京
+    venue: animeite hall BLACK (アニメイト池袋本店 北館 9F)
+    venue_address: 〒170-0013 東京都豊島区東池袋1-20-7
+    starts: "18:45"
+    rounds:
+      - name: 抽選
+        type: lottery
+        apply_open: 2026-06-13
+        apply_deadline: 2026-06-21T23:59:00
+        results_date: 2026-06-26
+        notes: "src: 【申込期間】
+2026年6月13日 (土) ～ 2026年6月21日 (日)23:59
+【当選通知】
+2026年6月26日 (金) 予定"
+  - date: 2026-07-10
+    city: 大阪
+    venue: アニメイト大阪日本橋 5階イベントホール
+    venue_address: 〒556-0004 大阪府大阪市浪速区日本橋西1丁目1-3　池田ビル２号館
+    starts: "18:45"
+    rounds:
+      - name: 抽選
+        type: lottery
+        apply_open: 2026-06-13
+        apply_deadline: 2026-06-21T23:59:00
+        results_date: 2026-06-26
+        notes: "src: 【申込期間】
+2026年6月13日 (土) ～ 2026年6月21日 (日)23:59
+【当選通知】
+2026年6月26日 (金) 予定"
+source_url: https://www.sma.co.jp/s/sma/news/detail/114181#/
