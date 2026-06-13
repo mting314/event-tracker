@@ -27,7 +27,10 @@ import time
 from bs4 import BeautifulSoup
 from pydantic import BaseModel
 
+from schema.models import KINDS
+
 from .generic import HEADERS
+from .glossary import kind_block, prompt_block
 
 log = logging.getLogger(__name__)
 
@@ -54,13 +57,17 @@ SYSTEM = (
     "- For each round, set source_quote to the exact source line(s) the dates came "
     "from, so a human can verify.\n"
     "- OMIT any round you cannot assign at least one date to (apply_open / "
-    "apply_deadline / results_date / payment_deadline) — a dateless round is useless."
+    "apply_deadline / results_date / payment_deadline) — a dateless round is useless.\n"
+    + kind_block(KINDS)
+    + "\n"
+    + prompt_block()
 )
 
 
 # --- extraction schema (LLM-facing): loose, no id, string datetimes ---
 class ExtractedRound(BaseModel):
     name: str
+    name_en: str | None = None
     type: str | None = None
     leg: str | None = None
     apply_open: str | None = None
@@ -144,6 +151,8 @@ def _to_event_dict(ev: ExtractedEvent, url: str | None) -> dict:
         p["rounds"] = _clean_rounds(p.get("rounds", []))
     if data.get("rounds"):  # event-wide rounds (nested into perfs downstream)
         data["rounds"] = _clean_rounds(data["rounds"])
+    if data.get("kind"):  # normalise to the controlled vocab's casing
+        data["kind"] = str(data["kind"]).strip().lower()
     data.setdefault("kind", "concert")
     data["source_url"] = url
     return data

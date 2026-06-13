@@ -3,6 +3,7 @@
     python -m scrape.cli <url>                 # auto-detect source by domain
     python -m scrape.cli <url> --id my-slug    # force the output filename
     python -m scrape.cli --text "<pasted>"     # parse pasted text (X posts)
+    python -m scrape.cli <url> --llm --stdout  # print YAML for testing, write nothing
 
 Writes ``events/<slug>.yaml`` (never overwrites without --force). The draft is a
 starting point: fill in the lottery rounds and series tags, then commit.
@@ -26,6 +27,7 @@ def main(argv=None) -> int:
     ap.add_argument("--force", action="store_true", help="overwrite an existing file")
     ap.add_argument("--llm", action="store_true", help="force LLM (Vertex) extraction")
     ap.add_argument("--no-llm", action="store_true", help="disable the LLM fallback")
+    ap.add_argument("--stdout", action="store_true", help="print YAML to stdout; write nothing")
     args = ap.parse_args(argv)
 
     if not args.url and not args.text:
@@ -38,10 +40,14 @@ def main(argv=None) -> int:
             res = ingest_url(args.url, allow_llm=not args.no_llm, force_llm=args.llm)
             data = res.data
             if res.used_llm:
-                print("(used LLM extraction via Vertex)")
+                print("(used LLM extraction via Vertex)", file=sys.stderr)
         except Exception as exc:  # noqa: BLE001 - report cleanly, still write a stub
             print(f"⚠️  ingest failed: {exc}", file=sys.stderr)
             data = {"source_url": args.url, "rounds": []}
+
+    if args.stdout:
+        print(to_event_yaml(data))
+        return 0
 
     dates = data.get("event_dates") or [
         p["date"] for p in data.get("performances", []) if p.get("date")
