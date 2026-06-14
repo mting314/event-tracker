@@ -7,17 +7,23 @@
 <section id="active-lotteries" hidden>
   <h2 class="section-head" data-i18n="active_title">Open now</h2>
   <ul class="active-list">
-    {% for l in lotteries %}
-    <li class="franchise-{{ l.franchise }}" data-open="{{ l.apply_open }}" data-deadline="{{ l.apply_deadline }}" hidden>
-      <span class="active-main">
+    {% for ev in lotteries %}
+    <li class="active-event-block franchise-{{ ev.franchise }}" hidden>
+      <span class="active-event-head">
         <span class="fr-dot"></span>
-        <a class="active-event i18n-field" href="{{ base }}event/{{ l.id }}.html" data-ja="{{ l.name }}" data-en="{{ l.name_en }}">{{ l.name }}</a>
-        <span class="active-round i18n-field" data-ja="{{ l.round }}" data-en="{{ l.round_en }}">{{ l.round }}</span>
+        <a class="active-event i18n-field" href="{{ base }}event/{{ ev.id }}.html" data-ja="{{ ev.name }}" data-en="{{ ev.name_en }}">{{ ev.name }}</a>
       </span>
-      <span class="active-when"><span data-i18n="active_closes">closes</span>
-        <time class="dt" datetime="{{ l.apply_deadline }}">{{ l.apply_deadline|jst_fmt }}</time>
-        <span class="countdown" data-iso="{{ l.apply_deadline }}"></span></span>
-      {% if l.apply_url %}<a class="apply" href="{{ l.apply_url }}" target="_blank" rel="noopener" data-i18n="apply">Apply ↗</a>{% else %}<span></span>{% endif %}
+      <ul class="active-rounds">
+        {% for r in ev.rounds %}
+        <li class="active-round-row" data-open="{{ r.apply_open }}" data-deadline="{{ r.apply_deadline }}" hidden>
+          <span class="active-round i18n-field" data-ja="{{ r.round }}" data-en="{{ r.round_en }}">{{ r.round }}</span>
+          <span class="active-when"><span data-i18n="active_closes">closes</span>
+            <time class="dt" datetime="{{ r.apply_deadline }}">{{ r.apply_deadline|jst_fmt }}</time>
+            <span class="countdown" data-iso="{{ r.apply_deadline }}"></span></span>
+          {% if r.apply_url %}<a class="apply" href="{{ r.apply_url }}" target="_blank" rel="noopener" data-i18n="apply">Apply ↗</a>{% else %}<span></span>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
     </li>
     {% endfor %}
   </ul>
