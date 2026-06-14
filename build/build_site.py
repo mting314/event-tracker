@@ -156,30 +156,38 @@ def main() -> None:
     env.filters["series_ja"] = lambda s: SERIES.get(s, s)  # canonical EN -> JP display
 
     groups = build_index_groups(events)
-    # Lottery rounds with a deadline, for the index "Open now" section. Whether a
-    # round is *currently* open depends on view time, so the client filters by
-    # apply_open/apply_deadline; here we just emit the candidates (deduped — a
-    # leg-wide round repeated under each show collapses to one).
-    lotteries, _seen = [], set()
+    # Events with deadline-bearing lottery rounds, for the index "Open now"
+    # section (grouped by event). Whether a round is *currently* open depends on
+    # view time, so the client filters by apply_open/apply_deadline and hides
+    # events/rounds that aren't active. Rounds are deduped (a leg-wide round
+    # repeated under each show collapses to one).
+    lotteries = []
     for ev in events:
+        rounds, seen = [], set()
         for r in ev.all_rounds:
             if not r.apply_deadline:
                 continue
-            key = (ev.id, r.name, r.apply_deadline.isoformat())
-            if key in _seen:
+            key = (r.name, r.apply_deadline.isoformat())
+            if key in seen:
                 continue
-            _seen.add(key)
+            seen.add(key)
+            rounds.append(
+                {
+                    "round": r.name,
+                    "round_en": r.name_en or r.name,
+                    "apply_open": r.apply_open.isoformat() if r.apply_open else "",
+                    "apply_deadline": r.apply_deadline.isoformat(),
+                    "apply_url": r.apply_url or "",
+                }
+            )
+        if rounds:
             lotteries.append(
                 {
                     "id": ev.id,
                     "name": ev.name,
                     "name_en": ev.name_en or ev.name,
                     "franchise": ev.franchise,
-                    "round": r.name,
-                    "round_en": r.name_en or r.name,
-                    "apply_open": r.apply_open.isoformat() if r.apply_open else "",
-                    "apply_deadline": r.apply_deadline.isoformat(),
-                    "apply_url": r.apply_url or "",
+                    "rounds": rounds,
                 }
             )
     # The edit API URL (public Cloud Function) is baked into the add page so the

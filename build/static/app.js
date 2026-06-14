@@ -348,25 +348,38 @@ function initGroups() {
   setInterval(paintCountdowns, 60000);
 }
 
-/* --- "Open now": lottery rounds whose application window is currently open --- */
+/* --- "Open now": events with a currently-open application window, grouped by
+   event and showing only the active rounds (auto-expanded). --- */
 function initActiveLotteries() {
   const section = document.getElementById('active-lotteries');
   if (!section) return;
-  const items = [...section.querySelectorAll('li')];
+  const blocks = [...section.querySelectorAll('.active-event-block')];
+  const earliest = (block) => [...block.querySelectorAll('.active-round-row:not([hidden])')]
+    .map((r) => r.dataset.deadline).sort()[0] || '9999';
   const refresh = () => {
     const now = new Date();
-    let open = 0;
-    items.forEach((li) => {
-      const o = li.dataset.open;
-      const isOpen = (!o || new Date(o) <= now) && new Date(li.dataset.deadline) > now;
-      li.hidden = !isOpen;
-      if (isOpen) open++;
+    let shownEvents = 0;
+    blocks.forEach((block) => {
+      const rows = [...block.querySelectorAll('.active-round-row')];
+      let active = 0;
+      rows.forEach((row) => {
+        const o = row.dataset.open;
+        const isOpen = (!o || new Date(o) <= now) && new Date(row.dataset.deadline) > now;
+        row.hidden = !isOpen;
+        if (isOpen) active++;
+      });
+      rows // soonest-closing active round first, within the event
+        .filter((r) => !r.hidden)
+        .sort((a, b) => a.dataset.deadline.localeCompare(b.dataset.deadline))
+        .forEach((r) => r.parentNode.appendChild(r));
+      block.hidden = active === 0;
+      if (active) shownEvents++;
     });
-    items
-      .filter((li) => !li.hidden)
-      .sort((a, b) => a.dataset.deadline.localeCompare(b.dataset.deadline))
-      .forEach((li) => li.parentNode.appendChild(li));
-    section.hidden = open === 0;
+    blocks // events with the soonest-closing round first
+      .filter((b) => !b.hidden)
+      .sort((a, b) => earliest(a).localeCompare(earliest(b)))
+      .forEach((b) => b.parentNode.appendChild(b));
+    section.hidden = shownEvents === 0;
     paintCountdowns();
     applyTz(document.getElementById('tz-local')?.checked);
   };
