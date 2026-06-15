@@ -1,6 +1,7 @@
 name: ペイトン尚未 1st Album「らしさ」発売記念トーク＋お見送り会
+name_en: "Payton Naomi 1st Album \"Rashisa\" Release Commemorative Talk + Send-off Event"
 artist: ペイトン尚未
-kind: concert
+kind: release
 categories:
   - Voice actor
 performances:
@@ -11,6 +12,7 @@ performances:
     starts: "18:45"
     rounds:
       - name: 抽選
+        name_en: Lottery
         type: lottery
         apply_open: 2026-06-13
         apply_deadline: 2026-06-21T23:59:00
@@ -26,6 +28,7 @@ performances:
     starts: "18:45"
     rounds:
       - name: 抽選
+        name_en: Lottery
         type: lottery
         apply_open: 2026-06-13
         apply_deadline: 2026-06-21T23:59:00
