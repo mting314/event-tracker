@@ -218,11 +218,19 @@ def parse_text(
     }
 
 
+# Subtrees describing the post's *author*, not the post. We prune these while
+# walking so we never pick up the account's bio link, profile text, or account
+# creation date — only what's actually in the post the user gave us.
+_AUTHOR_KEYS = ("user_results", "user")
+
+
 def _walk(obj, key: str) -> list:
-    """Collect every string value stored under ``key`` anywhere in nested JSON."""
+    """Collect every string value under ``key`` in nested JSON, skipping author subtrees."""
     out = []
     if isinstance(obj, dict):
         for k, v in obj.items():
+            if k in _AUTHOR_KEYS:
+                continue  # don't descend into the tweet author's profile
             if k == key and isinstance(v, str):
                 out.append(v)
             else:
@@ -234,11 +242,14 @@ def _walk(obj, key: str) -> list:
 
 
 def _from_payload(payload: dict) -> tuple[str, list[str], int | None]:
-    """Extract the fullest post text, expanded links, and post year from any X JSON.
+    """Extract the post's text, its expanded links, and its year from any X JSON.
 
     Works for both the syndication ``tweet-result`` payload and the GraphQL
     ``TweetResultByRestId`` payload by walking for ``expanded_url`` / text /
     ``created_at`` fields, so it's resilient to X's nested, reshuffled structures.
+    The walk skips the author subtree (see ``_AUTHOR_KEYS``) so we only ever read
+    links/text/date that belong to the **post itself** — not the account's bio
+    link (which is a common false positive) or the account's creation date.
     """
     texts = _walk(payload, "text") + _walk(payload, "full_text")
     text = max(texts, key=len) if texts else ""
