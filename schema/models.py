@@ -30,7 +30,7 @@ KINDS = (
     "release",  # 発売記念 / リリースイベント
     "meet-greet",  # サイン会 / 握手会 / ミート＆グリート / お見送り会
     "fan-meeting",  # ファンミーティング / FAN MEETING / サロン
-    "talk",  # トークイベント / 公開録音
+    "talk",  # talk / solo seiyuu event: トーク(ショー) / 公開録音 / 朗読会 / 生誕・バースデー
     "stage",  # 舞台 / ミュージカル
     "screening",  # 上映会 / プレミア / 先行上映
     "goods",  # goods-only sales events (物販)
