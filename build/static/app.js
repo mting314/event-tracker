@@ -24,7 +24,7 @@ const I18N = {
     tz_local: 'Show local time',
     idx_title: 'Upcoming',
     idx_hint: 'One row per event, showing its next deadline. Click to expand rounds & shows.',
-    active_title: 'Open now', active_closes: 'closes',
+    active_title: 'Open now',
     fr_lovelive: 'Love Live!', fr_project_sekai: 'Project Sekai', fr_other: 'Other',
     open_event: 'open event page →',
     no_rounds: 'No lottery rounds recorded yet.',
@@ -78,7 +78,7 @@ const I18N = {
     tz_local: '現地時間で表示',
     idx_title: '開催予定',
     idx_hint: 'イベントごとに次の締切を表示。クリックで申込回・公演を展開。',
-    active_title: '受付中', active_closes: '締切',
+    active_title: '受付中',
     fr_lovelive: 'ラブライブ！', fr_project_sekai: 'プロジェクトセカイ', fr_other: 'その他',
     open_event: 'イベントページを開く →',
     no_rounds: '抽選回はまだ登録されていません。',
@@ -348,38 +348,42 @@ function initGroups() {
   setInterval(paintCountdowns, 60000);
 }
 
-/* --- "Open now": events with a currently-open application window, grouped by
-   event and showing only the active rounds (auto-expanded). --- */
+/* --- "Open now": the same expandable event cards as the main list, auto-
+   expanded, filtered to events with a currently-open application window and
+   showing only those open rounds' deadline rows. --- */
 function initActiveLotteries() {
   const section = document.getElementById('active-lotteries');
-  if (!section) return;
-  const blocks = [...section.querySelectorAll('.active-event-block')];
-  const earliest = (block) => [...block.querySelectorAll('.active-round-row:not([hidden])')]
-    .map((r) => r.dataset.deadline).sort()[0] || '9999';
+  const container = document.getElementById('active-groups');
+  if (!section || !container) return;
+  const cards = [...container.querySelectorAll(':scope > li')];
+  const earliest = (li) => [...li.querySelectorAll('.occ:not([hidden])')]
+    .map((o) => o.dataset.iso).sort()[0] || '9999';
   const refresh = () => {
     const now = new Date();
-    let shownEvents = 0;
-    blocks.forEach((block) => {
-      const rows = [...block.querySelectorAll('.active-round-row')];
+    let shown = 0;
+    cards.forEach((li) => {
       let active = 0;
-      rows.forEach((row) => {
-        const o = row.dataset.open;
-        const isOpen = (!o || new Date(o) <= now) && new Date(row.dataset.deadline) > now;
-        row.hidden = !isOpen;
-        if (isOpen) active++;
+      li.querySelectorAll('.occ').forEach((occ) => {
+        const ro = occ.dataset.ropen;
+        const rd = occ.dataset.rdeadline;
+        // show only the deadline row of a round whose application window is open
+        const roundOpen = rd && (!ro || new Date(ro) <= now) && new Date(rd) > now;
+        const visible = roundOpen && occ.dataset.css === 'deadline';
+        occ.hidden = !visible;
+        if (visible) active++;
       });
-      rows // soonest-closing active round first, within the event
-        .filter((r) => !r.hidden)
-        .sort((a, b) => a.dataset.deadline.localeCompare(b.dataset.deadline))
-        .forEach((r) => r.parentNode.appendChild(r));
-      block.hidden = active === 0;
-      if (active) shownEvents++;
+      li.querySelectorAll('.perf-block').forEach((pb) => {
+        const occ = [...pb.querySelectorAll('.occ')];
+        pb.hidden = !occ.length || !occ.some((o) => !o.hidden);
+      });
+      li.hidden = active === 0;
+      if (active) shown++;
     });
-    blocks // events with the soonest-closing round first
-      .filter((b) => !b.hidden)
+    cards // events with the soonest-closing round first
+      .filter((li) => !li.hidden)
       .sort((a, b) => earliest(a).localeCompare(earliest(b)))
-      .forEach((b) => b.parentNode.appendChild(b));
-    section.hidden = shownEvents === 0;
+      .forEach((li) => container.appendChild(li));
+    section.hidden = shown === 0;
     paintCountdowns();
     applyTz(document.getElementById('tz-local')?.checked);
   };

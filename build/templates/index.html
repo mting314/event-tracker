@@ -1,58 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Upcoming · LL Lottery Tracker{% endblock %}
 {% block content %}
-<h1 data-i18n="idx_title">Upcoming</h1>
-<p class="hint"><span data-i18n="idx_hint">One row per event, showing its next deadline. Click to expand rounds &amp; shows.</span></p>
 
-<section id="active-lotteries" hidden>
-  <h2 class="section-head" data-i18n="active_title">Open now</h2>
-  <ul class="active-list">
-    {% for ev in lotteries %}
-    <li class="active-event-block franchise-{{ ev.franchise }}" hidden>
-      <span class="active-event-head">
-        <span class="fr-dot"></span>
-        <a class="active-event i18n-field" href="{{ base }}event/{{ ev.id }}.html" data-ja="{{ ev.name }}" data-en="{{ ev.name_en }}">{{ ev.name }}</a>
-      </span>
-      <ul class="active-rounds">
-        {% for r in ev.rounds %}
-        <li class="active-round-row" data-open="{{ r.apply_open }}" data-deadline="{{ r.apply_deadline }}" hidden>
-          <span class="active-round i18n-field" data-ja="{{ r.round }}" data-en="{{ r.round_en }}">{{ r.round }}</span>
-          <span class="active-when"><span data-i18n="active_closes">closes</span>
-            <time class="dt" datetime="{{ r.apply_deadline }}">{{ r.apply_deadline|jst_fmt }}</time>
-            <span class="countdown" data-iso="{{ r.apply_deadline }}"></span></span>
-          {% if r.apply_url %}<a class="apply" href="{{ r.apply_url }}" target="_blank" rel="noopener" data-i18n="apply">Apply ↗</a>{% else %}<span></span>{% endif %}
-        </li>
-        {% endfor %}
-      </ul>
-    </li>
-    {% endfor %}
-  </ul>
-</section>
-
-{% set kinds = groups|map(attribute='kind')|select|unique|list %}
-<div class="filters">
-  <input type="search" id="q" placeholder="Search name, artist, series, venue, performer…"
-         data-i18n-placeholder="cat_search" autofocus>
-  <select id="kind">
-    <option value="" data-i18n="cat_all_kinds">All kinds</option>
-    {% for k in kinds %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
-  </select>
-  <label><input type="checkbox" id="open-only"> <span data-i18n="open_round">has open round</span></label>
-</div>
-<div class="type-legend">
-  {% for fr, key in [('lovelive', 'fr_lovelive'), ('project-sekai', 'fr_project_sekai'), ('other', 'fr_other')] %}
-  <label class="franchise-{{ fr }}"><input type="checkbox" class="fr-filter" data-fr="{{ fr }}" checked>
-    <span class="fr-dot"></span><span data-i18n="{{ key }}">{{ fr }}</span></label>
-  {% endfor %}
-</div>
-
-<ul class="evgroups" id="groups">
-  {% for g in groups %}
+{# One collapsible event card — reused by the main list and the "Open now" section. #}
+{% macro event_card(g, base, is_open) %}
   <li class="franchise-{{ g.franchise }}" data-franchise="{{ g.franchise }}"
       data-haystack="{{ (g.name ~ ' ' ~ g.name_en ~ ' ' ~ (g.artist or '') ~ ' ' ~ (g.series|join(' ')) ~ ' ' ~ (g.series|map('series_ja')|join(' ')) ~ ' ' ~ (g.venues|join(' ')) ~ ' ' ~ (g.performers|join(' ')))|lower }}"
       data-kind="{{ g.kind or '' }}"
       data-deadlines="{{ g.deadlines|join(',') }}">
-    <details class="evgroup">
+    <details class="evgroup"{% if is_open %} open{% endif %}>
       <summary>
         <span class="next-badge"></span>
         <span class="next-round"></span>
@@ -85,7 +41,8 @@
             <table class="rounds-mini">
               <tbody>
                 {% for o in p.occurrences %}
-                <tr class="occ" data-iso="{{ o.iso }}" data-round="{{ o.round }}" data-round-en="{{ o.round_en }}" data-perf="{{ pidx }}-{{ p.date }}">
+                <tr class="occ" data-iso="{{ o.iso }}" data-css="{{ o.css }}" data-round="{{ o.round }}" data-round-en="{{ o.round_en }}"
+                    data-ropen="{{ o.r_open }}" data-rdeadline="{{ o.r_deadline }}" data-perf="{{ pidx }}-{{ p.date }}">
                   <td><span class="badge i18n-field {{ o.css }}" data-ja="{{ o.label_ja }}" data-en="{{ o.label_en }}">{{ o.label_ja }}</span></td>
                   <td class="occ-round i18n-field" data-ja="{{ o.round }}" data-en="{{ o.round_en }}">{{ o.round }}</td>
                   <td><time class="dt" datetime="{{ o.iso }}">{{ o.iso|jst_fmt }}</time>
@@ -104,7 +61,37 @@
       </div>
     </details>
   </li>
+{% endmacro %}
+
+<h1 data-i18n="idx_title">Upcoming</h1>
+<p class="hint"><span data-i18n="idx_hint">One row per event, showing its next deadline. Click to expand rounds &amp; shows.</span></p>
+
+<section id="active-lotteries" hidden>
+  <h2 class="section-head" data-i18n="active_title">Open now</h2>
+  <ul class="evgroups" id="active-groups">
+    {% for g in groups if g.occurrences %}{{ event_card(g, base, true) }}{% endfor %}
+  </ul>
+</section>
+
+{% set kinds = groups|map(attribute='kind')|select|unique|list %}
+<div class="filters">
+  <input type="search" id="q" placeholder="Search name, artist, series, venue, performer…"
+         data-i18n-placeholder="cat_search" autofocus>
+  <select id="kind">
+    <option value="" data-i18n="cat_all_kinds">All kinds</option>
+    {% for k in kinds %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
+  </select>
+  <label><input type="checkbox" id="open-only"> <span data-i18n="open_round">has open round</span></label>
+</div>
+<div class="type-legend">
+  {% for fr, key in [('lovelive', 'fr_lovelive'), ('project-sekai', 'fr_project_sekai'), ('other', 'fr_other')] %}
+  <label class="franchise-{{ fr }}"><input type="checkbox" class="fr-filter" data-fr="{{ fr }}" checked>
+    <span class="fr-dot"></span><span data-i18n="{{ key }}">{{ fr }}</span></label>
   {% endfor %}
+</div>
+
+<ul class="evgroups" id="groups">
+  {% for g in groups %}{{ event_card(g, base, false) }}{% endfor %}
 </ul>
 
 <h2 class="section-head" id="past-head" hidden data-i18n="past_title">Past events</h2>
