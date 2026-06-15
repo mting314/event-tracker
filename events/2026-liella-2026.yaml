@@ -1,0 +1,54 @@
+name: "ラブライブ！スーパースター!! Liella!のちゅーとりえらいぶ!! 2026"
+kind: concert
+performances:
+  - date: 2026-08-01
+    city: 千葉
+    label: 昼公演
+    venue: LaLa arena TOKYO-BAY
+    starts: "12:00"
+    rounds:
+      - name: アップグレード受付
+        type: 抽選
+        apply_open: 2026-06-15T18:00:00
+        apply_deadline: 2026-06-28T23:59:00
+        results_date: 2026-07-02T18:00:00
+        notes: "src: 受付期間
+2026年06月15日(月) 18:00 ～
+2026年06月28日(日) 23:59
+●
+結果発表
+2026年07月02日(木) 18:00頃(予定)"
+  - date: 2026-08-01
+    city: 千葉
+    label: 夜公演
+    venue: LaLa arena TOKYO-BAY
+    starts: "17:30"
+    rounds:
+      - name: アップグレード受付
+        type: 抽選
+        apply_open: 2026-06-15T18:00:00
+        apply_deadline: 2026-06-28T23:59:00
+        results_date: 2026-07-02T18:00:00
+        notes: "src: 受付期間
+2026年06月15日(月) 18:00 ～
+2026年06月28日(日) 23:59
+●
+結果発表
+2026年07月02日(木) 18:00頃(予定)"
+  - date: 2026-08-02
+    city: 千葉
+    venue: LaLa arena TOKYO-BAY
+    starts: "16:00"
+    rounds:
+      - name: アップグレード受付
+        type: 抽選
+        apply_open: 2026-06-15T18:00:00
+        apply_deadline: 2026-06-28T23:59:00
+        results_date: 2026-07-02T18:00:00
+        notes: "src: 受付期間
+2026年06月15日(月) 18:00 ～
+2026年06月28日(日) 23:59
+●
+結果発表
+2026年0702日(木) 18:00頃(予定)"
+source_url: https://va.pia.jp/index.jsp?slcd=VQ482&n=0016263606
