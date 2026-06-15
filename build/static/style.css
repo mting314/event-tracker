@@ -171,6 +171,7 @@ tbody tr:hover { background: var(--panel); }
 .evgroups > li[class*="franchise-"] {
   border-left: 4px solid var(--fr, transparent); border-radius: 4px;
 }
+.event-detail[class*="franchise-"] { border-left: 4px solid var(--fr, transparent); padding-left: 1rem; }
 .fr-dot {
   display: inline-block; width: .6em; height: .6em; border-radius: 50%;
   background: var(--fr, var(--muted)); margin-right: .35em; flex: none;
