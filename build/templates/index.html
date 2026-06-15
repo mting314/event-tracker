@@ -7,6 +7,7 @@
   <li class="franchise-{{ g.franchise }}" data-franchise="{{ g.franchise }}"
       data-haystack="{{ (g.name ~ ' ' ~ g.name_en ~ ' ' ~ (g.artist or '') ~ ' ' ~ (g.series|join(' ')) ~ ' ' ~ (g.series|map('series_ja')|join(' ')) ~ ' ' ~ (g.venues|join(' ')) ~ ' ' ~ (g.performers|join(' ')))|lower }}"
       data-kind="{{ g.kind or '' }}"
+      data-series="{{ g.series|join('|') }}"
       data-deadlines="{{ g.deadlines|join(',') }}">
     <details class="evgroup"{% if is_open %} open{% endif %}>
       <summary>
@@ -63,23 +64,21 @@
   </li>
 {% endmacro %}
 
-<h1 data-i18n="idx_title">Upcoming</h1>
+<h1 data-i18n="nav_events">Events</h1>
 <p class="hint"><span data-i18n="idx_hint">One row per event, showing its next deadline. Click to expand rounds &amp; shows.</span></p>
 
-<section id="active-lotteries" hidden>
-  <h2 class="section-head" data-i18n="active_title">Open now</h2>
-  <ul class="evgroups" id="active-groups">
-    {% for g in groups if g.occurrences %}{{ event_card(g, base, true) }}{% endfor %}
-  </ul>
-</section>
-
 {% set kinds = groups|map(attribute='kind')|select|unique|list %}
+{% set all_series = groups|map(attribute='series')|sum(start=[])|unique|list|sort %}
 <div class="filters">
   <input type="search" id="q" placeholder="Search name, artist, series, venue, performer…"
          data-i18n-placeholder="cat_search" autofocus>
   <select id="kind">
     <option value="" data-i18n="cat_all_kinds">All kinds</option>
     {% for k in kinds %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
+  </select>
+  <select id="series-filter">
+    <option value="" data-i18n="cat_all_series">All series</option>
+    {% for s in all_series %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
   </select>
   <label><input type="checkbox" id="open-only"> <span data-i18n="open_round">has open round</span></label>
 </div>
@@ -90,13 +89,33 @@
   {% endfor %}
 </div>
 
+<section id="active-lotteries" hidden>
+  <h2 class="section-head"><span data-i18n="active_title">Open now</span>
+    <span class="collapse-ctls">
+      <button type="button" class="collapse-ctl" data-target="active-groups" data-act="expand" data-i18n="expand_all">Expand all</button>
+      <button type="button" class="collapse-ctl" data-target="active-groups" data-act="collapse" data-i18n="collapse_all">Collapse all</button>
+    </span></h2>
+  <ul class="evgroups" id="active-groups">
+    {% for g in groups if g.occurrences %}{{ event_card(g, base, true) }}{% endfor %}
+  </ul>
+</section>
+
+<h2 class="section-head"><span data-i18n="idx_title">Upcoming</span>
+  <span class="collapse-ctls">
+    <button type="button" class="collapse-ctl" data-target="groups" data-act="expand" data-i18n="expand_all">Expand all</button>
+    <button type="button" class="collapse-ctl" data-target="groups" data-act="collapse" data-i18n="collapse_all">Collapse all</button>
+  </span></h2>
 <ul class="evgroups" id="groups">
   {% for g in groups %}{{ event_card(g, base, false) }}{% endfor %}
 </ul>
 
-<h2 class="section-head" id="past-head" hidden data-i18n="past_title">Past events</h2>
+<h2 class="section-head" id="past-head" hidden><span data-i18n="past_title">Past events</span>
+  <span class="collapse-ctls">
+    <button type="button" class="collapse-ctl" data-target="past-groups" data-act="expand" data-i18n="expand_all">Expand all</button>
+    <button type="button" class="collapse-ctl" data-target="past-groups" data-act="collapse" data-i18n="collapse_all">Collapse all</button>
+  </span></h2>
 <ul class="evgroups" id="past-groups"></ul>
 
 <p class="empty" id="feed-empty" hidden>Nothing upcoming. 🎉</p>
 {% endblock %}
-{% block scripts %}<script>initActiveLotteries(); initGroups();</script>{% endblock %}
+{% block scripts %}<script>initFilters(); initActiveLotteries(); initGroups(); initCollapseToggles();</script>{% endblock %}

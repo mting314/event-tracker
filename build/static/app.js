@@ -31,9 +31,10 @@ const I18N = {
     feed_empty: 'Nothing upcoming. 🎉',
     apply: 'Apply ↗',
     past_badge: 'past',
-    cat_title: 'Event catalog',
+    expand_all: 'Expand all', collapse_all: 'Collapse all',
     cat_search: 'Search name, artist, series, venue, performer…',
     cat_all_kinds: 'All kinds',
+    cat_all_series: 'All series',
     cat_empty: 'No matching events.',
     open_round: 'has open round',
     th_event: 'Event', th_dates: 'Dates', th_series: 'Series',
@@ -85,9 +86,10 @@ const I18N = {
     feed_empty: '予定はありません。🎉',
     apply: '申込 ↗',
     past_badge: '終了',
-    cat_title: 'イベント一覧',
+    expand_all: 'すべて展開', collapse_all: 'すべて折りたたむ',
     cat_search: '名前・アーティスト・シリーズ・会場・出演者で検索…',
     cat_all_kinds: 'すべての種別',
+    cat_all_series: 'すべてのシリーズ',
     cat_empty: '該当するイベントはありません。',
     open_round: '受付中あり',
     th_event: 'イベント', th_dates: '日程', th_series: 'シリーズ',
@@ -216,6 +218,41 @@ function paintCountdowns() {
   });
 }
 
+/* --- shared event filters (search / kind / series / franchise / has-open-round),
+   applied across EVERY section: Open now, Upcoming, Past. Each event <li> carries
+   data-haystack / data-kind / data-series / data-franchise / data-deadlines. --- */
+function readFilters() {
+  const frFilters = [...document.querySelectorAll('.fr-filter')];
+  return {
+    term: (document.getElementById('q')?.value || '').trim().toLowerCase(),
+    kind: document.getElementById('kind')?.value || '',
+    series: document.getElementById('series-filter')?.value || '',
+    openOnly: !!document.getElementById('open-only')?.checked,
+    frOn: new Set(frFilters.filter((c) => c.checked).map((c) => c.dataset.fr)),
+    frCount: frFilters.length,
+  };
+}
+function anyFilterActive(f) {
+  return !!(f.term || f.kind || f.series || f.openOnly || (f.frCount && f.frOn.size < f.frCount));
+}
+function passesFilters(li, f, now) {
+  if (f.term && !(li.dataset.haystack || '').includes(f.term)) return false;
+  if (f.kind && li.dataset.kind !== f.kind) return false;
+  if (f.series && !(li.dataset.series || '').split('|').includes(f.series)) return false;
+  if (f.frCount && !f.frOn.has(li.dataset.franchise)) return false;
+  if (f.openOnly
+    && !(li.dataset.deadlines || '').split(',').some((dl) => dl && new Date(dl) > now)) return false;
+  return true;
+}
+/** Wire all filter controls to a single 'filterchange' event the sections listen to. */
+function initFilters() {
+  const fire = () => window.dispatchEvent(new Event('filterchange'));
+  document.getElementById('q')?.addEventListener('input', fire);
+  ['kind', 'series-filter', 'open-only'].forEach((id) =>
+    document.getElementById(id)?.addEventListener('change', fire));
+  document.querySelectorAll('.fr-filter').forEach((c) => c.addEventListener('change', fire));
+}
+
 /* --- upcoming: one collapsible row per event, summarised by its next deadline --- */
 function initGroups() {
   const empty = document.getElementById('feed-empty');
@@ -223,17 +260,13 @@ function initGroups() {
   const pastHead = document.getElementById('past-head');
   const pastContainer = document.getElementById('past-groups');
   const groups = [...container.querySelectorAll('.evgroup')];
-  // Merged-in catalog filters (search / kind / has-open-round) + franchise legend.
-  const q = document.getElementById('q');
-  const kindSel = document.getElementById('kind');
-  const openOnly = document.getElementById('open-only');
-  const frFilters = [...document.querySelectorAll('.fr-filter')];
 
   // The event-name link lives inside <summary>; a plain click should navigate,
   // not toggle the row. preventDefault cancels BOTH the native nav and the
   // <summary> toggle (one event), so navigate manually. Modified clicks
   // (cmd/ctrl/shift → new tab/window) fall through to native behaviour.
-  container.addEventListener('click', (e) => {
+  // Bound on document so it also covers the Past and "Open now" sections.
+  document.addEventListener('click', (e) => {
     const a = e.target.closest('.evname');
     if (!a) return;
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
@@ -243,12 +276,8 @@ function initGroups() {
 
   const refresh = () => {
     const now = new Date();
-    const term = (q?.value || '').trim().toLowerCase();
-    const kindVal = kindSel?.value || '';
-    const openChk = !!openOnly?.checked;
-    const frOn = new Set(frFilters.filter((c) => c.checked).map((c) => c.dataset.fr));
-    const frFiltering = frFilters.length > 0 && frOn.size < frFilters.length;
-    const filtering = !!(term || kindVal || openChk || frFiltering); // reveals all matches
+    const f = readFilters();
+    const filtering = anyFilterActive(f);
     let visible = 0;
     const rows = groups.map((d) => {
       // Per performance+round, keep only the next upcoming date (so a round isn't
@@ -285,14 +314,9 @@ function initGroups() {
 
     for (const { d, next } of rows) {
       const li = d.closest('li');
-      const matchText = !term || (li.dataset.haystack || '').includes(term);
-      const matchKind = !kindVal || li.dataset.kind === kindVal;
-      const matchFr = !frFilters.length || frOn.has(li.dataset.franchise);
-      const matchOpen = !openChk
-        || (li.dataset.deadlines || '').split(',').some((dl) => dl && new Date(dl) > now);
       // Past events are always shown (in their own section below), so visibility
       // is just whether the row matches the active filters.
-      li.hidden = !(matchText && matchKind && matchFr && matchOpen);
+      li.hidden = !passesFilters(li, f, now);
       if (li.hidden) continue;
       visible++;
       const badge = d.querySelector('summary .next-badge');
@@ -336,10 +360,7 @@ function initGroups() {
     }
   };
 
-  q?.addEventListener('input', refresh);
-  kindSel?.addEventListener('change', refresh);
-  openOnly?.addEventListener('change', refresh);
-  frFilters.forEach((c) => c.addEventListener('change', refresh));
+  window.addEventListener('filterchange', refresh); // shared across all sections
   window.addEventListener('langchange', refresh); // re-pick next-round label + empty text
   // On back-navigation the browser restores the filter inputs' values but fires
   // no input/change event, so re-apply filters once form state is restored.
@@ -360,18 +381,22 @@ function initActiveLotteries() {
     .map((o) => o.dataset.iso).sort()[0] || '9999';
   const refresh = () => {
     const now = new Date();
+    const f = readFilters();
     let shown = 0;
     cards.forEach((li) => {
       let active = 0;
-      li.querySelectorAll('.occ').forEach((occ) => {
-        const ro = occ.dataset.ropen;
-        const rd = occ.dataset.rdeadline;
-        // show only the deadline row of a round whose application window is open
-        const roundOpen = rd && (!ro || new Date(ro) <= now) && new Date(rd) > now;
-        const visible = roundOpen && occ.dataset.css === 'deadline';
-        occ.hidden = !visible;
-        if (visible) active++;
-      });
+      // the shared filters also constrain "Open now"
+      if (passesFilters(li, f, now)) {
+        li.querySelectorAll('.occ').forEach((occ) => {
+          const ro = occ.dataset.ropen;
+          const rd = occ.dataset.rdeadline;
+          // show only the deadline row of a round whose application window is open
+          const roundOpen = rd && (!ro || new Date(ro) <= now) && new Date(rd) > now;
+          const visible = roundOpen && occ.dataset.css === 'deadline';
+          occ.hidden = !visible;
+          if (visible) active++;
+        });
+      }
       li.querySelectorAll('.perf-block').forEach((pb) => {
         const occ = [...pb.querySelectorAll('.occ')];
         pb.hidden = !occ.length || !occ.some((o) => !o.hidden);
@@ -387,10 +412,26 @@ function initActiveLotteries() {
     paintCountdowns();
     applyTz(document.getElementById('tz-local')?.checked);
   };
+  window.addEventListener('filterchange', refresh); // shared filters constrain Open now too
   window.addEventListener('langchange', refresh);
   window.addEventListener('pageshow', refresh);
   refresh();
   setInterval(refresh, 60000);
+}
+
+/* --- per-section "Expand all" / "Collapse all" controls (always both shown).
+   data-target=<ul id>, data-act=expand|collapse. Acts on visible cards only. --- */
+function initCollapseToggles() {
+  document.querySelectorAll('.collapse-ctl').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const ul = document.getElementById(btn.dataset.target);
+      if (!ul) return;
+      const open = btn.dataset.act === 'expand';
+      [...ul.querySelectorAll(':scope > li')]
+        .filter((li) => !li.hidden)
+        .forEach((li) => { const d = li.querySelector('details.evgroup'); if (d) d.open = open; });
+    });
+  });
 }
 
 /* --- past archive: name/series search --- */
