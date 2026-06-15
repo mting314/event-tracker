@@ -394,27 +394,18 @@ function initActiveLotteries() {
   setInterval(refresh, 60000);
 }
 
-/* --- per-section "Expand all / Collapse all" toggle (data-target=<ul id>) --- */
+/* --- per-section "Expand all" / "Collapse all" controls (always both shown).
+   data-target=<ul id>, data-act=expand|collapse. Acts on visible cards only. --- */
 function initCollapseToggles() {
-  document.querySelectorAll('.collapse-toggle').forEach((btn) => {
-    const ul = document.getElementById(btn.dataset.target);
-    if (!ul) return;
-    // operate on the currently-visible cards in this section, live each call
-    const cards = () => [...ul.querySelectorAll(':scope > li')]
-      .filter((li) => !li.hidden)
-      .map((li) => li.querySelector('details.evgroup'))
-      .filter(Boolean);
-    const relabel = () => {
-      btn.textContent = cards().some((d) => d.open) ? t('collapse_all') : t('expand_all');
-    };
+  document.querySelectorAll('.collapse-ctl').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const ds = cards();
-      const anyOpen = ds.some((d) => d.open);
-      ds.forEach((d) => { d.open = !anyOpen; });
-      relabel();
+      const ul = document.getElementById(btn.dataset.target);
+      if (!ul) return;
+      const open = btn.dataset.act === 'expand';
+      [...ul.querySelectorAll(':scope > li')]
+        .filter((li) => !li.hidden)
+        .forEach((li) => { const d = li.querySelector('details.evgroup'); if (d) d.open = open; });
     });
-    relabel();
-    window.addEventListener('langchange', relabel);
   });
 }
 

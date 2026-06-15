@@ -68,7 +68,10 @@
 
 <section id="active-lotteries" hidden>
   <h2 class="section-head"><span data-i18n="active_title">Open now</span>
-    <button type="button" class="collapse-toggle" data-target="active-groups">Collapse all</button></h2>
+    <span class="collapse-ctls">
+      <button type="button" class="collapse-ctl" data-target="active-groups" data-act="expand" data-i18n="expand_all">Expand all</button>
+      <button type="button" class="collapse-ctl" data-target="active-groups" data-act="collapse" data-i18n="collapse_all">Collapse all</button>
+    </span></h2>
   <ul class="evgroups" id="active-groups">
     {% for g in groups if g.occurrences %}{{ event_card(g, base, true) }}{% endfor %}
   </ul>
@@ -89,7 +92,10 @@
   <label class="franchise-{{ fr }}"><input type="checkbox" class="fr-filter" data-fr="{{ fr }}" checked>
     <span class="fr-dot"></span><span data-i18n="{{ key }}">{{ fr }}</span></label>
   {% endfor %}
-  <button type="button" class="collapse-toggle" data-target="groups">Expand all</button>
+  <span class="collapse-ctls">
+    <button type="button" class="collapse-ctl" data-target="groups" data-act="expand" data-i18n="expand_all">Expand all</button>
+    <button type="button" class="collapse-ctl" data-target="groups" data-act="collapse" data-i18n="collapse_all">Collapse all</button>
+  </span>
 </div>
 
 <ul class="evgroups" id="groups">
@@ -97,7 +103,10 @@
 </ul>
 
 <h2 class="section-head" id="past-head" hidden><span data-i18n="past_title">Past events</span>
-  <button type="button" class="collapse-toggle" data-target="past-groups">Expand all</button></h2>
+  <span class="collapse-ctls">
+    <button type="button" class="collapse-ctl" data-target="past-groups" data-act="expand" data-i18n="expand_all">Expand all</button>
+    <button type="button" class="collapse-ctl" data-target="past-groups" data-act="collapse" data-i18n="collapse_all">Collapse all</button>
+  </span></h2>
 <ul class="evgroups" id="past-groups"></ul>
 
 <p class="empty" id="feed-empty" hidden>Nothing upcoming. 🎉</p>

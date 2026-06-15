@@ -181,13 +181,15 @@ tbody tr:hover { background: var(--panel); }
   margin: 1.75rem 0 .5rem; padding-top: .75rem; border-top: 1px solid #2c2f55;
   font-size: 1.05rem; color: var(--muted);
 }
-/* Per-section "Expand all / Collapse all" toggle (link-style, sits in headers). */
-.collapse-toggle {
-  margin-left: .6rem; background: none; border: none; padding: 0; cursor: pointer;
+/* Per-section "Expand all" / "Collapse all" controls (link-style, both shown). */
+.collapse-ctls { margin-left: .6rem; display: inline-flex; gap: .6rem; vertical-align: middle; }
+.type-legend .collapse-ctls { margin-left: auto; }
+.collapse-ctl {
+  background: none; border: none; padding: 0; cursor: pointer;
   font: inherit; font-size: .8rem; font-weight: 400; color: var(--accent, #ff5fa2);
-  text-decoration: underline; vertical-align: middle;
+  text-decoration: underline;
 }
-.type-legend .collapse-toggle { margin-left: auto; text-decoration: underline; }
+.collapse-ctl:hover { color: var(--text); }
 .evgroup .evname { font-weight: 600; color: var(--text); text-decoration: none; }
 .evgroup .evname:hover { color: var(--accent, #ff5fa2); text-decoration: underline; }
 .evgroup .next-badge:empty { display: none; }
