@@ -10,7 +10,7 @@
   {% if event.name_en %}<p class="sub i18n-field" data-ja="{{ event.name_en }}" data-en="{{ event.name }}">{{ event.name_en }}</p>{% endif %}
 
   <span class="fr-dot franchise-{{ event.franchise }}" title="{{ event.franchise }}"></span>
-  {% if event.kind %}<span class="kind-badge">{{ event.kind }}</span>{% endif %}
+  {% if event.kind %}<span class="kind-badge i18n-field" data-en="{{ kind_labels[event.kind].en }}" data-ja="{{ kind_labels[event.kind].ja }}">{{ kind_labels[event.kind].en }}</span>{% endif %}
 
   <div class="meta-grid">
     {% if event.artist %}<div><dt data-i18n="detail_artist">Artist</dt><dd>{{ event.artist }}</dd></div>{% endif %}
