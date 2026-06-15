@@ -4,7 +4,7 @@ from datetime import date, datetime
 
 from scrape.eventernote import parse_eventernote
 from scrape.util import find_all_dates, parse_date, parse_datetime, slugify, to_event_yaml
-from scrape.x_post import extract_links, parse_text
+from scrape.x_post import _from_payload, extract_links, parse_text
 
 EVENTERNOTE_FIXTURE = """
 <html><head>
@@ -71,6 +71,51 @@ def test_extract_links_filters_x_and_media():
     )
     links = extract_links(text)
     assert links == ["https://www.lovelive-anime.jp/event/1"]  # X/media/shortener dropped
+
+
+def test_from_payload_ignores_author_profile_links_and_date():
+    # Mirrors X's GraphQL shape: the post links the ticket page; the *author's*
+    # profile carries a bio link + the account's creation date. Only the post's
+    # link/text/year should be picked up.
+    payload = {
+        "data": {
+            "tweetResult": {
+                "result": {
+                    "core": {
+                        "user_results": {
+                            "result": {
+                                "legacy": {
+                                    "created_at": "Mon Jan 01 00:00:00 +0000 2019",
+                                    "entities": {
+                                        "url": {
+                                            "urls": [
+                                                {"expanded_url": "https://example.com/bio-link"}
+                                            ]
+                                        }
+                                    },
+                                }
+                            }
+                        }
+                    },
+                    "legacy": {
+                        "full_text": "チケット情報 https://t.co/abc",
+                        "created_at": "Fri May 29 04:00:00 +0000 2026",
+                        "entities": {
+                            "urls": [
+                                {
+                                    "expanded_url": "https://lovelive-anime.jp/live/live_detail.php?p=1"
+                                }
+                            ]
+                        },
+                    },
+                }
+            }
+        }
+    }
+    text, links, year = _from_payload(payload)
+    assert links == ["https://lovelive-anime.jp/live/live_detail.php?p=1"]  # not the bio link
+    assert "チケット情報" in text
+    assert year == 2026  # the tweet's year, not the account's 2019
 
 
 def test_parse_text_reads_yearless_show_dates_from_post():

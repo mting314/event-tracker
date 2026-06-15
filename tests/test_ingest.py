@@ -123,6 +123,60 @@ def test_x_post_keeps_dates_when_link_is_thin():
     assert res.data["rounds"] == [{"name": "FC先行"}]
 
 
+def test_x_post_prefers_ticket_link_over_llm_on_tangential_link():
+    """Regression: a ticket post links a movie page *and* the ticket page. The
+    movie page parses empty deterministically; the LLM would fabricate a screening
+    from it. The richest deterministic result (the ticket page) must win — no LLM."""
+    movie = "https://www.lovelive-anime.jp/nijigasaki/movie/Chapter2/"
+    ticket = "https://lovelive-anime.jp/nijigasaki/live/live_detail.php?p=8thlive#ticket"
+    x_data = {
+        "official_url": X_URL,
+        "event_dates": [],
+        "rounds": [],
+        "source_links": [movie, ticket],
+    }
+
+    def official_side(url):
+        if "live_detail" in url:
+            return {"name": "8th Live", "rounds": [{"name": "1次先行"}]}
+        return {"name": "movie", "rounds": []}  # movie page: nothing structured
+
+    with (
+        patch("scrape.x_post.scrape", return_value=x_data) as xp,
+        patch("scrape.official.scrape", side_effect=official_side) as off,
+        patch(
+            "scrape.llm.scrape",
+            return_value={"name": "MOVIE SCREENING", "performances": [{"date": date(2025, 11, 7)}]},
+        ) as llm,
+    ):
+        xp.__module__ = "scrape.x_post"
+        off.__module__ = "scrape.official"
+        res = ingest.ingest_url(X_URL)  # allow_llm=True (bot default)
+    assert res.adapter == "x→official"
+    assert res.data["name"] == "8th Live"  # ticket page, not the movie screening
+    llm.assert_not_called()  # deterministic ticket result preempts the LLM
+
+
+def test_x_post_uses_llm_only_when_no_deterministic_link():
+    """If every nested link parses empty deterministically, the LLM may try (in
+    priority order) — but only as a last resort."""
+    fc = "https://someartist.com/fc/event"  # -> generic adapter
+    x_data = {"official_url": X_URL, "event_dates": [], "rounds": [], "source_links": [fc]}
+    with (
+        patch("scrape.x_post.scrape", return_value=x_data) as xp,
+        patch("scrape.generic.scrape", return_value={"name": "g", "rounds": []}) as gen,
+        patch(
+            "scrape.llm.scrape", return_value={"name": "Real Event", "rounds": [{"name": "r"}]}
+        ) as llm,
+    ):
+        xp.__module__ = "scrape.x_post"
+        gen.__module__ = "scrape.generic"
+        res = ingest.ingest_url(X_URL)
+    assert res.used_llm and res.adapter == "x→llm"
+    assert res.data["name"] == "Real Event"
+    llm.assert_called()
+
+
 def test_x_post_no_links_falls_back_to_llm():
     """No nested link and a thin post -> existing LLM-on-empty behaviour."""
     x_data = {"official_url": X_URL, "event_dates": [], "rounds": [], "source_links": []}

@@ -108,13 +108,28 @@ def _followable(link: str) -> bool:
     return not any(host == h or host.endswith("." + h) for h in _SKIP_HOSTS)
 
 
-def link_priority(link: str) -> int:
-    """Sort key: known event/ticket hosts first, everything else after."""
+# Path hints: a ticket/live page is the right target for a ticket post; a movie /
+# news / goods page on the same host is usually tangential and ranked lower.
+_PATH_UP = ("ticket", "/live", "live_detail", "/event", "/tour", "ticket.")
+_PATH_DOWN = ("/movie", "/news", "/goods", "/bd", "/dvd", "/cd", "/blog")
+
+
+def link_priority(link: str) -> tuple[int, int]:
+    """Sort key: known event/ticket hosts first, then ticket/live paths before
+    tangential ones (movie/news/goods) on that host."""
     host = urlparse(link).netloc.lower()
-    for i, h in enumerate(_PREFERRED_HOSTS):
-        if host == h or host.endswith("." + h):
-            return i
-    return len(_PREFERRED_HOSTS)
+    host_rank = next(
+        (i for i, h in enumerate(_PREFERRED_HOSTS) if host == h or host.endswith("." + h)),
+        len(_PREFERRED_HOSTS),
+    )
+    low = link.lower()
+    if any(k in low for k in _PATH_UP):
+        path_rank = 0
+    elif any(k in low for k in _PATH_DOWN):
+        path_rank = 2
+    else:
+        path_rank = 1
+    return (host_rank, path_rank)
 
 
 def extract_links(text: str) -> list[str]:
@@ -203,11 +218,19 @@ def parse_text(
     }
 
 
+# Subtrees describing the post's *author*, not the post. We prune these while
+# walking so we never pick up the account's bio link, profile text, or account
+# creation date — only what's actually in the post the user gave us.
+_AUTHOR_KEYS = ("user_results", "user")
+
+
 def _walk(obj, key: str) -> list:
-    """Collect every string value stored under ``key`` anywhere in nested JSON."""
+    """Collect every string value under ``key`` in nested JSON, skipping author subtrees."""
     out = []
     if isinstance(obj, dict):
         for k, v in obj.items():
+            if k in _AUTHOR_KEYS:
+                continue  # don't descend into the tweet author's profile
             if k == key and isinstance(v, str):
                 out.append(v)
             else:
@@ -219,11 +242,14 @@ def _walk(obj, key: str) -> list:
 
 
 def _from_payload(payload: dict) -> tuple[str, list[str], int | None]:
-    """Extract the fullest post text, expanded links, and post year from any X JSON.
+    """Extract the post's text, its expanded links, and its year from any X JSON.
 
     Works for both the syndication ``tweet-result`` payload and the GraphQL
     ``TweetResultByRestId`` payload by walking for ``expanded_url`` / text /
     ``created_at`` fields, so it's resilient to X's nested, reshuffled structures.
+    The walk skips the author subtree (see ``_AUTHOR_KEYS``) so we only ever read
+    links/text/date that belong to the **post itself** — not the account's bio
+    link (which is a common false positive) or the account's creation date.
     """
     texts = _walk(payload, "text") + _walk(payload, "full_text")
     text = max(texts, key=len) if texts else ""
