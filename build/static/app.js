@@ -31,7 +31,7 @@ const I18N = {
     feed_empty: 'Nothing upcoming. 🎉',
     apply: 'Apply ↗',
     past_badge: 'past',
-    cat_title: 'Event catalog',
+    expand_all: 'Expand all', collapse_all: 'Collapse all',
     cat_search: 'Search name, artist, series, venue, performer…',
     cat_all_kinds: 'All kinds',
     cat_empty: 'No matching events.',
@@ -85,7 +85,7 @@ const I18N = {
     feed_empty: '予定はありません。🎉',
     apply: '申込 ↗',
     past_badge: '終了',
-    cat_title: 'イベント一覧',
+    expand_all: 'すべて展開', collapse_all: 'すべて折りたたむ',
     cat_search: '名前・アーティスト・シリーズ・会場・出演者で検索…',
     cat_all_kinds: 'すべての種別',
     cat_empty: '該当するイベントはありません。',
@@ -233,7 +233,8 @@ function initGroups() {
   // not toggle the row. preventDefault cancels BOTH the native nav and the
   // <summary> toggle (one event), so navigate manually. Modified clicks
   // (cmd/ctrl/shift → new tab/window) fall through to native behaviour.
-  container.addEventListener('click', (e) => {
+  // Bound on document so it also covers the Past and "Open now" sections.
+  document.addEventListener('click', (e) => {
     const a = e.target.closest('.evname');
     if (!a) return;
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
@@ -391,6 +392,30 @@ function initActiveLotteries() {
   window.addEventListener('pageshow', refresh);
   refresh();
   setInterval(refresh, 60000);
+}
+
+/* --- per-section "Expand all / Collapse all" toggle (data-target=<ul id>) --- */
+function initCollapseToggles() {
+  document.querySelectorAll('.collapse-toggle').forEach((btn) => {
+    const ul = document.getElementById(btn.dataset.target);
+    if (!ul) return;
+    // operate on the currently-visible cards in this section, live each call
+    const cards = () => [...ul.querySelectorAll(':scope > li')]
+      .filter((li) => !li.hidden)
+      .map((li) => li.querySelector('details.evgroup'))
+      .filter(Boolean);
+    const relabel = () => {
+      btn.textContent = cards().some((d) => d.open) ? t('collapse_all') : t('expand_all');
+    };
+    btn.addEventListener('click', () => {
+      const ds = cards();
+      const anyOpen = ds.some((d) => d.open);
+      ds.forEach((d) => { d.open = !anyOpen; });
+      relabel();
+    });
+    relabel();
+    window.addEventListener('langchange', relabel);
+  });
 }
 
 /* --- past archive: name/series search --- */

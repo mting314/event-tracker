@@ -67,7 +67,8 @@
 <p class="hint"><span data-i18n="idx_hint">One row per event, showing its next deadline. Click to expand rounds &amp; shows.</span></p>
 
 <section id="active-lotteries" hidden>
-  <h2 class="section-head" data-i18n="active_title">Open now</h2>
+  <h2 class="section-head"><span data-i18n="active_title">Open now</span>
+    <button type="button" class="collapse-toggle" data-target="active-groups">Collapse all</button></h2>
   <ul class="evgroups" id="active-groups">
     {% for g in groups if g.occurrences %}{{ event_card(g, base, true) }}{% endfor %}
   </ul>
@@ -88,15 +89,17 @@
   <label class="franchise-{{ fr }}"><input type="checkbox" class="fr-filter" data-fr="{{ fr }}" checked>
     <span class="fr-dot"></span><span data-i18n="{{ key }}">{{ fr }}</span></label>
   {% endfor %}
+  <button type="button" class="collapse-toggle" data-target="groups">Expand all</button>
 </div>
 
 <ul class="evgroups" id="groups">
   {% for g in groups %}{{ event_card(g, base, false) }}{% endfor %}
 </ul>
 
-<h2 class="section-head" id="past-head" hidden data-i18n="past_title">Past events</h2>
+<h2 class="section-head" id="past-head" hidden><span data-i18n="past_title">Past events</span>
+  <button type="button" class="collapse-toggle" data-target="past-groups">Expand all</button></h2>
 <ul class="evgroups" id="past-groups"></ul>
 
 <p class="empty" id="feed-empty" hidden>Nothing upcoming. 🎉</p>
 {% endblock %}
-{% block scripts %}<script>initActiveLotteries(); initGroups();</script>{% endblock %}
+{% block scripts %}<script>initActiveLotteries(); initGroups(); initCollapseToggles();</script>{% endblock %}
