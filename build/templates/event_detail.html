@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ event.name }} · LL Lottery Tracker{% endblock %}
 {% block content %}
-<article class="event-detail">
+<article class="event-detail franchise-{{ event.franchise }}">
   <div class="event-head">
     <a class="crumb" href="{{ base }}index.html" data-i18n="detail_back">← Events</a>
     <a class="btn primary edit-btn" href="{{ base }}add.html?edit={{ event.id }}" data-i18n="detail_edit">✎ Edit event</a>
@@ -9,7 +9,6 @@
   <h1 class="i18n-field" data-ja="{{ event.name }}" data-en="{{ event.name_en or event.name }}">{{ event.name }}</h1>
   {% if event.name_en %}<p class="sub i18n-field" data-ja="{{ event.name_en }}" data-en="{{ event.name }}">{{ event.name_en }}</p>{% endif %}
 
-  <span class="fr-dot franchise-{{ event.franchise }}" title="{{ event.franchise }}"></span>
   {% if event.kind %}<span class="kind-badge i18n-field" data-en="{{ kind_labels[event.kind].en }}" data-ja="{{ kind_labels[event.kind].ja }}">{{ kind_labels[event.kind].en }}</span>{% endif %}
 
   <div class="meta-grid">

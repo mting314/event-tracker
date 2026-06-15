@@ -14,7 +14,6 @@
         <span class="next-badge"></span>
         <span class="next-round"></span>
         <span class="countdown"></span>
-        <span class="fr-dot" title="{{ g.franchise }}"></span>
         <a class="evname i18n-field" href="{{ base }}event/{{ g.id }}.html" data-ja="{{ g.name }}" data-en="{{ g.name_en }}">{{ g.name }}</a>
         {% for s in g.series %}<span class="tag i18n-field" data-en="{{ s }}" data-ja="{{ s|series_ja }}">{{ s }}</span>{% endfor %}
         {% if g.kind %}<span class="kind-badge i18n-field" data-en="{{ kind_labels[g.kind].en }}" data-ja="{{ kind_labels[g.kind].ja }}">{{ kind_labels[g.kind].en }}</span>{% endif %}
