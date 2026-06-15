@@ -175,28 +175,8 @@ tbody tr:hover { background: var(--panel); }
 .type-legend { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin: .25rem 0 1rem; font-size: .85rem; }
 .type-legend label { display: inline-flex; align-items: center; gap: .35rem; color: var(--muted); cursor: pointer; }
 .type-legend .fr-dot { margin-right: 0; }
-/* "Open now" section — one block per event (with active rounds), each
-   auto-expanded showing only its active rounds. Round rows use a subgrid so the
-   "closes …" / Apply columns line up within an event. */
+/* "Open now" section reuses the .evgroup event cards (auto-expanded). */
 #active-lotteries { margin: 1rem 0 1.25rem; }
-.active-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem; }
-.active-event-block {
-  padding: .5rem .6rem; background: var(--panel); border-radius: 6px;
-  border-left: 4px solid var(--fr, transparent);
-}
-.active-event-head { display: inline-flex; align-items: center; }
-.active-event-head .active-event { font-weight: 600; color: var(--text); text-decoration: none; }
-.active-event-head .active-event:hover { color: var(--accent, #ff5fa2); text-decoration: underline; }
-.active-rounds {
-  list-style: none; margin: .3rem 0 0; padding: 0;
-  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; row-gap: .2rem;
-}
-.active-round-row {
-  display: grid; grid-template-columns: subgrid; grid-column: 1 / -1;
-  align-items: center; column-gap: .8rem; padding-left: 1.2rem;
-}
-.active-round-row .active-round { color: var(--text); }
-.active-when { color: var(--muted); font-size: .85rem; white-space: nowrap; }
 .section-head {
   margin: 1.75rem 0 .5rem; padding-top: .75rem; border-top: 1px solid #2c2f55;
   font-size: 1.05rem; color: var(--muted);

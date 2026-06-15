@@ -42,6 +42,9 @@ def _round_occurrences(rnd) -> list[dict]:
     """The dated actions (opens/deadline/results/payment) for one round."""
     leg = f" · {rnd.leg}" if rnd.leg else ""
     round_en = (rnd.name_en or rnd.name) + leg
+    # The round's application window, so the "Open now" view can tell if it's live.
+    r_open = rnd.apply_open.isoformat() if rnd.apply_open else ""
+    r_deadline = rnd.apply_deadline.isoformat() if rnd.apply_deadline else ""
     out = []
     for field, meta in DATE_TYPES.items():
         dt = getattr(rnd, field)
@@ -55,6 +58,8 @@ def _round_occurrences(rnd) -> list[dict]:
                 "css": meta["css"],
                 "round": rnd.name + leg,
                 "round_en": round_en,
+                "r_open": r_open,
+                "r_deadline": r_deadline,
                 "apply_url": rnd.apply_url,
             }
         )
@@ -156,40 +161,6 @@ def main() -> None:
     env.filters["series_ja"] = lambda s: SERIES.get(s, s)  # canonical EN -> JP display
 
     groups = build_index_groups(events)
-    # Events with deadline-bearing lottery rounds, for the index "Open now"
-    # section (grouped by event). Whether a round is *currently* open depends on
-    # view time, so the client filters by apply_open/apply_deadline and hides
-    # events/rounds that aren't active. Rounds are deduped (a leg-wide round
-    # repeated under each show collapses to one).
-    lotteries = []
-    for ev in events:
-        rounds, seen = [], set()
-        for r in ev.all_rounds:
-            if not r.apply_deadline:
-                continue
-            key = (r.name, r.apply_deadline.isoformat())
-            if key in seen:
-                continue
-            seen.add(key)
-            rounds.append(
-                {
-                    "round": r.name,
-                    "round_en": r.name_en or r.name,
-                    "apply_open": r.apply_open.isoformat() if r.apply_open else "",
-                    "apply_deadline": r.apply_deadline.isoformat(),
-                    "apply_url": r.apply_url or "",
-                }
-            )
-        if rounds:
-            lotteries.append(
-                {
-                    "id": ev.id,
-                    "name": ev.name,
-                    "name_en": ev.name_en or ev.name,
-                    "franchise": ev.franchise,
-                    "rounds": rounds,
-                }
-            )
     # The edit API URL (public Cloud Function) is baked into the add page so the
     # editor only ever enters the admin secret. Override via EDIT_API_URL.
     edit_api = os.environ.get("EDIT_API_URL", "https://ll-commit-g6hnlr7cca-uc.a.run.app")
@@ -209,7 +180,7 @@ def main() -> None:
         "kind_options": kind_options,
     }
 
-    env.get_template("index.html").stream(groups=groups, lotteries=lotteries, **common).dump(
+    env.get_template("index.html").stream(groups=groups, **common).dump(
         str(DIST_DIR / "index.html")
     )
     env.get_template("calendar.html").stream(**common).dump(str(DIST_DIR / "calendar.html"))
