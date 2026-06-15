@@ -3,8 +3,8 @@
 from datetime import date, datetime
 
 from scrape.eventernote import parse_eventernote
-from scrape.util import find_all_dates, parse_date, parse_datetime, slugify
-from scrape.x_post import parse_text
+from scrape.util import find_all_dates, parse_date, parse_datetime, slugify, to_event_yaml
+from scrape.x_post import extract_links, parse_text
 
 EVENTERNOTE_FIXTURE = """
 <html><head>
@@ -61,3 +61,48 @@ def test_x_post_text_extracts_rounds():
     deadlines = [r["apply_deadline"] for r in data["rounds"]]
     assert datetime(2026, 6, 25, 23, 59) in deadlines
     assert datetime(2026, 8, 22, 10, 0) in deadlines
+
+
+def test_extract_links_filters_x_and_media():
+    text = (
+        "詳細はこちら https://www.lovelive-anime.jp/event/1 \n"
+        "RT https://twitter.com/foo/status/2 pic https://pic.twitter.com/abc "
+        "短縮 https://t.co/xyz。"
+    )
+    links = extract_links(text)
+    assert links == ["https://www.lovelive-anime.jp/event/1"]  # X/media/shortener dropped
+
+
+def test_parse_text_reads_yearless_show_dates_from_post():
+    # "6/13-14＠… 開催" is the show; "発売日：5/30" is a sale date and must be skipped.
+    text = "🌈チケット情報🌈\n6/13-14＠京王アリーナ TOKYOにて開催🎊\n発売日：5/30(土)12:00～"
+    data = parse_text(text, "https://x.com/foo/status/1", default_year=2026)
+    assert data["event_dates"] == [date(2026, 6, 13), date(2026, 6, 14)]
+
+
+def test_to_event_yaml_synthesises_performances_for_rounds():
+    # An X-followed ticket page yields rounds + show dates but no performances;
+    # to_event_yaml must build performances so the rounds have somewhere to nest.
+    data = {
+        "name": "Test Live",
+        "event_dates": [date(2026, 6, 13)],
+        "rounds": [{"name": "1次先行", "apply_deadline": datetime(2026, 5, 1, 12, 0)}],
+    }
+    out = to_event_yaml(data)
+    assert "performances:" in out
+    assert "- date: 2026-06-13" in out
+    assert "name: 1次先行" in out  # round nested under the synthesised performance
+
+
+def test_parse_text_surfaces_and_prioritises_links():
+    data = parse_text(
+        "tickets! https://eplus.jp/sf/detail/1",
+        "https://x.com/foo/status/1",
+        links=["https://www.lovelive-anime.jp/event/1", "https://example.com/blog"],
+    )
+    # known event hosts (lovelive, eplus) sort ahead of the unknown blog
+    assert data["source_links"][:2] == [
+        "https://www.lovelive-anime.jp/event/1",
+        "https://eplus.jp/sf/detail/1",
+    ]
+    assert "https://example.com/blog" in data["source_links"]
