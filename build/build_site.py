@@ -42,6 +42,9 @@ def _round_occurrences(rnd) -> list[dict]:
     """The dated actions (opens/deadline/results/payment) for one round."""
     leg = f" · {rnd.leg}" if rnd.leg else ""
     round_en = (rnd.name_en or rnd.name) + leg
+    # The round's application window, so the "Open now" view can tell if it's live.
+    r_open = rnd.apply_open.isoformat() if rnd.apply_open else ""
+    r_deadline = rnd.apply_deadline.isoformat() if rnd.apply_deadline else ""
     out = []
     for field, meta in DATE_TYPES.items():
         dt = getattr(rnd, field)
@@ -55,6 +58,8 @@ def _round_occurrences(rnd) -> list[dict]:
                 "css": meta["css"],
                 "round": rnd.name + leg,
                 "round_en": round_en,
+                "r_open": r_open,
+                "r_deadline": r_deadline,
                 "apply_url": rnd.apply_url,
             }
         )
@@ -95,6 +100,7 @@ def build_index_groups(events) -> list[dict]:
                 "artist": ev.artist,
                 "series": ev.series,
                 "kind": ev.kind,
+                "franchise": ev.franchise,
                 "venues": ev.venues,
                 "performers": ev.performers,
                 # apply deadlines (ISO) — drives the index "has open round" filter

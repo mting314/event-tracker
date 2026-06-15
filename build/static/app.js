@@ -24,6 +24,8 @@ const I18N = {
     tz_local: 'Show local time',
     idx_title: 'Upcoming',
     idx_hint: 'One row per event, showing its next deadline. Click to expand rounds & shows.',
+    active_title: 'Open now',
+    fr_lovelive: 'Love Live!', fr_project_sekai: 'Project Sekai', fr_other: 'Other',
     open_event: 'open event page →',
     no_rounds: 'No lottery rounds recorded yet.',
     feed_empty: 'Nothing upcoming. 🎉',
@@ -76,6 +78,8 @@ const I18N = {
     tz_local: '現地時間で表示',
     idx_title: '開催予定',
     idx_hint: 'イベントごとに次の締切を表示。クリックで申込回・公演を展開。',
+    active_title: '受付中',
+    fr_lovelive: 'ラブライブ！', fr_project_sekai: 'プロジェクトセカイ', fr_other: 'その他',
     open_event: 'イベントページを開く →',
     no_rounds: '抽選回はまだ登録されていません。',
     feed_empty: '予定はありません。🎉',
@@ -219,10 +223,11 @@ function initGroups() {
   const pastHead = document.getElementById('past-head');
   const pastContainer = document.getElementById('past-groups');
   const groups = [...container.querySelectorAll('.evgroup')];
-  // Merged-in catalog filters (search / kind / has-open-round).
+  // Merged-in catalog filters (search / kind / has-open-round) + franchise legend.
   const q = document.getElementById('q');
   const kindSel = document.getElementById('kind');
   const openOnly = document.getElementById('open-only');
+  const frFilters = [...document.querySelectorAll('.fr-filter')];
 
   // The event-name link lives inside <summary>; a plain click should navigate,
   // not toggle the row. preventDefault cancels BOTH the native nav and the
@@ -241,7 +246,9 @@ function initGroups() {
     const term = (q?.value || '').trim().toLowerCase();
     const kindVal = kindSel?.value || '';
     const openChk = !!openOnly?.checked;
-    const filtering = !!(term || kindVal || openChk); // a search/filter reveals all matches
+    const frOn = new Set(frFilters.filter((c) => c.checked).map((c) => c.dataset.fr));
+    const frFiltering = frFilters.length > 0 && frOn.size < frFilters.length;
+    const filtering = !!(term || kindVal || openChk || frFiltering); // reveals all matches
     let visible = 0;
     const rows = groups.map((d) => {
       // Per performance+round, keep only the next upcoming date (so a round isn't
@@ -280,11 +287,12 @@ function initGroups() {
       const li = d.closest('li');
       const matchText = !term || (li.dataset.haystack || '').includes(term);
       const matchKind = !kindVal || li.dataset.kind === kindVal;
+      const matchFr = !frFilters.length || frOn.has(li.dataset.franchise);
       const matchOpen = !openChk
         || (li.dataset.deadlines || '').split(',').some((dl) => dl && new Date(dl) > now);
       // Past events are always shown (in their own section below), so visibility
       // is just whether the row matches the active filters.
-      li.hidden = !(matchText && matchKind && matchOpen);
+      li.hidden = !(matchText && matchKind && matchFr && matchOpen);
       if (li.hidden) continue;
       visible++;
       const badge = d.querySelector('summary .next-badge');
@@ -331,6 +339,7 @@ function initGroups() {
   q?.addEventListener('input', refresh);
   kindSel?.addEventListener('change', refresh);
   openOnly?.addEventListener('change', refresh);
+  frFilters.forEach((c) => c.addEventListener('change', refresh));
   window.addEventListener('langchange', refresh); // re-pick next-round label + empty text
   // On back-navigation the browser restores the filter inputs' values but fires
   // no input/change event, so re-apply filters once form state is restored.
@@ -339,6 +348,50 @@ function initGroups() {
   setInterval(paintCountdowns, 60000);
 }
 
+/* --- "Open now": the same expandable event cards as the main list, auto-
+   expanded, filtered to events with a currently-open application window and
+   showing only those open rounds' deadline rows. --- */
+function initActiveLotteries() {
+  const section = document.getElementById('active-lotteries');
+  const container = document.getElementById('active-groups');
+  if (!section || !container) return;
+  const cards = [...container.querySelectorAll(':scope > li')];
+  const earliest = (li) => [...li.querySelectorAll('.occ:not([hidden])')]
+    .map((o) => o.dataset.iso).sort()[0] || '9999';
+  const refresh = () => {
+    const now = new Date();
+    let shown = 0;
+    cards.forEach((li) => {
+      let active = 0;
+      li.querySelectorAll('.occ').forEach((occ) => {
+        const ro = occ.dataset.ropen;
+        const rd = occ.dataset.rdeadline;
+        // show only the deadline row of a round whose application window is open
+        const roundOpen = rd && (!ro || new Date(ro) <= now) && new Date(rd) > now;
+        const visible = roundOpen && occ.dataset.css === 'deadline';
+        occ.hidden = !visible;
+        if (visible) active++;
+      });
+      li.querySelectorAll('.perf-block').forEach((pb) => {
+        const occ = [...pb.querySelectorAll('.occ')];
+        pb.hidden = !occ.length || !occ.some((o) => !o.hidden);
+      });
+      li.hidden = active === 0;
+      if (active) shown++;
+    });
+    cards // events with the soonest-closing round first
+      .filter((li) => !li.hidden)
+      .sort((a, b) => earliest(a).localeCompare(earliest(b)))
+      .forEach((li) => container.appendChild(li));
+    section.hidden = shown === 0;
+    paintCountdowns();
+    applyTz(document.getElementById('tz-local')?.checked);
+  };
+  window.addEventListener('langchange', refresh);
+  window.addEventListener('pageshow', refresh);
+  refresh();
+  setInterval(refresh, 60000);
+}
 
 /* --- past archive: name/series search --- */
 function initPast() {

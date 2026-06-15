@@ -85,6 +85,30 @@ _SERIES_ALIASES = {
     "Yohane the Parhelion -SUNSHINE in the MIRROR-": "Yohane the Parhelion",
 }
 
+# Top-level franchise buckets for colour-coding events by "type". Derived from an
+# event's series; artist-only / non-LL/Sekai events fall back to "other".
+_LOVELIVE_SERIES = {
+    "Love Live!",
+    "Love Live! Sunshine!!",
+    "Nijigasaki",
+    "Love Live! Superstar!!",
+    "Hasunosora",
+    "Yohane the Parhelion",
+    "Ikizulive!",
+    "Love Live! Bluebird",
+    "School Idol Musical",
+    "μ's",
+    "Aqours",
+    "Liella!",
+    "Guilty Kiss",
+    "Saint Snow",
+}
+_PROJECT_SEKAI_SERIES = {
+    "Project Sekai Unit Fan Meeting",
+    "Leo/need",
+    "Nightcord at 25:00",
+}
+
 _SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -223,6 +247,16 @@ class Event(BaseModel):
     def all_rounds(self) -> list[Round]:
         """Every round across all performances (flattened — for diffing/counts)."""
         return [r for p in self.performances for r in p.rounds]
+
+    @property
+    def franchise(self) -> str:
+        """Top-level type bucket for colour-coding: lovelive | project-sekai | other."""
+        s = set(self.series)
+        if s & _LOVELIVE_SERIES:
+            return "lovelive"
+        if s & _PROJECT_SEKAI_SERIES:
+            return "project-sekai"
+        return "other"
 
     @property
     def event_dates(self) -> list[date]:
