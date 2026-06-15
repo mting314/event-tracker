@@ -17,7 +17,7 @@
         <span class="fr-dot" title="{{ g.franchise }}"></span>
         <a class="evname i18n-field" href="{{ base }}event/{{ g.id }}.html" data-ja="{{ g.name }}" data-en="{{ g.name_en }}">{{ g.name }}</a>
         {% for s in g.series %}<span class="tag i18n-field" data-en="{{ s }}" data-ja="{{ s|series_ja }}">{{ s }}</span>{% endfor %}
-        {% if g.kind %}<span class="kind-badge">{{ g.kind }}</span>{% endif %}
+        {% if g.kind %}<span class="kind-badge i18n-field" data-en="{{ kind_labels[g.kind].en }}" data-ja="{{ kind_labels[g.kind].ja }}">{{ kind_labels[g.kind].en }}</span>{% endif %}
         <time class="next-when dt"></time>
       </summary>
       <div class="evbody">
@@ -74,11 +74,11 @@
          data-i18n-placeholder="cat_search" autofocus>
   <select id="kind">
     <option value="" data-i18n="cat_all_kinds">All kinds</option>
-    {% for k in kinds %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
+    {% for k in kinds %}<option value="{{ k }}" class="i18n-field" data-en="{{ kind_labels[k].en }}" data-ja="{{ kind_labels[k].ja }}">{{ kind_labels[k].en }}</option>{% endfor %}
   </select>
   <select id="series-filter">
     <option value="" data-i18n="cat_all_series">All series</option>
-    {% for s in all_series %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+    {% for s in all_series %}<option value="{{ s }}" class="i18n-field" data-en="{{ s }}" data-ja="{{ s|series_ja }}">{{ s }}</option>{% endfor %}
   </select>
   <label><input type="checkbox" id="open-only"> <span data-i18n="open_round">has open round</span></label>
 </div>

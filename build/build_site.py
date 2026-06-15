@@ -19,7 +19,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from schema.models import JST, KINDS, SERIES, load_all_events
+from schema.models import JST, KIND_LABELS, KINDS, SERIES, load_all_events
 
 ROOT = Path(__file__).resolve().parent.parent
 EVENTS_DIR = ROOT / "events"
@@ -178,6 +178,7 @@ def main() -> None:
         "edit_api": edit_api,
         "series_options": series_options,
         "kind_options": kind_options,
+        "kind_labels": KIND_LABELS,
     }
 
     env.get_template("index.html").stream(groups=groups, **common).dump(
@@ -195,9 +196,13 @@ def main() -> None:
     event_dir.mkdir()
     detail = env.get_template("event_detail.html")
     for ev in events:
-        detail.stream(event=ev, date_types=DATE_TYPES, event_count=len(events), base="../").dump(
-            str(event_dir / f"{ev.id}.html")
-        )
+        detail.stream(
+            event=ev,
+            date_types=DATE_TYPES,
+            event_count=len(events),
+            base="../",
+            kind_labels=KIND_LABELS,
+        ).dump(str(event_dir / f"{ev.id}.html"))
 
     print(f"Built {len(events)} events -> {DIST_DIR}")
 

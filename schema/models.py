@@ -38,6 +38,23 @@ KINDS = (
     "other",  # anything that fits none of the above
 )
 
+# Display labels for each kind (the stored value is the slug). Used for the kind
+# badges and the kind filter, localized JP/EN on the site.
+KIND_LABELS = {
+    "concert": {"en": "Concert", "ja": "コンサート"},
+    "tour": {"en": "Tour", "ja": "ツアー"},
+    "festival": {"en": "Festival", "ja": "フェス"},
+    "release": {"en": "Release", "ja": "リリース"},
+    "meet-greet": {"en": "Meet & Greet", "ja": "特典会"},
+    "fan-meeting": {"en": "Fan Meeting", "ja": "ファンミーティング"},
+    "talk": {"en": "Talk", "ja": "トーク"},
+    "stage": {"en": "Stage", "ja": "舞台"},
+    "screening": {"en": "Screening", "ja": "上映会"},
+    "goods": {"en": "Goods", "ja": "物販"},
+    "stream": {"en": "Stream", "ja": "配信"},
+    "other": {"en": "Other", "ja": "その他"},
+}
+
 # Controlled series/group vocabulary. The canonical key is the English/stylized name
 # (groups are already Latin); the value is the Japanese display form for localization.
 # Single source of truth for the series datalist + the site's JP/EN series tags.
