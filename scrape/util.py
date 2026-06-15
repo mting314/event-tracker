@@ -156,7 +156,13 @@ def to_event_yaml(data: dict) -> str:
     (performances[].rounds) or the legacy flat shape (top-level rounds), which is
     distributed into performances first. Tolerant of datetimes or ISO strings.
     """
-    data = nest_rounds(dict(data))  # legacy flat -> nested; don't mutate caller
+    data = dict(data)  # don't mutate caller
+    # Synthesise performances from event_dates *before* nesting, so rounds have
+    # somewhere to attach when an adapter returns rounds + dates but no performances
+    # (e.g. a ticket page's lottery rounds + show dates pulled from the X post).
+    if not data.get("performances") and data.get("event_dates"):
+        data["performances"] = [{"date": _iso(d)} for d in data["event_dates"]]
+    data = nest_rounds(data)  # legacy flat -> nested
     L = []
     L.append(f"name: {_yaml_str(data.get('name') or 'TODO event name')}")
     for f in ("name_en", "artist", "kind"):
@@ -172,9 +178,7 @@ def to_event_yaml(data: dict) -> str:
         L.append("performers:")
         L += [f"  - {_yaml_str(p)}" for p in data["performers"]]
 
-    perfs = data.get("performances")
-    if not perfs and data.get("event_dates"):
-        perfs = [{"date": _iso(d)} for d in data["event_dates"]]
+    perfs = data.get("performances")  # synthesised from event_dates above if needed
     if perfs:
         L.append("performances:")
         for p in perfs:

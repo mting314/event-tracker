@@ -50,6 +50,29 @@ def empty(data: dict) -> bool:
     return not (data.get("rounds") or data.get("performances") or data.get("event_dates"))
 
 
+# Max nested links to follow out of an X post, and how deep to recurse. An X post
+# rarely links more than one real event page; the cap bounds cost and keeps a
+# spam-heavy post from fanning out into many fetches.
+_MAX_FOLLOW = 3
+_MAX_DEPTH = 2
+
+
+def _merge_x_link(x_data: dict, link_data: dict, link_url: str) -> dict:
+    """Fold the X post's date hints into the (richer) linked-page result.
+
+    The linked official/FC page is authoritative for name/venue/rounds; the post
+    only contributes a source link and, if the page parse came up thin, its dates.
+    """
+    out = dict(link_data)
+    if not out.get("source_url"):
+        out["source_url"] = link_url
+    if not (out.get("performances") or out.get("event_dates")) and x_data.get("event_dates"):
+        out["event_dates"] = x_data["event_dates"]
+    if not out.get("rounds") and x_data.get("rounds"):
+        out["rounds"] = x_data["rounds"]
+    return out
+
+
 @dataclass
 class Ingested:
     data: dict
@@ -62,6 +85,7 @@ def ingest_url(
     allow_llm: bool = True,
     force_llm: bool = False,
     progress: Callable[[str], None] | None = None,
+    _depth: int = 0,
 ) -> Ingested:
     """Fetch + structure a URL. Raises if nothing can parse it.
 
@@ -114,6 +138,24 @@ def ingest_url(
         len(data.get("rounds", [])),
         len(data.get("performances", [])),
     )
+
+    # X post: the details usually live behind a link in the post, not in the post
+    # text. Follow the most promising nested link through the normal dispatcher and
+    # merge that richer result back (the post is the trigger; the page is the truth).
+    if adapter == "x_post" and _depth < _MAX_DEPTH and data.get("source_links"):
+        for link in data["source_links"][:_MAX_FOLLOW]:
+            _emit(progress, f"🔗 Following link from the X post: {link} …")
+            try:
+                sub = ingest_url(
+                    link, allow_llm, force_llm=False, progress=progress, _depth=_depth + 1
+                )
+            except Exception as exc:  # noqa: BLE001 - try the next link, else fall through
+                log.warning("ingest %s: nested link %s failed (%s)", url, link, exc)
+                continue
+            if not empty(sub.data):
+                log.info("ingest %s: followed nested link %s via %s", url, link, sub.adapter)
+                merged = _merge_x_link(data, sub.data, link)
+                return Ingested(merged, f"x→{sub.adapter}", sub.used_llm)
 
     # Domain adapter found nothing usable -> try the LLM (generic already tried it above).
     if empty(data) and allow_llm and adapter != "generic":

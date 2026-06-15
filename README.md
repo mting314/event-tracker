@@ -299,7 +299,7 @@ dispatched by domain** (`scrape/cli.py`):
 |--------|---------|
 | `lovelive-anime.jp` | `official.py` (authoritative) |
 | `eventernote.com` | `eventernote.py` |
-| `x.com` / paste | `x_post.py` |
+| `x.com` / paste | `x_post.py` — reads the post via the embed API, then **follows the event link inside it** |
 | **anything else** (artist/FC/live-house pages) | `generic.py` — generic `【label】` parser |
 | **fallback** when the above find nothing | `llm.py` — Vertex AI (Gemini) extractor |
 
@@ -312,6 +312,22 @@ uv run python add_event.py --url "<page>" --llm        # force LLM   |   --no-ll
 The generic parser reads the common JP FC layout (`【公演日程】/【会場】/受付期間 ※抽選※`)
 into performances + lottery windows (verified on LustQueen). When a deterministic
 adapter returns nothing, ingestion falls back to the **LLM extractor**.
+
+**X posts as a trigger.** An LL ticket post on X usually carries only a teaser plus
+a link to the real event page. `x_post.py` reads the post through X's public embed
+API (`cdn.syndication.twimg.com`, no auth) to recover the post text *and* its
+expanded links; for long-form **note tweets** (whose link card the embed API hides)
+it falls back to a logged-out GraphQL read (guest token + the web app's public
+bearer — no dev account). `ingest.py` then **follows the most promising link** (known
+event/ticket hosts first) back through the same dispatcher and merges that richer
+result — so `/add <x-link>` works even when the details live behind the link, not in
+the post. The post also supplies the **show dates** (year-less `6/13-14` lines are
+resolved using the tweet's own year, while sale/lottery dates are skipped), so the
+linked ticket page's lottery rounds get attached to real performances. Shown in the
+embed footer as e.g. `x→official` or `x→llm`.
+
+> The GraphQL fallback is best-effort and brittle — if X rotates the public bearer
+> or the query id it 4xx's and we degrade to the embed API (or the LLM/paste path).
 
 ### LLM fallback (Pydantic AI — provider-swappable)
 
@@ -358,3 +374,6 @@ Swap providers with `LLM_MODEL` (no code change):
   - Needs a dev account + app + bearer token (a CI/host secret). Recent-search only covers
     the last 7 days, so poll at least weekly. Twitter is the *trigger*; the structured data
     still comes from the linked official page (so it feeds the same parser).
+  - **Click-through is now implemented** for the manual `/add <x-link>` path: `x_post.py`
+    reads the post (embed API) and `ingest.py` follows the linked event page automatically.
+    Only the *automated filtered-search feed* above remains deferred.
