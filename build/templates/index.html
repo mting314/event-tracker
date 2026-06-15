@@ -7,6 +7,7 @@
   <li class="franchise-{{ g.franchise }}" data-franchise="{{ g.franchise }}"
       data-haystack="{{ (g.name ~ ' ' ~ g.name_en ~ ' ' ~ (g.artist or '') ~ ' ' ~ (g.series|join(' ')) ~ ' ' ~ (g.series|map('series_ja')|join(' ')) ~ ' ' ~ (g.venues|join(' ')) ~ ' ' ~ (g.performers|join(' ')))|lower }}"
       data-kind="{{ g.kind or '' }}"
+      data-series="{{ g.series|join('|') }}"
       data-deadlines="{{ g.deadlines|join(',') }}">
     <details class="evgroup"{% if is_open %} open{% endif %}>
       <summary>
@@ -78,12 +79,17 @@
 </section>
 
 {% set kinds = groups|map(attribute='kind')|select|unique|list %}
+{% set all_series = groups|map(attribute='series')|sum(start=[])|unique|list|sort %}
 <div class="filters">
   <input type="search" id="q" placeholder="Search name, artist, series, venue, performer…"
          data-i18n-placeholder="cat_search" autofocus>
   <select id="kind">
     <option value="" data-i18n="cat_all_kinds">All kinds</option>
     {% for k in kinds %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
+  </select>
+  <select id="series-filter">
+    <option value="" data-i18n="cat_all_series">All series</option>
+    {% for s in all_series %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
   </select>
   <label><input type="checkbox" id="open-only"> <span data-i18n="open_round">has open round</span></label>
 </div>
@@ -111,4 +117,4 @@
 
 <p class="empty" id="feed-empty" hidden>Nothing upcoming. 🎉</p>
 {% endblock %}
-{% block scripts %}<script>initActiveLotteries(); initGroups(); initCollapseToggles();</script>{% endblock %}
+{% block scripts %}<script>initFilters(); initActiveLotteries(); initGroups(); initCollapseToggles();</script>{% endblock %}

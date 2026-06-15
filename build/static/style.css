@@ -94,6 +94,10 @@ tbody tr:hover { background: var(--panel); }
 .filters { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin: 1rem 0; }
 #q { flex: 1; min-width: 240px; padding: .55rem .7rem; border-radius: 8px;
   border: 1px solid #2c2f55; background: var(--panel); color: var(--text); font-size: 1rem; }
+.filters select {
+  padding: .5rem .6rem; border-radius: 8px; border: 1px solid #2c2f55;
+  background: var(--panel); color: var(--text); font-size: .95rem; font-family: inherit; cursor: pointer;
+}
 
 /* event detail */
 .crumb { margin: 0 0 .5rem; }
