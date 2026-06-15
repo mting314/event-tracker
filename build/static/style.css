@@ -160,6 +160,10 @@ tbody tr:hover { background: var(--panel); }
 .evgroup summary::-webkit-details-marker { display: none; }
 .evgroup summary::before { content: "▸"; color: var(--muted); }
 .evgroup[open] summary::before { content: "▾"; }
+.section-head {
+  margin: 1.75rem 0 .5rem; padding-top: .75rem; border-top: 1px solid #2c2f55;
+  font-size: 1.05rem; color: var(--muted);
+}
 .evgroup .evname { font-weight: 600; color: var(--text); text-decoration: none; }
 .evgroup .evname:hover { color: var(--accent, #ff5fa2); text-decoration: underline; }
 .evgroup .next-badge:empty { display: none; }

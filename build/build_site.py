@@ -92,8 +92,15 @@ def build_index_groups(events) -> list[dict]:
                 "id": ev.id,
                 "name": ev.name,
                 "name_en": ev.name_en or ev.name,
+                "artist": ev.artist,
                 "series": ev.series,
                 "kind": ev.kind,
+                "venues": ev.venues,
+                "performers": ev.performers,
+                # apply deadlines (ISO) — drives the index "has open round" filter
+                "deadlines": [
+                    r.apply_deadline.isoformat() for r in ev.all_rounds if r.apply_deadline
+                ],
                 "performances": perfs,
                 "occurrences": all_occ,
             }
@@ -170,9 +177,6 @@ def main() -> None:
     env.get_template("index.html").stream(groups=groups, **common).dump(
         str(DIST_DIR / "index.html")
     )
-    env.get_template("catalog.html").stream(
-        events=[e.public_dict() for e in events], **common
-    ).dump(str(DIST_DIR / "catalog.html"))
     env.get_template("calendar.html").stream(**common).dump(str(DIST_DIR / "calendar.html"))
     env.get_template("add.html").stream(**common).dump(str(DIST_DIR / "add.html"))
 

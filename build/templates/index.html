@@ -2,13 +2,23 @@
 {% block title %}Upcoming · LL Lottery Tracker{% endblock %}
 {% block content %}
 <h1 data-i18n="idx_title">Upcoming</h1>
-<p class="hint"><span data-i18n="idx_hint">One row per event, showing its next deadline. Click to expand rounds &amp; shows.</span>
-  <label><input type="checkbox" id="show-past"> <span data-i18n="show_past">show past / no upcoming</span></label>
-</p>
+<p class="hint"><span data-i18n="idx_hint">One row per event, showing its next deadline. Click to expand rounds &amp; shows.</span></p>
+{% set kinds = groups|map(attribute='kind')|select|unique|list %}
+<div class="filters">
+  <input type="search" id="q" placeholder="Search name, artist, series, venue, performer…"
+         data-i18n-placeholder="cat_search" autofocus>
+  <select id="kind">
+    <option value="" data-i18n="cat_all_kinds">All kinds</option>
+    {% for k in kinds %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
+  </select>
+  <label><input type="checkbox" id="open-only"> <span data-i18n="open_round">has open round</span></label>
+</div>
 
 <ul class="evgroups" id="groups">
   {% for g in groups %}
-  <li>
+  <li data-haystack="{{ (g.name ~ ' ' ~ g.name_en ~ ' ' ~ (g.artist or '') ~ ' ' ~ (g.series|join(' ')) ~ ' ' ~ (g.series|map('series_ja')|join(' ')) ~ ' ' ~ (g.venues|join(' ')) ~ ' ' ~ (g.performers|join(' ')))|lower }}"
+      data-kind="{{ g.kind or '' }}"
+      data-deadlines="{{ g.deadlines|join(',') }}">
     <details class="evgroup">
       <summary>
         <span class="next-badge"></span>
@@ -62,6 +72,10 @@
   </li>
   {% endfor %}
 </ul>
-<p class="empty" id="feed-empty" hidden data-i18n="feed_empty">Nothing upcoming. 🎉</p>
+
+<h2 class="section-head" id="past-head" hidden data-i18n="past_title">Past events</h2>
+<ul class="evgroups" id="past-groups"></ul>
+
+<p class="empty" id="feed-empty" hidden>Nothing upcoming. 🎉</p>
 {% endblock %}
 {% block scripts %}<script>initGroups();</script>{% endblock %}

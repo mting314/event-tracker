@@ -20,11 +20,10 @@ function fmtLocal(iso) {
    badges) uses .i18n-field elements carrying data-ja / data-en. --- */
 const I18N = {
   en: {
-    nav_catalog: 'Catalog', nav_calendar: 'Calendar', nav_past: 'Past', nav_add: '+ Add',
+    nav_events: 'Events', nav_calendar: 'Calendar', nav_past: 'Past', nav_add: '+ Add',
     tz_local: 'Show local time',
     idx_title: 'Upcoming',
     idx_hint: 'One row per event, showing its next deadline. Click to expand rounds & shows.',
-    show_past: 'show past / no upcoming',
     open_event: 'open event page →',
     no_rounds: 'No lottery rounds recorded yet.',
     feed_empty: 'Nothing upcoming. 🎉',
@@ -35,12 +34,11 @@ const I18N = {
     cat_all_kinds: 'All kinds',
     cat_empty: 'No matching events.',
     open_round: 'has open round',
-    th_event: 'Event', th_series_artist: 'Series / Artist', th_kind: 'Kind',
-    th_venue: 'Venue', th_dates: 'Dates', th_rounds: 'Rounds', th_series: 'Series',
+    th_event: 'Event', th_dates: 'Dates', th_series: 'Series',
     cal_title: 'Calendar',
     past_title: 'Past events',
     past_search: 'Search name or series…',
-    detail_back: '← Catalog', detail_edit: '✎ Edit event',
+    detail_back: '← Events', detail_edit: '✎ Edit event',
     detail_artist: 'Artist', detail_series: 'Series', detail_dates: 'Dates', detail_cast: 'Cast',
     detail_perfs: 'Performances & deadlines', th_round: 'Round',
     no_rounds_show: 'No lottery rounds recorded for this show yet.',
@@ -74,11 +72,10 @@ const I18N = {
     btn_remove_round: '✕ remove round',
   },
   ja: {
-    nav_catalog: 'カタログ', nav_calendar: 'カレンダー', nav_past: '過去', nav_add: '＋追加',
+    nav_events: 'イベント', nav_calendar: 'カレンダー', nav_past: '過去', nav_add: '＋追加',
     tz_local: '現地時間で表示',
     idx_title: '開催予定',
     idx_hint: 'イベントごとに次の締切を表示。クリックで申込回・公演を展開。',
-    show_past: '過去・予定なしも表示',
     open_event: 'イベントページを開く →',
     no_rounds: '抽選回はまだ登録されていません。',
     feed_empty: '予定はありません。🎉',
@@ -89,12 +86,11 @@ const I18N = {
     cat_all_kinds: 'すべての種別',
     cat_empty: '該当するイベントはありません。',
     open_round: '受付中あり',
-    th_event: 'イベント', th_series_artist: 'シリーズ / アーティスト', th_kind: '種別',
-    th_venue: '会場', th_dates: '日程', th_rounds: '抽選回数', th_series: 'シリーズ',
+    th_event: 'イベント', th_dates: '日程', th_series: 'シリーズ',
     cal_title: 'カレンダー',
     past_title: '過去のイベント',
     past_search: '名前・シリーズで検索…',
-    detail_back: '← 一覧', detail_edit: '✎ 編集',
+    detail_back: '← イベント', detail_edit: '✎ 編集',
     detail_artist: 'アーティスト', detail_series: 'シリーズ', detail_dates: '日程', detail_cast: '出演',
     detail_perfs: '公演・締切', th_round: '抽選回',
     no_rounds_show: 'この公演の抽選回はまだ登録されていません。',
@@ -218,10 +214,15 @@ function paintCountdowns() {
 
 /* --- upcoming: one collapsible row per event, summarised by its next deadline --- */
 function initGroups() {
-  const showPast = document.getElementById('show-past');
   const empty = document.getElementById('feed-empty');
   const container = document.getElementById('groups');
+  const pastHead = document.getElementById('past-head');
+  const pastContainer = document.getElementById('past-groups');
   const groups = [...container.querySelectorAll('.evgroup')];
+  // Merged-in catalog filters (search / kind / has-open-round).
+  const q = document.getElementById('q');
+  const kindSel = document.getElementById('kind');
+  const openOnly = document.getElementById('open-only');
 
   // The event-name link lives inside <summary>; a plain click should navigate,
   // not toggle the row. preventDefault cancels BOTH the native nav and the
@@ -237,42 +238,53 @@ function initGroups() {
 
   const refresh = () => {
     const now = new Date();
-    const showPastChecked = showPast.checked;
+    const term = (q?.value || '').trim().toLowerCase();
+    const kindVal = kindSel?.value || '';
+    const openChk = !!openOnly?.checked;
+    const filtering = !!(term || kindVal || openChk); // a search/filter reveals all matches
     let visible = 0;
     const rows = groups.map((d) => {
       // Per performance+round, keep only the next upcoming date (so a round isn't
       // repeated once per Opens/Deadline/Results/Payment, but a leg-wide round
-      // still shows under each of its shows). showPast reveals all rows.
+      // still shows under each of its shows).
       const byKey = {};
       for (const o of d.querySelectorAll('.occ')) {
         const k = (o.dataset.perf || '') + '|' + o.dataset.round;
         (byKey[k] ||= []).push(o);
       }
       let next = null;
+      const chosenByKey = {};
       for (const key in byKey) {
-        const occs = byKey[key];
-        const future = occs
+        const future = byKey[key]
           .filter((o) => new Date(o.dataset.iso) > now)
           .sort((a, b) => a.dataset.iso.localeCompare(b.dataset.iso));
         const chosen = future[0] || null;
-        occs.forEach((o) => {
-          o.hidden = showPastChecked ? false : o !== chosen;
-        });
+        chosenByKey[key] = chosen;
         if (chosen && (!next || chosen.dataset.iso < next)) next = chosen.dataset.iso;
       }
-      // Collapse a performance whose deadlines are all past (keep ones with no
-      // rounds, and reveal everything under show-past).
+      // A fully-past event (no upcoming deadline) reveals all its past occurrences
+      // when expanded; an upcoming event collapses each round to its next date.
+      const revealAll = !next;
+      for (const key in byKey) {
+        byKey[key].forEach((o) => { o.hidden = revealAll ? false : o !== chosenByKey[key]; });
+      }
       d.querySelectorAll('.perf-block').forEach((pb) => {
         const occ = [...pb.querySelectorAll('.occ')];
         if (!occ.length) return;
-        pb.hidden = showPastChecked ? false : !occ.some((o) => !o.hidden);
+        pb.hidden = revealAll ? false : !occ.some((o) => !o.hidden);
       });
       return { d, next };
     });
 
     for (const { d, next } of rows) {
       const li = d.closest('li');
-      li.hidden = !next && !showPastChecked;
+      const matchText = !term || (li.dataset.haystack || '').includes(term);
+      const matchKind = !kindVal || li.dataset.kind === kindVal;
+      const matchOpen = !openChk
+        || (li.dataset.deadlines || '').split(',').some((dl) => dl && new Date(dl) > now);
+      // Past events are always shown (in their own section below), so visibility
+      // is just whether the row matches the active filters.
+      li.hidden = !(matchText && matchKind && matchOpen);
       if (li.hidden) continue;
       visible++;
       const badge = d.querySelector('summary .next-badge');
@@ -297,52 +309,36 @@ function initGroups() {
       }
     }
 
-    // soonest-next first; hidden/no-next sink to the bottom
-    rows
-      .filter((r) => !r.d.closest('li').hidden)
-      .sort((a, b) => (a.next || '9999').localeCompare(b.next || '9999'))
+    // Split into Upcoming (has a next deadline, soonest first) and a separate
+    // Past section (no upcoming deadline). Hidden rows stay put.
+    const shown = rows.filter((r) => !r.d.closest('li').hidden);
+    shown
+      .filter((r) => r.next)
+      .sort((a, b) => a.next.localeCompare(b.next))
       .forEach((r) => container.appendChild(r.d.closest('li')));
+    const past = shown.filter((r) => !r.next);
+    past.forEach((r) => pastContainer.appendChild(r.d.closest('li')));
+    if (pastHead) pastHead.hidden = past.length === 0;
 
     paintCountdowns();
     applyTz(document.getElementById('tz-local')?.checked);
-    if (empty) empty.hidden = visible > 0;
+    if (empty) {
+      empty.textContent = filtering ? t('cat_empty') : t('feed_empty');
+      empty.hidden = visible > 0;
+    }
   };
 
-  showPast.addEventListener('change', refresh);
-  window.addEventListener('langchange', refresh); // re-pick next-round label per language
+  q?.addEventListener('input', refresh);
+  kindSel?.addEventListener('change', refresh);
+  openOnly?.addEventListener('change', refresh);
+  window.addEventListener('langchange', refresh); // re-pick next-round label + empty text
+  // On back-navigation the browser restores the filter inputs' values but fires
+  // no input/change event, so re-apply filters once form state is restored.
+  window.addEventListener('pageshow', refresh);
   refresh();
   setInterval(paintCountdowns, 60000);
 }
 
-/* --- catalog search/filter --- */
-function initCatalog() {
-  const q = document.getElementById('q');
-  const openOnly = document.getElementById('open-only');
-  const kind = document.getElementById('kind');
-  const empty = document.getElementById('catalog-empty');
-  const rows = [...document.querySelectorAll('#catalog .evrow')];
-  const apply = () => {
-    const term = q.value.trim().toLowerCase();
-    const now = new Date();
-    let visible = 0;
-    rows.forEach((tr) => {
-      const matchText = !term || tr.dataset.haystack.includes(term);
-      const matchKind = !kind.value || tr.dataset.kind === kind.value;
-      let hasOpen = true;
-      if (openOnly.checked) {
-        hasOpen = tr.dataset.deadlines.split(',').some((d) => d && new Date(d) > now);
-      }
-      const show = matchText && matchKind && hasOpen;
-      tr.hidden = !show;
-      if (show) visible++;
-    });
-    if (empty) empty.hidden = visible > 0;
-  };
-  q.addEventListener('input', apply);
-  openOnly.addEventListener('change', apply);
-  kind.addEventListener('change', apply);
-  apply();
-}
 
 /* --- past archive: name/series search --- */
 function initPast() {
