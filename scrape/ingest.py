@@ -73,6 +73,57 @@ def _merge_x_link(x_data: dict, link_data: dict, link_url: str) -> dict:
     return out
 
 
+def _content_score(data: dict) -> tuple[int, int]:
+    """Rank a result by how much real event content it carries (rounds, then shows)."""
+    return (len(data.get("rounds") or []), len(data.get("performances") or []))
+
+
+def _follow_x_links(links, allow_llm, progress, depth):
+    """Follow links found in an X post; return (link, Ingested) of the best, or None.
+
+    Pass 1 follows every candidate with the **LLM off** and keeps the richest
+    deterministic result. This is deliberate: an X ticket post often links several
+    pages (e.g. a movie page *and* the ticket page), and an empty deterministic
+    parse would otherwise trigger the LLM to fabricate a plausible-but-wrong event
+    from a tangential link — which then wins by being "first". Letting the page
+    with the most rounds win picks the ticket page over a movie/screening page.
+    Only when nothing parses deterministically do we let the LLM try, in priority
+    order (source_links is already sorted so ticket/live links come first).
+    """
+    candidates = list(links)[:_MAX_FOLLOW]
+    if not candidates:
+        return None
+
+    deterministic = []
+    for link in candidates:
+        _emit(progress, f"🔗 Following link from the X post: {link} …")
+        try:
+            sub = ingest_url(
+                link, allow_llm=False, force_llm=False, progress=progress, _depth=depth + 1
+            )
+        except Exception as exc:  # noqa: BLE001 - try the next link
+            log.warning("ingest: nested link %s failed (%s)", link, exc)
+            continue
+        if not empty(sub.data):
+            deterministic.append((link, sub))
+    if deterministic:
+        return max(deterministic, key=lambda ls: _content_score(ls[1].data))
+
+    if allow_llm:
+        for link in candidates:  # priority order; stop at the first that yields anything
+            _emit(progress, f"🤖 No structured page found — trying AI on {link} …")
+            try:
+                sub = ingest_url(
+                    link, allow_llm=True, force_llm=True, progress=progress, _depth=depth + 1
+                )
+            except Exception as exc:  # noqa: BLE001
+                log.warning("ingest: nested link %s (LLM) failed (%s)", link, exc)
+                continue
+            if not empty(sub.data):
+                return link, sub
+    return None
+
+
 @dataclass
 class Ingested:
     data: dict
@@ -140,22 +191,15 @@ def ingest_url(
     )
 
     # X post: the details usually live behind a link in the post, not in the post
-    # text. Follow the most promising nested link through the normal dispatcher and
-    # merge that richer result back (the post is the trigger; the page is the truth).
+    # text. Follow the nested links and merge the best result back (the post is the
+    # trigger; the page is the truth).
     if adapter == "x_post" and _depth < _MAX_DEPTH and data.get("source_links"):
-        for link in data["source_links"][:_MAX_FOLLOW]:
-            _emit(progress, f"🔗 Following link from the X post: {link} …")
-            try:
-                sub = ingest_url(
-                    link, allow_llm, force_llm=False, progress=progress, _depth=_depth + 1
-                )
-            except Exception as exc:  # noqa: BLE001 - try the next link, else fall through
-                log.warning("ingest %s: nested link %s failed (%s)", url, link, exc)
-                continue
-            if not empty(sub.data):
-                log.info("ingest %s: followed nested link %s via %s", url, link, sub.adapter)
-                merged = _merge_x_link(data, sub.data, link)
-                return Ingested(merged, f"x→{sub.adapter}", sub.used_llm)
+        followed = _follow_x_links(data["source_links"], allow_llm, progress, _depth)
+        if followed:
+            link, sub = followed
+            log.info("ingest %s: followed nested link %s via %s", url, link, sub.adapter)
+            merged = _merge_x_link(data, sub.data, link)
+            return Ingested(merged, f"x→{sub.adapter}", sub.used_llm)
 
     # Domain adapter found nothing usable -> try the LLM (generic already tried it above).
     if empty(data) and allow_llm and adapter != "generic":

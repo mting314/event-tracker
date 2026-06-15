@@ -108,13 +108,28 @@ def _followable(link: str) -> bool:
     return not any(host == h or host.endswith("." + h) for h in _SKIP_HOSTS)
 
 
-def link_priority(link: str) -> int:
-    """Sort key: known event/ticket hosts first, everything else after."""
+# Path hints: a ticket/live page is the right target for a ticket post; a movie /
+# news / goods page on the same host is usually tangential and ranked lower.
+_PATH_UP = ("ticket", "/live", "live_detail", "/event", "/tour", "ticket.")
+_PATH_DOWN = ("/movie", "/news", "/goods", "/bd", "/dvd", "/cd", "/blog")
+
+
+def link_priority(link: str) -> tuple[int, int]:
+    """Sort key: known event/ticket hosts first, then ticket/live paths before
+    tangential ones (movie/news/goods) on that host."""
     host = urlparse(link).netloc.lower()
-    for i, h in enumerate(_PREFERRED_HOSTS):
-        if host == h or host.endswith("." + h):
-            return i
-    return len(_PREFERRED_HOSTS)
+    host_rank = next(
+        (i for i, h in enumerate(_PREFERRED_HOSTS) if host == h or host.endswith("." + h)),
+        len(_PREFERRED_HOSTS),
+    )
+    low = link.lower()
+    if any(k in low for k in _PATH_UP):
+        path_rank = 0
+    elif any(k in low for k in _PATH_DOWN):
+        path_rank = 2
+    else:
+        path_rank = 1
+    return (host_rank, path_rank)
 
 
 def extract_links(text: str) -> list[str]:
