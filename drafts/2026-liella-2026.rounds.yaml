@@ -1,0 +1,4 @@
+rounds:
+  - name: 受付期間
+    type: presale
+    apply_open: 2026-06-15T18:00:00
