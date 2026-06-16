@@ -335,10 +335,19 @@ function initGroups() {
         if (!occ.length) return;
         pb.hidden = revealAll ? false : !occ.some((o) => !o.hidden);
       });
-      return { d, next };
+      // Order + summarise by the soonest upcoming *application deadline* (the
+      // actionable date), falling back to the next occurrence for events past
+      // their deadline but still awaiting results/payment.
+      let nextDeadline = null;
+      for (const o of d.querySelectorAll('.occ')) {
+        if (o.dataset.css !== 'deadline') continue;
+        const iso = o.dataset.iso;
+        if (new Date(iso) > now && (!nextDeadline || iso < nextDeadline)) nextDeadline = iso;
+      }
+      return { d, next, headerIso: nextDeadline || next };
     });
 
-    for (const { d, next } of rows) {
+    for (const { d, headerIso } of rows) {
       const li = d.closest('li');
       // Past events are always shown (in their own section below), so visibility
       // is just whether the row matches the active filters.
@@ -349,7 +358,7 @@ function initGroups() {
       const round = d.querySelector('summary .next-round');
       const cd = d.querySelector('summary .countdown');
       const when = d.querySelector('summary .next-when');
-      const occEl = next && [...d.querySelectorAll('.occ')].find((o) => o.dataset.iso === next);
+      const occEl = headerIso && [...d.querySelectorAll('.occ')].find((o) => o.dataset.iso === headerIso);
       if (occEl) {
         const src = occEl.querySelector('.badge');
         // copy "badge <css>" for colour, but NOT i18n-field — next-badge has no
@@ -357,8 +366,8 @@ function initGroups() {
         badge.className = ('next-badge ' + src.className).replace(/\s*\bi18n-field\b/g, '');
         badge.textContent = src.textContent;
         if (round) round.textContent = pick(occEl.dataset.round, occEl.dataset.roundEn); // which round
-        cd.dataset.iso = next;
-        when.setAttribute('datetime', next);
+        cd.dataset.iso = headerIso;
+        when.setAttribute('datetime', headerIso);
       } else {
         badge.className = 'next-badge'; badge.textContent = t('past_badge');
         if (round) round.textContent = '';
@@ -372,7 +381,7 @@ function initGroups() {
     const shown = rows.filter((r) => !r.d.closest('li').hidden);
     shown
       .filter((r) => r.next)
-      .sort((a, b) => a.next.localeCompare(b.next))
+      .sort((a, b) => a.headerIso.localeCompare(b.headerIso))
       .forEach((r) => container.appendChild(r.d.closest('li')));
     const past = shown.filter((r) => !r.next);
     past.forEach((r) => pastContainer.appendChild(r.d.closest('li')));
