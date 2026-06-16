@@ -59,6 +59,54 @@ def test_parse_official_extracts_legged_rounds():
     assert r1.get("payment_deadline") is None  # single 結果発表 -> no payment window
 
 
+# Multi-leg page: per-leg ＜City公演＞ schedule blocks + rounds scoped by 対象公演,
+# with a goods-section "◆東京公演" heading that used to pollute every round's leg.
+MULTILEG_FIXTURE = """
+<html><head><title>8thライブ | ラブライブ！シリーズ Official Web Site</title></head>
+<body>
+<p>＜大阪公演＞</p>
+<p>【日程】Day.1　2026年6月6日（土）16:00開場／17:00開演</p>
+<p>Day.2　2026年6月7日（日）14:00開場／15:00開演</p>
+<p>【会場】大阪城ホール</p>
+<p>＜東京公演＞</p>
+<p>【日程】Day.1　2026年6月13日（土）16:00開場／17:00開演</p>
+<p>Day.2　2026年6月14日（日）14:00開場／15:00開演</p>
+<p>【会場】京王アリーナ TOKYO</p>
+<p>＜公演当日のグッズ受け渡しに関するご案内＞</p>
+<p>◆東京公演</p>
+<p>チケット情報</p>
+<p>最速先行抽選</p>
+<p>■対象公演：大阪公演DAY.1& DAY.2（2026年6月6日・7日＠大阪城ホール）</p>
+<p>最速先行抽選申込券にて受付</p>
+<p>■受付期間：2026年2月4日（水）12:00～2月23日（月・祝）23:59</p>
+<p>■対象公演：東京公演DAY.1& DAY.2（2026年6月13日・14日＠京王アリーナ TOKYO）</p>
+<p>最速先行抽選申込券にて受付</p>
+<p>■受付期間：2026年3月25日（水）12:00～4月19日（日）23:59</p>
+</body></html>
+"""
+
+
+def test_parse_official_multileg_performances_and_legs():
+    d = parse_official(MULTILEG_FIXTURE, "https://lovelive-anime.jp/x/live_detail.php?p=8th")
+    perfs = d["performances"]
+    assert [(str(p["date"]), p["city"]) for p in perfs] == [
+        ("2026-06-06", "大阪"),
+        ("2026-06-07", "大阪"),
+        ("2026-06-13", "東京"),
+        ("2026-06-14", "東京"),
+    ]
+    osaka = perfs[0]
+    assert (
+        osaka["venue"] == "大阪城ホール"
+        and osaka["doors"] == "16:00"
+        and osaka["starts"] == "17:00"
+    )
+    # The two 最速先行 rounds keep their 対象公演 legs (大阪 / 東京), NOT the stray
+    # "◆東京公演" goods heading that used to overwrite both.
+    legs = sorted(r["leg"] for r in d["rounds"])
+    assert legs == ["大阪", "東京"]
+
+
 def test_diff_rounds_keys_on_deadline_not_name():
     # Official (JP) names/legs differ from what we store (EN), but the deadline matches.
     parsed = [
