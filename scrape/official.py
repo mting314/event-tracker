@@ -18,7 +18,7 @@ import re
 
 from bs4 import BeautifulSoup
 
-from .util import parse_jp_range
+from .util import parse_date, parse_jp_range
 
 # The site 403s a bare requests UA; it wants a real browser UA + ja Accept-Language.
 HEADERS = {
@@ -87,8 +87,79 @@ def parse_official(html: str, url: str | None = None) -> dict:
     name = re.split(r"\s*[|｜]\s*", title)[0].strip() or "TODO event name"
 
     lines = [ln.strip() for ln in soup.get_text("\n").split("\n") if ln.strip()]
-    rounds = parse_rounds(lines)
-    return {"name": name, "official_url": url, "rounds": rounds}
+    out = {"name": name, "official_url": url, "rounds": parse_rounds(lines)}
+    perfs = parse_performances(lines)
+    if perfs:
+        out["performances"] = perfs
+    return out
+
+
+# A standalone per-leg heading, e.g. "＜大阪公演＞" (the お問合せ先 variant has
+# trailing text, so we anchor to end-of-line to skip it).
+_PERF_HEAD_RE = re.compile(r"^[＜<](.{1,8}?)公演[＞>]$")
+_DOORS_RE = re.compile(r"(\d{1,2}:\d{2})\s*開場")
+_STARTS_RE = re.compile(r"(\d{1,2}:\d{2})\s*開演")
+_DAY_RE = re.compile(r"Day\.?\s*(\d+)", re.I)
+
+
+def parse_performances(lines: list[str]) -> list[dict]:
+    """Extract per-leg shows from the official page's venue blocks:
+
+        ＜大阪公演＞
+        【日程】Day.1　2026年6月6日（土）16:00開場／17:00開演
+        Day.2　2026年6月7日（日）14:00開場／15:00開演
+        【会場】大阪城ホール
+
+    One performance per dated day-line, tagged with its leg (``city``) so rounds
+    scoped to that leg attach to the right shows. ``city`` deliberately matches
+    the round ``leg`` (大阪 / 東京) the round parser pulls from 対象公演 lines.
+    """
+    # These pages often duplicate the schedule DOM (SP/PC variants), so the same
+    # ＜City公演＞ block appears many times. Dedupe by (date, city), keeping the
+    # richest copy (the one that also carried venue/door/start times).
+    seen: dict[tuple, dict] = {}
+
+    def richness(p):
+        return sum(p.get(k) is not None for k in ("venue", "doors", "starts", "label"))
+
+    i, n = 0, len(lines)
+    while i < n:
+        m = _PERF_HEAD_RE.match(lines[i])
+        if not m:
+            i += 1
+            continue
+        city = m.group(1)
+        j = i + 1
+        block = []
+        while j < n and not lines[j].startswith(("＜", "<")):
+            block.append(lines[j])
+            j += 1
+        venue = next(
+            (re.split(r"[】：]", ln, maxsplit=1)[-1].strip() for ln in block if "会場" in ln),
+            None,
+        )
+        for ln in block:
+            d = parse_date(ln)
+            # Require real show times so sale-window day-lines ("Day.1 …21:30～")
+            # aren't mistaken for performances.
+            if not d or not ("開場" in ln or "開演" in ln):
+                continue
+            day = _DAY_RE.search(ln)
+            doors = _DOORS_RE.search(ln)
+            starts = _STARTS_RE.search(ln)
+            perf = {
+                "date": d,
+                "city": city,
+                "venue": venue,
+                "label": f"Day.{day.group(1)}" if day else None,
+                "doors": doors.group(1) if doors else None,
+                "starts": starts.group(1) if starts else None,
+            }
+            key = (d, city)
+            if key not in seen or richness(perf) > richness(seen[key]):
+                seen[key] = perf
+        i = j
+    return sorted(seen.values(), key=lambda p: (p["date"].isoformat(), p["city"]))
 
 
 _DATE_FIELDS = ("apply_open", "apply_deadline", "results_date", "payment_deadline")
@@ -132,6 +203,7 @@ def parse_rounds(lines: list[str]) -> list[dict]:
     cur = None
     pending_name = None  # from a ＜…＞ heading, applied at the next 申込対象 block
     section_leg = None  # from a bare 'XX公演' heading (yuigaoka)
+    pending_leg = None  # from the most recent 対象公演 line (wins over section_leg)
 
     def flush():
         nonlocal cur
@@ -152,19 +224,22 @@ def parse_rounds(lines: list[str]) -> list[dict]:
             flush()
             pending_name, _ = _strip_ended(ang.group(1))
             continue
-        # per-leg target line (newer) -> begins a round instance
+        # per-leg target line (newer) -> begins a round instance and pins the leg
+        # for any round-name line that follows it (e.g. 対象公演:大阪 … then the name).
         if "申込対象" in line or "対象公演" in line:
             m = _TARGET_LEG_RE.search(line)
-            start(pending_name, m.group(1) if m else None)
+            pending_leg = m.group(1) if m else None
+            start(pending_name, pending_leg)
             continue
         # bare 'XX公演' section heading (yuigaoka)
         leg_m = _LEG_RE.match(line)
         if leg_m and "＜" not in line:
             section_leg = leg_m.group(1)
             continue
-        # bare round-name heading (yuigaoka)
+        # bare round-name heading (yuigaoka). Prefer the 対象公演 leg over a stale
+        # section heading (goods sections like "◆東京公演" would otherwise mislabel it).
         if _is_bare_round_heading(line):
-            start(line, section_leg)
+            start(line, pending_leg or section_leg)
             continue
         # marker lines feed the current round (start one if a ＜…＞ name is pending)
         if any(t in line for t in ("受付URL", "受付期間", "当落発表", "結果発表", "入金期間")):

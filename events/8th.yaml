@@ -1,21 +1,19 @@
 name: ラブライブ！虹ヶ咲学園スクールアイドル同好会 8thライブ
 performances:
-  - date: 2026-06-13
+  - date: 2026-06-06
+    city: 大阪
+    label: Day.1
+    venue: 大阪城ホール
+    doors: "16:00"
+    starts: "17:00"
     rounds:
       - name: 初回生産分限定封入特典・チケット最速先行抽選申込券にて受付
         type: presale
-        leg: ◆東京
+        leg: 大阪
         apply_open: 2026-02-04T12:00:00
         apply_deadline: 2026-02-23T23:59:00
         results_date: 2026-02-28T13:00:00
         payment_deadline: 2026-03-03T21:00:00
-      - name: 封入特典・チケット最速先行抽選申込券にて受付
-        type: presale
-        leg: ◆東京
-        apply_open: 2026-03-25T12:00:00
-        apply_deadline: 2026-04-19T23:59:00
-        results_date: 2026-04-25T13:00:00
-        payment_deadline: 2026-04-28T21:00:00
       - name: 一般発売（1次抽選）
         type: general
         leg: 大阪
@@ -23,6 +21,61 @@ performances:
         apply_deadline: 2026-04-05T23:59:00
         results_date: 2026-04-11T13:00:00
         payment_deadline: 2026-04-14T21:00:00
+      - name: 一般発売（2次抽選）
+        type: general
+        leg: 大阪
+        apply_open: 2026-04-18T12:00:00
+        apply_deadline: 2026-05-17T23:59:00
+        results_date: 2026-05-22T13:00:00
+      - name: 一般発売（先着）
+        type: general
+        leg: 大阪
+        apply_open: 2026-05-23T12:00:00
+  - date: 2026-06-07
+    city: 大阪
+    label: Day.2
+    venue: 大阪城ホール
+    doors: "14:00"
+    starts: "15:00"
+    rounds:
+      - name: 初回生産分限定封入特典・チケット最速先行抽選申込券にて受付
+        type: presale
+        leg: 大阪
+        apply_open: 2026-02-04T12:00:00
+        apply_deadline: 2026-02-23T23:59:00
+        results_date: 2026-02-28T13:00:00
+        payment_deadline: 2026-03-03T21:00:00
+      - name: 一般発売（1次抽選）
+        type: general
+        leg: 大阪
+        apply_open: 2026-03-07T12:00:00
+        apply_deadline: 2026-04-05T23:59:00
+        results_date: 2026-04-11T13:00:00
+        payment_deadline: 2026-04-14T21:00:00
+      - name: 一般発売（2次抽選）
+        type: general
+        leg: 大阪
+        apply_open: 2026-04-18T12:00:00
+        apply_deadline: 2026-05-17T23:59:00
+        results_date: 2026-05-22T13:00:00
+      - name: 一般発売（先着）
+        type: general
+        leg: 大阪
+        apply_open: 2026-05-23T12:00:00
+  - date: 2026-06-13
+    city: 東京
+    label: Day.1
+    venue: 京王アリーナ TOKYO
+    doors: "16:00"
+    starts: "17:00"
+    rounds:
+      - name: 封入特典・チケット最速先行抽選申込券にて受付
+        type: presale
+        leg: 東京
+        apply_open: 2026-03-25T12:00:00
+        apply_deadline: 2026-04-19T23:59:00
+        results_date: 2026-04-25T13:00:00
+        payment_deadline: 2026-04-28T21:00:00
       - name: 一般発売（1次抽選）
         type: general
         leg: 東京
@@ -32,47 +85,28 @@ performances:
         payment_deadline: 2026-05-19T21:00:00
       - name: 一般発売（2次抽選）
         type: general
-        leg: 大阪
-        apply_open: 2026-04-18T12:00:00
-        apply_deadline: 2026-05-17T23:59:00
-        results_date: 2026-05-22T13:00:00
-      - name: 一般発売（2次抽選）
-        type: general
         leg: 東京
         apply_open: 2026-05-16T12:00:00
         apply_deadline: 2026-05-24T23:59:00
         results_date: 2026-05-29T13:00:00
-      - name: 一般発売（先着）
-        type: general
-        leg: 大阪
-        apply_open: 2026-05-23T12:00:00
       - name: 一般発売（先着）
         type: general
         leg: 東京
         apply_open: 2026-05-30T12:00:00
   - date: 2026-06-14
+    city: 東京
+    label: Day.2
+    venue: 京王アリーナ TOKYO
+    doors: "14:00"
+    starts: "15:00"
     rounds:
-      - name: 初回生産分限定封入特典・チケット最速先行抽選申込券にて受付
-        type: presale
-        leg: ◆東京
-        apply_open: 2026-02-04T12:00:00
-        apply_deadline: 2026-02-23T23:59:00
-        results_date: 2026-02-28T13:00:00
-        payment_deadline: 2026-03-03T21:00:00
       - name: 封入特典・チケット最速先行抽選申込券にて受付
         type: presale
-        leg: ◆東京
+        leg: 東京
         apply_open: 2026-03-25T12:00:00
         apply_deadline: 2026-04-19T23:59:00
         results_date: 2026-04-25T13:00:00
         payment_deadline: 2026-04-28T21:00:00
-      - name: 一般発売（1次抽選）
-        type: general
-        leg: 大阪
-        apply_open: 2026-03-07T12:00:00
-        apply_deadline: 2026-04-05T23:59:00
-        results_date: 2026-04-11T13:00:00
-        payment_deadline: 2026-04-14T21:00:00
       - name: 一般発売（1次抽選）
         type: general
         leg: 東京
@@ -82,20 +116,10 @@ performances:
         payment_deadline: 2026-05-19T21:00:00
       - name: 一般発売（2次抽選）
         type: general
-        leg: 大阪
-        apply_open: 2026-04-18T12:00:00
-        apply_deadline: 2026-05-17T23:59:00
-        results_date: 2026-05-22T13:00:00
-      - name: 一般発売（2次抽選）
-        type: general
         leg: 東京
         apply_open: 2026-05-16T12:00:00
         apply_deadline: 2026-05-24T23:59:00
         results_date: 2026-05-29T13:00:00
-      - name: 一般発売（先着）
-        type: general
-        leg: 大阪
-        apply_open: 2026-05-23T12:00:00
       - name: 一般発売（先着）
         type: general
         leg: 東京
