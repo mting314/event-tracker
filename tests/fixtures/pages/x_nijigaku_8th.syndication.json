@@ -1,0 +1,169 @@
+{
+  "__typename": "Tweet",
+  "favorite_count": 1124,
+  "lang": "ja",
+  "possibly_sensitive": false,
+  "created_at": "2026-05-29T04:00:00.000Z",
+  "display_text_range": [
+    0,
+    177
+  ],
+  "entities": {
+    "media": [
+      {
+        "display_url": "pic.x.com/M2ImhOmyaf",
+        "expanded_url": "https://x.com/Nijigaku_movie/status/2060209517850480726/photo/1",
+        "indices": [
+          172,
+          195
+        ],
+        "url": "https://t.co/M2ImhOmyaf"
+      }
+    ]
+  },
+  "id_str": "2060209517850480726",
+  "text": "🌈チケット情報🌈\n6/13-14＠京王アリーナ TOKYOにて開催🎊\nラブライブ！虹ヶ咲学園スクールアイドル同好会\n8th Live! TOKIMEKI Express\n\n完全見切れ席\nチケット一般発売(先着)のお知らせ✨\n発売日：5/30(土)12:00～\n\nときめきの超特急に乗って\n一緒に旅に出よう🚅🛠\n\nあなたのご参加お待ちしてます💕 https://t.co/M2ImhOmyaf",
+  "user": {
+    "id_str": "1805438302050467842",
+    "name": "『ラブライブ！虹ヶ咲学園スクールアイドル同好会』【公式】",
+    "screen_name": "Nijigaku_movie",
+    "is_blue_verified": true,
+    "profile_image_shape": "Circle",
+    "verified": false,
+    "profile_image_url_https": "https://pbs.twimg.com/profile_images/1958546962611118080/Is_3qcg__normal.jpg"
+  },
+  "edit_control": {
+    "edit_tweet_ids": [
+      "2060209517850480726"
+    ],
+    "editable_until_msecs": "1780030800000",
+    "edits_remaining": "5",
+    "is_edit_eligible": true
+  },
+  "mediaDetails": [
+    {
+      "display_url": "pic.x.com/M2ImhOmyaf",
+      "expanded_url": "https://x.com/Nijigaku_movie/status/2060209517850480726/photo/1",
+      "ext_media_availability": {
+        "status": "Available"
+      },
+      "indices": [
+        172,
+        195
+      ],
+      "media_url_https": "https://pbs.twimg.com/media/HJZpj5CbAAA-Zqo.jpg",
+      "original_info": {
+        "focus_rects": [
+          {
+            "h": 560,
+            "w": 1000,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "h": 1000,
+            "w": 1000,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "h": 1140,
+            "w": 1000,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "h": 1414,
+            "w": 707,
+            "x": 0,
+            "y": 0
+          },
+          {
+            "h": 1414,
+            "w": 1000,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "height": 1414,
+        "width": 1000
+      },
+      "sizes": {
+        "large": {
+          "h": 1414,
+          "resize": "fit",
+          "w": 1000
+        },
+        "medium": {
+          "h": 1200,
+          "resize": "fit",
+          "w": 849
+        },
+        "small": {
+          "h": 680,
+          "resize": "fit",
+          "w": 481
+        },
+        "thumb": {
+          "h": 150,
+          "resize": "crop",
+          "w": 150
+        }
+      },
+      "type": "photo",
+      "url": "https://t.co/M2ImhOmyaf"
+    }
+  ],
+  "photos": [
+    {
+      "backgroundColor": {
+        "red": 204,
+        "green": 214,
+        "blue": 221
+      },
+      "cropCandidates": [
+        {
+          "h": 560,
+          "w": 1000,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "h": 1000,
+          "w": 1000,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "h": 1140,
+          "w": 1000,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "h": 1414,
+          "w": 707,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "h": 1414,
+          "w": 1000,
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "expandedUrl": "https://x.com/Nijigaku_movie/status/2060209517850480726/photo/1",
+      "url": "https://pbs.twimg.com/media/HJZpj5CbAAA-Zqo.jpg",
+      "width": 1000,
+      "height": 1414
+    }
+  ],
+  "conversation_count": 4,
+  "news_action_type": "conversation",
+  "isEdited": false,
+  "isStaleEdit": false,
+  "note_tweet": {
+    "id": "Tm90ZVR3ZWV0UmVzdWx0czoyMDYwMjA5NTE3Nzc5MTE2MDMy"
+  }
+}

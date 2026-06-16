@@ -235,6 +235,25 @@ uv run --extra dev pre-commit install              # enable the git hook (ruff +
 Lint, format, and tests also run in CI (`.github/workflows/lint.yml`) on every push/PR.
 Config lives in `pyproject.toml` (`[tool.ruff]`) and `.pre-commit-config.yaml`.
 
+### Extractor regression fixtures
+
+`tests/test_fixtures.py` guards the extractors against regressions using **real
+saved pages** under `tests/fixtures/` (one adapter each: official, generic,
+eventernote, ll-fans, plus the X note-tweet→follow integration). Each fixture
+pairs a recorded input with a blessed golden of the parsed output; the tests
+parse the saved input **offline** and assert it still matches.
+
+```bash
+python tests/test_fixtures.py record           # fetch every fixture's live page,
+                                               # save it, and re-bless goldens (network)
+python tests/test_fixtures.py record <name>    # just one (e.g. a newly added source)
+python tests/test_fixtures.py bless            # offline: re-parse saved inputs and
+                                               # rewrite goldens after an intended change
+```
+
+`record` is the only network step — run it locally and commit the result. After
+an intentional extractor change, run `bless`, review the golden diff, and commit.
+
 ## Watcher (official-page polling)
 
 A scheduled job polls the watchlist in `sources.yaml`, parses lottery rounds, and
