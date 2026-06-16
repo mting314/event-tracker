@@ -242,12 +242,15 @@ a.perf-row:hover { background: #20234420; background: rgba(255,255,255,.04); }
 .rounds-mini { width: 100%; border-collapse: collapse; margin: 0; }
 .rounds-mini td { padding: .3rem .4rem; border-bottom: 1px solid #23264a; font-size: .85rem; vertical-align: top; }
 .rounds-mini tr:last-child td { border-bottom: none; }
-/* Give the round-name column all the slack so the badge/date columns hug their
-   content. Without this, the 100%-wide table spreads every column and the short
-   round name floats in the middle of an over-wide cell (looks centered). */
+/* Pack badge → name → date together on the left and let the trailing (apply)
+   column absorb the slack. Otherwise the 100%-wide table spreads the columns:
+   give the name the slack and the date flies to the right edge; give the badge
+   the slack and the name floats mid-cell. The empty last column keeps the row
+   border full-width without opening a gap between the name and the time. */
 .rounds-mini td:first-child { width: 1%; white-space: nowrap; }  /* badge hugs left */
-.rounds-mini td:nth-child(3) { width: 1%; white-space: nowrap; }  /* date hugs right side */
-.occ-round { color: var(--text); width: 100%; }  /* name fills the gap, stays left */
+.rounds-mini td:nth-child(3) { white-space: nowrap; }            /* date + countdown on one line */
+.rounds-mini td:last-child { width: 100%; }                      /* apply / spacer takes the slack */
+.occ-round { color: var(--text); }  /* name hugs its content, right after the badge */
 
 /* event page: header row with Edit button */
 .event-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: .5rem; }
