@@ -72,6 +72,17 @@ footer { color: var(--muted); font-size: .8rem; text-align: center; padding: 2re
 .countdown { font-size: .8rem; font-weight: 600; }
 .countdown.soon { color: var(--deadline); }
 .countdown.past { color: var(--muted); text-decoration: line-through; }
+/* Urgency highlights (set by paintCountdowns): a deadline closing within 48h or
+   a round opening within a few days gets a coloured pill so it pops. Defined
+   after .soon so the pill colour wins over the plain "soon" text colour. */
+.countdown.hot-deadline,
+.countdown.hot-open,
+.countdown.hot-payment {
+  padding: .05rem .45rem; border-radius: 999px; font-weight: 700; color: #14152b;
+}
+.countdown.hot-deadline { background: var(--deadline); }   /* closing soon — pink */
+.countdown.hot-open,
+.countdown.hot-payment { background: var(--results); }     /* opening / payment soon — amber */
 
 .badge {
   font-size: .7rem; padding: .1rem .5rem; border-radius: 999px; color: #14152b; font-weight: 700;

@@ -24,7 +24,7 @@ const I18N = {
     tz_local: 'Show local time',
     idx_title: 'Upcoming',
     idx_hint: 'One row per event, showing its next deadline. Click to expand rounds & shows.',
-    active_title: 'Open now',
+    active_title: 'Open & upcoming',
     fr_lovelive: 'Love Live!', fr_project_sekai: 'Project Sekai', fr_other: 'Other',
     open_event: 'open event page →',
     no_rounds: 'No lottery rounds recorded yet.',
@@ -79,7 +79,7 @@ const I18N = {
     tz_local: '現地時間で表示',
     idx_title: '開催予定',
     idx_hint: 'イベントごとに次の締切を表示。クリックで申込回・公演を展開。',
-    active_title: '受付中',
+    active_title: '受付中・予定',
     fr_lovelive: 'ラブライブ！', fr_project_sekai: 'プロジェクトセカイ', fr_other: 'その他',
     open_event: 'イベントページを開く →',
     no_rounds: '抽選回はまだ登録されていません。',
@@ -194,6 +194,11 @@ function applyTz(local) {
 })();
 
 /* --- relative countdown text --- */
+// Urgency thresholds for the countdown highlights (see .countdown.hot-* in CSS):
+// an application/payment deadline closing within 48h, or a round opening within
+// the next few days, gets a coloured pill so it stands out at a glance.
+const DEADLINE_SOON_H = 48;
+const OPEN_SOON_DAYS = 3;
 function relative(iso) {
   const ms = new Date(iso) - new Date();
   const past = ms < 0;
@@ -207,7 +212,21 @@ function relative(iso) {
   else txt = `${m}m`;
   return { txt: past ? `${txt} ago` : `in ${txt}`, past, soon: !past && ms < 72 * 3600e3 };
 }
+/* Which kind of date a countdown marks ('deadline'|'opens'|'payment'|…), read
+   from its occurrence row, or from the next-badge in a collapsed summary row. */
+function countdownKind(el) {
+  const occ = el.closest('.occ');
+  if (occ && occ.dataset.css) return occ.dataset.css;
+  const badge = el.closest('summary')?.querySelector('.next-badge');
+  if (badge) {
+    for (const k of ['deadline', 'opens', 'payment', 'results', 'event']) {
+      if (badge.classList.contains(k)) return k;
+    }
+  }
+  return null;
+}
 function paintCountdowns() {
+  const now = Date.now();
   document.querySelectorAll('.countdown').forEach((el) => {
     const iso = el.dataset.iso;
     if (!iso) return;
@@ -215,6 +234,13 @@ function paintCountdowns() {
     el.textContent = r.txt;
     el.classList.toggle('soon', r.soon);
     el.classList.toggle('past', r.past);
+    // Urgency highlight, by kind + how soon (skipped once past).
+    const ms = new Date(iso) - now;
+    const withinH = (h) => ms > 0 && ms < h * 3600e3;
+    const kind = countdownKind(el);
+    el.classList.toggle('hot-deadline', kind === 'deadline' && withinH(DEADLINE_SOON_H));
+    el.classList.toggle('hot-open', kind === 'opens' && withinH(OPEN_SOON_DAYS * 24));
+    el.classList.toggle('hot-payment', kind === 'payment' && withinH(DEADLINE_SOON_H));
   });
 }
 
@@ -384,25 +410,31 @@ function initActiveLotteries() {
     const f = readFilters();
     let shown = 0;
     cards.forEach((li) => {
-      let active = 0;
-      // the shared filters also constrain "Open now"
+      let hasOpen = 0; // a currently-open round gates the card into this section
+      // the shared filters also constrain "Open & upcoming"
       if (passesFilters(li, f, now)) {
         li.querySelectorAll('.occ').forEach((occ) => {
           const ro = occ.dataset.ropen;
           const rd = occ.dataset.rdeadline;
-          // show only the deadline row of a round whose application window is open
           const roundOpen = rd && (!ro || new Date(ro) <= now) && new Date(rd) > now;
-          const visible = roundOpen && occ.dataset.css === 'deadline';
+          const roundUpcoming = ro && new Date(ro) > now; // hasn't opened yet
+          // Open round -> its deadline row (act now); upcoming round -> its opens
+          // row (heads-up on when it starts). Both shown only on cards that have
+          // at least one open round.
+          let visible = false;
+          if (roundOpen && occ.dataset.css === 'deadline') { visible = true; hasOpen++; }
+          else if (roundUpcoming && occ.dataset.css === 'opens') { visible = true; }
           occ.hidden = !visible;
-          if (visible) active++;
         });
       }
+      // Without an open round the card doesn't belong here — hide its upcoming rows too.
+      if (!hasOpen) li.querySelectorAll('.occ').forEach((o) => { o.hidden = true; });
       li.querySelectorAll('.perf-block').forEach((pb) => {
         const occ = [...pb.querySelectorAll('.occ')];
         pb.hidden = !occ.length || !occ.some((o) => !o.hidden);
       });
-      li.hidden = active === 0;
-      if (active) shown++;
+      li.hidden = hasOpen === 0;
+      if (hasOpen) shown++;
     });
     cards // events with the soonest-closing round first
       .filter((li) => !li.hidden)
