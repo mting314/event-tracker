@@ -81,15 +81,6 @@ def _wall(v) -> str:
     return v.strftime("%Y-%m-%dT%H:%M")
 
 
-def round_key(deadline, name, leg) -> str:
-    """Identity for diffing. The apply deadline is the stable cross-source key
-    (round *names* and *legs* differ between official JP pages and our data, but
-    the deadline is the same fact). Fall back to name+leg when there's no deadline.
-    """
-    d = _wall(deadline)
-    return f"dl:{d}" if d else f"nm:{name or ''}|{leg or ''}"
-
-
 def _flat_rounds(data: dict) -> list[dict]:
     """All rounds in an ingest dict, whether nested under performances or top-level."""
     out = list(data.get("rounds") or [])
@@ -98,19 +89,43 @@ def _flat_rounds(data: dict) -> list[dict]:
     return out
 
 
+# The application window identifies a round across sources; names/legs differ
+# between official JP pages and our data, but the window is the same fact.
+_WINDOW_FIELDS = ("apply_open", "apply_deadline")
+
+
+def _window(get) -> dict:
+    """The {field: wall-clock} window timestamps a round carries. `get` reads a
+    field by name from a parsed dict (``r.get``) or a model object (``r``)."""
+    src = get if callable(get) else (lambda f: getattr(get, f, None))
+    return {f: w for f in _WINDOW_FIELDS if (w := _wall(src(f)))}
+
+
 def diff_rounds(parsed: list[dict], existing_rounds: list) -> dict:
     """Return {'new': [...]} — parsed (official) rounds we don't yet track.
 
-    Keyed by apply deadline so a renamed/re-legged round isn't a false positive;
-    a genuinely new round (or a moved deadline) surfaces as `new` for review.
+    Rounds are matched on their application *window* (apply_open + apply_deadline),
+    not name/leg. A parsed round is already-tracked iff some existing round shares
+    every window timestamp they *both* carry (and at least one). So:
+      - a renamed/re-legged round with the same window is NOT a false positive;
+      - a re-scrape that dropped the deadline still matches on apply_open alone;
+      - a *moved* deadline — or a genuinely distinct round in the same slot with a
+        *different* apply_open — still surfaces as new for review.
+    Rounds carrying no window timestamp at all fall back to name+leg identity.
     """
-    existing = {round_key(r.apply_deadline, r.name, r.leg) for r in existing_rounds}
-    new = [
-        r
-        for r in parsed
-        if round_key(r.get("apply_deadline"), r.get("name"), r.get("leg")) not in existing
-    ]
-    return {"new": new}
+    existing_windows = [_window(r) for r in existing_rounds]
+    existing_nm = {f"{r.name or ''}|{r.leg or ''}" for r in existing_rounds}
+
+    def is_known(r: dict) -> bool:
+        w = _window(r.get)
+        if not w:
+            return f"{r.get('name') or ''}|{r.get('leg') or ''}" in existing_nm
+        return any(
+            (common := w.keys() & ew.keys()) and all(w[f] == ew[f] for f in common)
+            for ew in existing_windows
+        )
+
+    return {"new": [r for r in parsed if not is_known(r)]}
 
 
 def round_to_yaml(r: dict) -> str:

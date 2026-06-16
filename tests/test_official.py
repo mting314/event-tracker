@@ -129,3 +129,66 @@ def test_diff_rounds_keys_on_deadline_not_name():
     d = diff_rounds(parsed, existing)
     assert len(d["new"]) == 1  # the matching-deadline round is NOT flagged
     assert d["new"][0]["name"] == "新しい抽選"  # only the genuinely new one
+
+
+def test_diff_rounds_no_deadline_matches_on_apply_open():
+    # Re-scrape yielded a round with a generic name and NO deadline (deadline parse
+    # failed). It must match an existing round on apply_open, not be a false positive.
+    parsed = [
+        {"name": "受付期間", "type": "presale", "apply_open": datetime(2026, 6, 15, 18, 0)},
+    ]
+    existing = [
+        SimpleNamespace(
+            name="Upgrade application",
+            leg=None,
+            apply_open=datetime(2026, 6, 15, 18, 0),
+            apply_deadline=datetime(2026, 6, 28, 23, 59),
+            results_date=None,
+            payment_deadline=None,
+        ),
+    ]
+    d = diff_rounds(parsed, existing)
+    assert d["new"] == []  # same apply_open -> already tracked, not flagged
+
+
+def test_diff_rounds_no_deadline_new_apply_open_is_flagged():
+    # A round with no deadline AND an apply_open we don't track is genuinely new.
+    parsed = [
+        {"name": "受付期間", "type": "presale", "apply_open": datetime(2026, 7, 1, 12, 0)},
+    ]
+    existing = [
+        SimpleNamespace(
+            name="Upgrade application",
+            leg=None,
+            apply_open=datetime(2026, 6, 15, 18, 0),
+            apply_deadline=datetime(2026, 6, 28, 23, 59),
+            results_date=None,
+            payment_deadline=None,
+        ),
+    ]
+    d = diff_rounds(parsed, existing)
+    assert len(d["new"]) == 1
+
+
+def test_diff_rounds_same_deadline_distinct_open_is_flagged():
+    # A genuinely distinct round (later apply_open) that happens to close on the same
+    # minute as a tracked round must still surface — the window differs.
+    parsed = [
+        {
+            "name": "一般発売",
+            "apply_open": datetime(2026, 6, 20, 10, 0),
+            "apply_deadline": datetime(2026, 6, 28, 23, 59),
+        },
+    ]
+    existing = [
+        SimpleNamespace(
+            name="先行抽選",
+            leg=None,
+            apply_open=datetime(2026, 6, 1, 18, 0),
+            apply_deadline=datetime(2026, 6, 28, 23, 59),  # same close, earlier open
+            results_date=None,
+            payment_deadline=None,
+        ),
+    ]
+    d = diff_rounds(parsed, existing)
+    assert len(d["new"]) == 1  # different apply_open -> distinct round, flagged
