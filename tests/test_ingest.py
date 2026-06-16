@@ -188,3 +188,30 @@ def test_x_post_no_links_falls_back_to_llm():
         res = ingest.ingest_url(X_URL)
     assert res.used_llm and res.adapter == "llm"
     llm.assert_called_once()
+
+
+def test_ingest_backfills_english_for_deterministic_result():
+    """A deterministic (non-LLM) result gets a translate-only pass to fill name_en."""
+    with (
+        patch(
+            "scrape.official.scrape", return_value={"name": "X", "rounds": [{"name": "r"}]}
+        ) as off,
+        patch("scrape.llm.translate_event", side_effect=lambda d: {**d, "name_en": "EN"}) as tr,
+    ):
+        off.__module__ = "scrape.official"
+        res = ingest.ingest_url(OFF_URL)
+    tr.assert_called_once()
+    assert res.data["name_en"] == "EN"
+
+
+def test_ingest_skips_english_backfill_for_llm_result():
+    """An LLM result already carries name_en -> no extra translate pass."""
+    with (
+        patch("scrape.official.scrape", return_value={"name": "X", "rounds": []}) as off,
+        patch("scrape.llm.scrape", return_value={"name": "X", "rounds": [{"name": "r"}]}),
+        patch("scrape.llm.translate_event") as tr,
+    ):
+        off.__module__ = "scrape.official"
+        res = ingest.ingest_url(OFF_URL)  # official empty -> LLM fallback
+    assert res.used_llm
+    tr.assert_not_called()

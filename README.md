@@ -355,6 +355,12 @@ output is validated against pydantic models (no hand-written schema). It's groun
 strictly on the page text and told to **quote the source line for every date** (kept
 in each round's `notes`) so you can verify; the draft is still human-reviewed.
 
+**Consistent English labels.** Deterministic adapters emit only the source-language
+names; the LLM extractor also returns `name_en`. So that the EN/JA toggle isn't a
+patchwork, `ingest_url` runs a cheap **translate-only** pass (`llm.translate_event`)
+on deterministic results to fill any missing `name_en` (event + rounds) — structured
+data stays untouched. Best-effort: skipped silently when the LLM is unavailable.
+
 Default is **Vertex AI (Gemini)** via Application Default Credentials (your GCP setup):
 
 ```bash
