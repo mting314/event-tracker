@@ -54,13 +54,10 @@ FIXTURES = [
         "url": "https://lustqueen.info/news/detail/81252",
     },
     {
-        # Synthetic page (eventernote has no stable public event URL to record);
-        # swap in a real page anytime via `record <name>` once you have one.
-        "name": "eventernote_synthetic",
+        "name": "eventernote_llfest15th",
         "kind": "html",
         "adapter": "eventernote",
-        "url": "https://www.eventernote.com/events/sample",
-        "synthetic": True,
+        "url": "https://www.eventernote.com/events/464371",
     },
     {
         "name": "llfans_aqours_1",
