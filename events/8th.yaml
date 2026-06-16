@@ -1,4 +1,5 @@
 name: ラブライブ！虹ヶ咲学園スクールアイドル同好会 8thライブ
+name_en: "Love Live! Nijigasaki High School Idol Club 8th Live"
 performances:
   - date: 2026-06-06
     city: 大阪
@@ -8,6 +9,7 @@ performances:
     starts: "17:00"
     rounds:
       - name: 初回生産分限定封入特典・チケット最速先行抽選申込券にて受付
+        name_en: "First-press bonus: fastest presale lottery (serial code)"
         type: presale
         leg: 大阪
         apply_open: 2026-02-04T12:00:00
@@ -15,6 +17,7 @@ performances:
         results_date: 2026-02-28T13:00:00
         payment_deadline: 2026-03-03T21:00:00
       - name: 一般発売（1次抽選）
+        name_en: General sale (1st lottery)
         type: general
         leg: 大阪
         apply_open: 2026-03-07T12:00:00
@@ -22,12 +25,14 @@ performances:
         results_date: 2026-04-11T13:00:00
         payment_deadline: 2026-04-14T21:00:00
       - name: 一般発売（2次抽選）
+        name_en: General sale (2nd lottery)
         type: general
         leg: 大阪
         apply_open: 2026-04-18T12:00:00
         apply_deadline: 2026-05-17T23:59:00
         results_date: 2026-05-22T13:00:00
       - name: 一般発売（先着）
+        name_en: General sale (first-come)
         type: general
         leg: 大阪
         apply_open: 2026-05-23T12:00:00
@@ -39,6 +44,7 @@ performances:
     starts: "15:00"
     rounds:
       - name: 初回生産分限定封入特典・チケット最速先行抽選申込券にて受付
+        name_en: "First-press bonus: fastest presale lottery (serial code)"
         type: presale
         leg: 大阪
         apply_open: 2026-02-04T12:00:00
@@ -46,6 +52,7 @@ performances:
         results_date: 2026-02-28T13:00:00
         payment_deadline: 2026-03-03T21:00:00
       - name: 一般発売（1次抽選）
+        name_en: General sale (1st lottery)
         type: general
         leg: 大阪
         apply_open: 2026-03-07T12:00:00
@@ -53,12 +60,14 @@ performances:
         results_date: 2026-04-11T13:00:00
         payment_deadline: 2026-04-14T21:00:00
       - name: 一般発売（2次抽選）
+        name_en: General sale (2nd lottery)
         type: general
         leg: 大阪
         apply_open: 2026-04-18T12:00:00
         apply_deadline: 2026-05-17T23:59:00
         results_date: 2026-05-22T13:00:00
       - name: 一般発売（先着）
+        name_en: General sale (first-come)
         type: general
         leg: 大阪
         apply_open: 2026-05-23T12:00:00
@@ -70,6 +79,7 @@ performances:
     starts: "17:00"
     rounds:
       - name: 封入特典・チケット最速先行抽選申込券にて受付
+        name_en: "Bonus: fastest presale lottery (serial code)"
         type: presale
         leg: 東京
         apply_open: 2026-03-25T12:00:00
@@ -77,6 +87,7 @@ performances:
         results_date: 2026-04-25T13:00:00
         payment_deadline: 2026-04-28T21:00:00
       - name: 一般発売（1次抽選）
+        name_en: General sale (1st lottery)
         type: general
         leg: 東京
         apply_open: 2026-04-25T12:00:00
@@ -84,12 +95,14 @@ performances:
         results_date: 2026-05-16T13:00:00
         payment_deadline: 2026-05-19T21:00:00
       - name: 一般発売（2次抽選）
+        name_en: General sale (2nd lottery)
         type: general
         leg: 東京
         apply_open: 2026-05-16T12:00:00
         apply_deadline: 2026-05-24T23:59:00
         results_date: 2026-05-29T13:00:00
       - name: 一般発売（先着）
+        name_en: General sale (first-come)
         type: general
         leg: 東京
         apply_open: 2026-05-30T12:00:00
@@ -101,6 +114,7 @@ performances:
     starts: "15:00"
     rounds:
       - name: 封入特典・チケット最速先行抽選申込券にて受付
+        name_en: "Bonus: fastest presale lottery (serial code)"
         type: presale
         leg: 東京
         apply_open: 2026-03-25T12:00:00
@@ -108,6 +122,7 @@ performances:
         results_date: 2026-04-25T13:00:00
         payment_deadline: 2026-04-28T21:00:00
       - name: 一般発売（1次抽選）
+        name_en: General sale (1st lottery)
         type: general
         leg: 東京
         apply_open: 2026-04-25T12:00:00
@@ -115,12 +130,14 @@ performances:
         results_date: 2026-05-16T13:00:00
         payment_deadline: 2026-05-19T21:00:00
       - name: 一般発売（2次抽選）
+        name_en: General sale (2nd lottery)
         type: general
         leg: 東京
         apply_open: 2026-05-16T12:00:00
         apply_deadline: 2026-05-24T23:59:00
         results_date: 2026-05-29T13:00:00
       - name: 一般発売（先着）
+        name_en: General sale (first-come)
         type: general
         leg: 東京
         apply_open: 2026-05-30T12:00:00

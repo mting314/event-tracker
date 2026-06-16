@@ -98,7 +98,7 @@ def _follow_x_links(links, allow_llm, progress, depth):
     for link in candidates:
         _emit(progress, f"🔗 Following link from the X post: {link} …")
         try:
-            sub = ingest_url(
+            sub = _ingest_url(
                 link, allow_llm=False, force_llm=False, progress=progress, _depth=depth + 1
             )
         except Exception as exc:  # noqa: BLE001 - try the next link
@@ -113,7 +113,7 @@ def _follow_x_links(links, allow_llm, progress, depth):
         for link in candidates:  # priority order; stop at the first that yields anything
             _emit(progress, f"🤖 No structured page found — trying AI on {link} …")
             try:
-                sub = ingest_url(
+                sub = _ingest_url(
                     link, allow_llm=True, force_llm=True, progress=progress, _depth=depth + 1
                 )
             except Exception as exc:  # noqa: BLE001
@@ -136,13 +136,36 @@ def ingest_url(
     allow_llm: bool = True,
     force_llm: bool = False,
     progress: Callable[[str], None] | None = None,
+) -> Ingested:
+    """Fetch + structure a URL, then backfill English labels. Raises if nothing parses.
+
+    ``progress`` is an optional callback invoked with a short human-readable status
+    at each stage (used by the bot to update its loading message).
+
+    Deterministic adapters emit only the source-language names, while the LLM
+    extractor also returns ``name_en``. To keep EN/JA display consistent across
+    sources, a deterministic result gets a cheap translate-only LLM pass to fill any
+    missing ``name_en`` (best-effort — skipped silently if the LLM is unavailable).
+    """
+    res = _ingest_url(url, allow_llm, force_llm, progress, _depth=0)
+    if allow_llm and not res.used_llm:
+        try:
+            from . import llm
+
+            res.data = llm.translate_event(res.data)
+        except Exception as exc:  # noqa: BLE001 - English labels are best-effort
+            log.warning("ingest %s: English backfill skipped (%s)", url, exc)
+    return res
+
+
+def _ingest_url(
+    url: str,
+    allow_llm: bool = True,
+    force_llm: bool = False,
+    progress: Callable[[str], None] | None = None,
     _depth: int = 0,
 ) -> Ingested:
-    """Fetch + structure a URL. Raises if nothing can parse it.
-
-    ``progress`` is an optional callback invoked with a short human-readable
-    status at each stage (used by the bot to update its loading message).
-    """
+    """Core dispatch (no English backfill — that's added once by ``ingest_url``)."""
 
     def _llm(reason: str) -> Ingested:
         from . import llm

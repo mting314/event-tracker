@@ -18,6 +18,7 @@ from scrape.llm import (
     _usage_str,
     extract_event,
     page_text,
+    translate_event,
 )
 from scrape.util import to_event_yaml
 
@@ -135,3 +136,41 @@ def test_extract_event_logs_token_usage(caplog):
     with caplog.at_level(logging.INFO, logger="scrape.llm"):
         extract_event("page text", "https://x/1", "T", agent=_Agent(SAMPLE, _Usage(100, 20, 120)))
     assert any("in=100, out=20, total=120" in r.message for r in caplog.records)
+
+
+class _ListAgent:
+    """Fake translate agent: returns a canned list[str] for any prompt."""
+
+    def __init__(self, output):
+        self._output = output
+
+    def run_sync(self, prompt):
+        return _Result(self._output)
+
+
+class _BoomAgent:
+    def run_sync(self, prompt):
+        raise AssertionError("agent should not be called when nothing needs translating")
+
+
+def test_translate_event_fills_missing_name_en_and_dedupes():
+    data = {
+        "name": "虹ヶ咲 8thライブ",
+        "performances": [
+            {"date": "2026-06-06", "rounds": [{"name": "一般発売（先着）"}]},
+            {"date": "2026-06-07", "rounds": [{"name": "一般発売（先着）"}]},  # same name -> dedupe
+        ],
+        "rounds": [{"name": "FC先行", "name_en": "FC presale"}],  # already translated -> untouched
+    }
+    # Two unique untranslated strings, in first-seen order: the title, then 一般発売（先着）.
+    agent = _ListAgent(["Nijigasaki 8th Live", "General sale (first-come)"])
+    out = translate_event(data, agent=agent)
+    assert out["name_en"] == "Nijigasaki 8th Live"
+    assert out["performances"][0]["rounds"][0]["name_en"] == "General sale (first-come)"
+    assert out["performances"][1]["rounds"][0]["name_en"] == "General sale (first-come)"
+    assert out["rounds"][0]["name_en"] == "FC presale"  # left as-is
+
+
+def test_translate_event_noop_when_complete():
+    data = {"name": "X", "name_en": "X", "rounds": [{"name": "r", "name_en": "R"}]}
+    assert translate_event(data, agent=_BoomAgent()) == data  # agent never invoked

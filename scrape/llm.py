@@ -241,6 +241,76 @@ def extract_event(text: str, url: str | None = None, title: str = "", agent=None
     return _to_event_dict(result.output, url)
 
 
+_TRANSLATE_SYSTEM = (
+    "You translate Japanese live-event titles and ticket-lottery round labels into "
+    "natural, concise English. Keep each translation short (a few words), faithful, and "
+    "free of notes or extra punctuation. Return exactly one English string per input "
+    "line, in the same order and count."
+)
+
+
+def _translate_agent():
+    from pydantic_ai import Agent
+
+    return Agent(
+        _model(),
+        output_type=list[str],
+        system_prompt=_TRANSLATE_SYSTEM,
+        model_settings={"temperature": 0, "timeout": REQUEST_TIMEOUT},
+        retries=1,
+    )
+
+
+def _untranslated(data: dict) -> list[tuple[dict, str]]:
+    """(holder, Japanese name) for every event/round name lacking an English rendering."""
+    out = []
+    if data.get("name") and not data.get("name_en"):
+        out.append((data, data["name"]))
+    rounds = list(data.get("rounds") or [])
+    for p in data.get("performances") or []:
+        rounds += list(p.get("rounds") or [])
+    for r in rounds:
+        if r.get("name") and not r.get("name_en"):
+            out.append((r, r["name"]))
+    return out
+
+
+def translate_event(data: dict, agent=None) -> dict:
+    """Best-effort: fill missing ``name_en`` on the event + its rounds via the LLM.
+
+    Translation only — never touches dates, legs, or structure — so deterministically
+    parsed events get the same English labels the LLM extractor already produces, for
+    consistent EN/JA display regardless of which adapter ran. Mutates and returns
+    ``data``; raises if the model is unavailable (callers treat English as optional).
+    """
+    pairs = _untranslated(data)
+    if not pairs:
+        return data
+    order: list[str] = []
+    holders: dict[str, list[dict]] = {}
+    for holder, jp in pairs:
+        if jp not in holders:
+            order.append(jp)
+        holders.setdefault(jp, []).append(holder)
+
+    agent = agent or _translate_agent()
+    prompt = "Translate each line to natural English (same count, same order):\n" + "\n".join(
+        f"{i + 1}. {s}" for i, s in enumerate(order)
+    )
+    log.info("llm: translating %d label(s) to English…", len(order))
+    result = agent.run_sync(prompt)
+    english = result.output
+    if not isinstance(english, list) or len(english) != len(order):
+        got = len(english) if isinstance(english, list) else repr(english)
+        raise ValueError(f"translation count mismatch: {got} vs {len(order)}")
+    for jp, eng in zip(order, english, strict=True):
+        eng = (eng or "").strip()
+        if eng:
+            for holder in holders[jp]:
+                holder["name_en"] = eng
+    return data
+
+
 def scrape(url: str, agent=None) -> dict:
     import requests
 
