@@ -263,8 +263,8 @@ def _from_payload(payload: dict) -> tuple[str, list[str], int | None]:
     return text, links, year
 
 
-def _fetch_syndication(tweet_id: str) -> tuple[str, list[str], int | None]:
-    """The cheap, no-auth embed API — enough for normal tweets."""
+def _syndication_payload(tweet_id: str) -> dict:
+    """Raw tweet-result JSON from the no-auth embed API."""
     import requests
 
     resp = requests.get(
@@ -274,7 +274,12 @@ def _fetch_syndication(tweet_id: str) -> tuple[str, list[str], int | None]:
         timeout=20,
     )
     resp.raise_for_status()
-    return _from_payload(resp.json())
+    return resp.json()
+
+
+def _fetch_syndication(tweet_id: str) -> tuple[str, list[str], int | None]:
+    """The cheap, no-auth embed API — enough for normal tweets."""
+    return _from_payload(_syndication_payload(tweet_id))
 
 
 _guest_token: str | None = None  # cached across calls so the bot doesn't re-activate each time
@@ -297,8 +302,8 @@ def _guest(force: bool = False) -> str:
     return _guest_token
 
 
-def _fetch_graphql(tweet_id: str) -> tuple[str, list[str], int | None]:
-    """Logged-out GraphQL read — recovers long-form note-tweet bodies + link cards."""
+def _graphql_payload(tweet_id: str) -> dict:
+    """Raw TweetResultByRestId JSON via a logged-out guest token."""
     import requests
 
     variables = {
@@ -338,7 +343,12 @@ def _fetch_graphql(tweet_id: str) -> tuple[str, list[str], int | None]:
             continue
         break
     resp.raise_for_status()
-    return _from_payload(resp.json())
+    return resp.json()
+
+
+def _fetch_graphql(tweet_id: str) -> tuple[str, list[str], int | None]:
+    """Logged-out GraphQL read — recovers long-form note-tweet bodies + link cards."""
+    return _from_payload(_graphql_payload(tweet_id))
 
 
 def fetch(url: str) -> tuple[str, list[str], int | None]:

@@ -1,0 +1,20 @@
+{
+  "kind": "concert",
+  "llfans_id": "1",
+  "name": "ラブライブ！サンシャイン!! Aqoursスペシャル課外活動 みんな準備はできてるかい？ ～せーので SUNSHINE!!～",
+  "official_url": "https://lantis-e.jp/entry/top/lovelive_sunshine/1st_sg/top_pc.html",
+  "performances": [
+    {
+      "date": "2016-01-11",
+      "doors": "14:00",
+      "label": null,
+      "starts": "15:00",
+      "venue": "メルパルクホール東京"
+    }
+  ],
+  "rounds": [],
+  "series": [
+    "ラブライブ！サンシャイン!!"
+  ],
+  "source_url": "https://ll-fans.jp/data/event/1"
+}

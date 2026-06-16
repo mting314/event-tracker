@@ -1,0 +1,405 @@
+{
+  "data": {
+    "tweetResult": {
+      "result": {
+        "__typename": "Tweet",
+        "core": {
+          "user_results": {
+            "result": {
+              "__typename": "User",
+              "affiliates_highlighted_label": {},
+              "has_graduated_access": true,
+              "has_nft_avatar": false,
+              "id": "VXNlcjoxODA1NDM4MzAyMDUwNDY3ODQy",
+              "is_blue_verified": true,
+              "legacy": {
+                "blocked_by": false,
+                "blocking": false,
+                "can_dm": false,
+                "can_media_tag": false,
+                "created_at": "Tue Jun 25 03:17:28 +0000 2024",
+                "default_profile": true,
+                "default_profile_image": false,
+                "description": "#虹ヶ咲 に関する映画、ライブ、ゲームなどの情報をお知らせする作品公式アカウント🌈\n#えいがさき 最終章、この冬公開！",
+                "entities": {
+                  "description": {},
+                  "url": {
+                    "urls": [
+                      {
+                        "display_url": "lovelive-anime.jp/nijigasaki/mov…",
+                        "expanded_url": "https://www.lovelive-anime.jp/nijigasaki/movie/Chapter2/",
+                        "indices": [
+                          0,
+                          23
+                        ],
+                        "url": "https://t.co/vZwBQ2S7ss"
+                      }
+                    ]
+                  }
+                },
+                "fast_followers_count": 0,
+                "favourites_count": 2,
+                "follow_request_sent": false,
+                "followed_by": false,
+                "followers_count": 67517,
+                "following": false,
+                "friends_count": 10,
+                "has_custom_timelines": false,
+                "is_translator": false,
+                "listed_count": 722,
+                "location": "",
+                "media_count": 2608,
+                "muting": false,
+                "name": "『ラブライブ！虹ヶ咲学園スクールアイドル同好会』【公式】",
+                "needs_phone_verification": false,
+                "normal_followers_count": 67517,
+                "notifications": false,
+                "pinned_tweet_ids_str": [
+                  "2010557254148452609"
+                ],
+                "possibly_sensitive": false,
+                "profile_banner_url": "https://pbs.twimg.com/profile_banners/1805438302050467842/1781431874",
+                "profile_image_url_https": "https://pbs.twimg.com/profile_images/1958546962611118080/Is_3qcg__normal.jpg",
+                "profile_interstitial_type": "",
+                "protected": false,
+                "screen_name": "Nijigaku_movie",
+                "statuses_count": 3415,
+                "time_zone": "",
+                "translator_type": "none",
+                "url": "https://t.co/vZwBQ2S7ss",
+                "utc_offset": 0,
+                "verified": false,
+                "withheld_description": "",
+                "withheld_scope": ""
+              },
+              "profile_image_shape": "Circle",
+              "rest_id": "1805438302050467842",
+              "super_follow_eligible": false,
+              "super_followed_by": false,
+              "super_following": false
+            }
+          }
+        },
+        "edit_control": {
+          "edit_tweet_ids": [
+            "2060209517850480726"
+          ],
+          "editable_until_msecs": "1780030800000",
+          "edits_remaining": "5",
+          "is_edit_eligible": true
+        },
+        "is_translatable": true,
+        "legacy": {
+          "bookmark_count": 57,
+          "bookmarked": false,
+          "conversation_id_str": "2060209517850480726",
+          "created_at": "Fri May 29 04:00:00 +0000 2026",
+          "display_text_range": [
+            0,
+            171
+          ],
+          "entities": {
+            "media": [
+              {
+                "display_url": "pic.x.com/M2ImhOmyaf",
+                "expanded_url": "https://x.com/Nijigaku_movie/status/2060209517850480726/photo/1",
+                "ext_media_availability": {
+                  "status": "Available"
+                },
+                "features": {
+                  "large": {
+                    "faces": [
+                      {
+                        "h": 153,
+                        "w": 153,
+                        "x": 758,
+                        "y": 96
+                      }
+                    ]
+                  },
+                  "medium": {
+                    "faces": [
+                      {
+                        "h": 129,
+                        "w": 129,
+                        "x": 643,
+                        "y": 81
+                      }
+                    ]
+                  },
+                  "orig": {
+                    "faces": [
+                      {
+                        "h": 153,
+                        "w": 153,
+                        "x": 758,
+                        "y": 96
+                      }
+                    ]
+                  },
+                  "small": {
+                    "faces": [
+                      {
+                        "h": 73,
+                        "w": 73,
+                        "x": 364,
+                        "y": 46
+                      }
+                    ]
+                  }
+                },
+                "id_str": "2059949944895897600",
+                "indices": [
+                  172,
+                  195
+                ],
+                "media_key": "3_2059949944895897600",
+                "media_url_https": "https://pbs.twimg.com/media/HJZpj5CbAAA-Zqo.jpg",
+                "original_info": {
+                  "focus_rects": [
+                    {
+                      "h": 560,
+                      "w": 1000,
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "h": 1000,
+                      "w": 1000,
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "h": 1140,
+                      "w": 1000,
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "h": 1414,
+                      "w": 707,
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "h": 1414,
+                      "w": 1000,
+                      "x": 0,
+                      "y": 0
+                    }
+                  ],
+                  "height": 1414,
+                  "width": 1000
+                },
+                "sizes": {
+                  "large": {
+                    "h": 1414,
+                    "resize": "fit",
+                    "w": 1000
+                  },
+                  "medium": {
+                    "h": 1200,
+                    "resize": "fit",
+                    "w": 849
+                  },
+                  "small": {
+                    "h": 680,
+                    "resize": "fit",
+                    "w": 481
+                  },
+                  "thumb": {
+                    "h": 150,
+                    "resize": "crop",
+                    "w": 150
+                  }
+                },
+                "type": "photo",
+                "url": "https://t.co/M2ImhOmyaf"
+              }
+            ]
+          },
+          "extended_entities": {
+            "media": [
+              {
+                "display_url": "pic.x.com/M2ImhOmyaf",
+                "expanded_url": "https://x.com/Nijigaku_movie/status/2060209517850480726/photo/1",
+                "ext_media_availability": {
+                  "status": "Available"
+                },
+                "features": {
+                  "large": {
+                    "faces": [
+                      {
+                        "h": 153,
+                        "w": 153,
+                        "x": 758,
+                        "y": 96
+                      }
+                    ]
+                  },
+                  "medium": {
+                    "faces": [
+                      {
+                        "h": 129,
+                        "w": 129,
+                        "x": 643,
+                        "y": 81
+                      }
+                    ]
+                  },
+                  "orig": {
+                    "faces": [
+                      {
+                        "h": 153,
+                        "w": 153,
+                        "x": 758,
+                        "y": 96
+                      }
+                    ]
+                  },
+                  "small": {
+                    "faces": [
+                      {
+                        "h": 73,
+                        "w": 73,
+                        "x": 364,
+                        "y": 46
+                      }
+                    ]
+                  }
+                },
+                "id_str": "2059949944895897600",
+                "indices": [
+                  172,
+                  195
+                ],
+                "media_key": "3_2059949944895897600",
+                "media_url_https": "https://pbs.twimg.com/media/HJZpj5CbAAA-Zqo.jpg",
+                "original_info": {
+                  "focus_rects": [
+                    {
+                      "h": 560,
+                      "w": 1000,
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "h": 1000,
+                      "w": 1000,
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "h": 1140,
+                      "w": 1000,
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "h": 1414,
+                      "w": 707,
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "h": 1414,
+                      "w": 1000,
+                      "x": 0,
+                      "y": 0
+                    }
+                  ],
+                  "height": 1414,
+                  "width": 1000
+                },
+                "sizes": {
+                  "large": {
+                    "h": 1414,
+                    "resize": "fit",
+                    "w": 1000
+                  },
+                  "medium": {
+                    "h": 1200,
+                    "resize": "fit",
+                    "w": 849
+                  },
+                  "small": {
+                    "h": 680,
+                    "resize": "fit",
+                    "w": 481
+                  },
+                  "thumb": {
+                    "h": 150,
+                    "resize": "crop",
+                    "w": 150
+                  }
+                },
+                "type": "photo",
+                "url": "https://t.co/M2ImhOmyaf"
+              }
+            ]
+          },
+          "favorite_count": 1124,
+          "favorited": false,
+          "full_text": "🌈チケット情報🌈\n6/13-14＠京王アリーナ TOKYOにて開催🎊\nラブライブ！虹ヶ咲学園スクールアイドル同好会\n8th Live! TOKIMEKI Express\n\n完全見切れ席\nチケット一般発売(先着)のお知らせ✨\n発売日：5/30(土)12:00～\n\nときめきの超特急に乗って\n一緒に旅に出よう🚅🛠\n\nあなたのご参加お待ちしてます💕 https://t.co/M2ImhOmyaf",
+          "id_str": "2060209517850480726",
+          "is_quote_status": false,
+          "lang": "ja",
+          "possibly_sensitive": false,
+          "possibly_sensitive_editable": true,
+          "quote_count": 42,
+          "reply_count": 4,
+          "retweet_count": 340,
+          "retweeted": false,
+          "user_id_str": "1805438302050467842"
+        },
+        "note_tweet": {
+          "is_expandable": true,
+          "note_tweet_results": {
+            "result": {
+              "entity_set": {
+                "hashtags": [
+                  {
+                    "indices": [
+                      202,
+                      211
+                    ],
+                    "text": "lovelive"
+                  },
+                  {
+                    "indices": [
+                      212,
+                      216
+                    ],
+                    "text": "虹ヶ咲"
+                  }
+                ],
+                "symbols": [],
+                "urls": [
+                  {
+                    "display_url": "lovelive-anime.jp/nijigasaki/liv…",
+                    "expanded_url": "https://lovelive-anime.jp/nijigasaki/live/live_detail.php?p=8thlive#ticket",
+                    "indices": [
+                      177,
+                      200
+                    ],
+                    "url": "https://t.co/c0LbtWuLu6"
+                  }
+                ],
+                "user_mentions": []
+              },
+              "id": "Tm90ZVR3ZWV0OjIwNjAyMDk1MTc3NzkxMTYwMzI=",
+              "text": "🌈チケット情報🌈\n6/13-14＠京王アリーナ TOKYOにて開催🎊\nラブライブ！虹ヶ咲学園スクールアイドル同好会\n8th Live! TOKIMEKI Express\n\n完全見切れ席\nチケット一般発売(先着)のお知らせ✨\n発売日：5/30(土)12:00～\n\nときめきの超特急に乗って\n一緒に旅に出よう🚅🛠\n\nあなたのご参加お待ちしてます💕\n\n詳細✅\nhttps://t.co/c0LbtWuLu6\n\n#lovelive #虹ヶ咲"
+            }
+          }
+        },
+        "rest_id": "2060209517850480726",
+        "source": "<a href=\"http://twitter.com\" rel=\"nofollow\">Twitter Web Client</a>",
+        "unmention_data": {},
+        "views": {
+          "count": "96250",
+          "state": "EnabledWithCount"
+        }
+      }
+    }
+  }
+}
