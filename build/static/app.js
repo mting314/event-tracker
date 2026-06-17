@@ -246,7 +246,7 @@ function paintCountdowns() {
 
 /* --- shared event filters (search / kind / series / franchise / has-open-round),
    applied across EVERY section: Open now, Upcoming, Past. Each event <li> carries
-   data-haystack / data-kind / data-series / data-franchise / data-deadlines. --- */
+   data-haystack / data-kind / data-series / data-franchise / data-windows. --- */
 function readFilters() {
   const frFilters = [...document.querySelectorAll('.fr-filter')];
   return {
@@ -261,13 +261,28 @@ function readFilters() {
 function anyFilterActive(f) {
   return !!(f.term || f.kind || f.series || f.openOnly || (f.frCount && f.frOn.size < f.frCount));
 }
+/* Whether a round (given its apply_open/deadline ISO strings) is still actionable:
+   `open` now, or `upcoming` (not opened yet). Shared by the "has open round" filter
+   and the "Open & upcoming" section. A first-come sale (apply_open, no deadline) is
+   open from its open time on; a round with only a deadline is open until that date. */
+function roundActionable(openIso, dlIso, now) {
+  const openD = openIso ? new Date(openIso) : null;
+  const dlD = dlIso ? new Date(dlIso) : null;
+  const open = (dlD ? dlD > now : !!openD) && (!openD || openD <= now);
+  const upcoming = !!openD && openD > now;
+  return { open, upcoming };
+}
 function passesFilters(li, f, now) {
   if (f.term && !(li.dataset.haystack || '').includes(f.term)) return false;
   if (f.kind && li.dataset.kind !== f.kind) return false;
   if (f.series && !(li.dataset.series || '').split('|').includes(f.series)) return false;
   if (f.frCount && !f.frOn.has(li.dataset.franchise)) return false;
-  if (f.openOnly
-    && !(li.dataset.deadlines || '').split(',').some((dl) => dl && new Date(dl) > now)) return false;
+  if (f.openOnly && !(li.dataset.windows || '').split(',').some((w) => {
+    if (!w) return false;
+    const [o, d] = w.split('~');
+    const s = roundActionable(o, d, now);
+    return s.open || s.upcoming;
+  })) return false;
   return true;
 }
 /** Wire all filter controls to a single 'filterchange' event the sections listen to. */
@@ -425,13 +440,12 @@ function initActiveLotteries() {
         li.querySelectorAll('.occ').forEach((occ) => {
           const ro = occ.dataset.ropen;
           const rd = occ.dataset.rdeadline;
-          const roundOpen = rd && (!ro || new Date(ro) <= now) && new Date(rd) > now;
-          const roundUpcoming = ro && new Date(ro) > now; // hasn't opened yet
-          // Open round -> its deadline row (act now); upcoming round -> its opens
-          // row (heads-up on when it starts). Both shown only on cards that have
-          // at least one open round.
+          const { open: roundOpen, upcoming: roundUpcoming } = roundActionable(ro, rd, now);
+          // Open round -> its deadline row to act on (or, for a deadline-less
+          // first-come sale, its opens row); upcoming round -> its opens row (a
+          // heads-up). Both shown only on cards that have at least one open round.
           let visible = false;
-          if (roundOpen && occ.dataset.css === 'deadline') { visible = true; hasOpen++; }
+          if (roundOpen && occ.dataset.css === (rd ? 'deadline' : 'opens')) { visible = true; hasOpen++; }
           else if (roundUpcoming && occ.dataset.css === 'opens') { visible = true; }
           occ.hidden = !visible;
         });

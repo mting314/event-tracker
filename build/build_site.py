@@ -103,9 +103,14 @@ def build_index_groups(events) -> list[dict]:
                 "franchise": ev.franchise,
                 "venues": ev.venues,
                 "performers": ev.performers,
-                # apply deadlines (ISO) — drives the index "has open round" filter
-                "deadlines": [
-                    r.apply_deadline.isoformat() for r in ev.all_rounds if r.apply_deadline
+                # Each round's application window as "open~deadline" (either side may
+                # be empty) — drives the index "has open round" filter, so a
+                # deadline-less first-come sale still counts as open while it's live.
+                "windows": [
+                    f"{r.apply_open.isoformat() if r.apply_open else ''}"
+                    f"~{r.apply_deadline.isoformat() if r.apply_deadline else ''}"
+                    for r in ev.all_rounds
+                    if r.apply_open or r.apply_deadline
                 ],
                 "performances": perfs,
                 "occurrences": all_occ,
