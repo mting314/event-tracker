@@ -30,7 +30,7 @@ const I18N = {
     no_rounds: 'No lottery rounds recorded yet.',
     feed_empty: 'Nothing upcoming. 🎉',
     apply: 'Apply ↗',
-    past_badge: 'past',
+    past_badge: 'past', open_badge: 'open now', show_badge: 'show',
     expand_all: 'Expand all', collapse_all: 'Collapse all',
     cat_search: 'Search name, artist, series, venue, performer…',
     cat_all_kinds: 'All kinds',
@@ -85,7 +85,7 @@ const I18N = {
     no_rounds: '抽選回はまだ登録されていません。',
     feed_empty: '予定はありません。🎉',
     apply: '申込 ↗',
-    past_badge: '終了',
+    past_badge: '終了', open_badge: '受付中', show_badge: '公演',
     expand_all: 'すべて展開', collapse_all: 'すべて折りたたむ',
     cat_search: '名前・アーティスト・シリーズ・会場・出演者で検索…',
     cat_all_kinds: 'すべての種別',
@@ -322,6 +322,7 @@ function initGroups() {
     const filtering = anyFilterActive(f);
     let visible = 0;
     const rows = groups.map((d) => {
+      const li = d.closest('li');
       // Per performance+round, keep only the next upcoming date (so a round isn't
       // repeated once per Opens/Deadline/Results/Payment, but a leg-wide round
       // still shows under each of its shows).
@@ -360,10 +361,26 @@ function initGroups() {
         const iso = o.dataset.iso;
         if (new Date(iso) > now && (!nextDeadline || iso < nextDeadline)) nextDeadline = iso;
       }
-      return { d, next, headerIso: nextDeadline || next };
+      // Past vs upcoming is authoritative on the SHOW dates, not the round dates: an
+      // event is past only once its last performance is over (data-shows is sorted).
+      const shows = (li.dataset.shows || '').split(',').filter(Boolean);
+      const lastShow = shows[shows.length - 1] || null;
+      const nextShow = shows.find((s) => new Date(s) > now) || null;
+      const isPast = lastShow ? new Date(lastShow) < now : !next;
+      // Soonest close among rounds open right now — lets the summary show "open now"
+      // (e.g. a first-come sale live until the show) when no round date anchors it.
+      let openClose = null;
+      for (const w of (li.dataset.windows || '').split(',')) {
+        if (!w) continue;
+        const [open, close] = w.split('~');
+        if (roundActionable(open, close, now).open && close && (!openClose || close < openClose)) {
+          openClose = close;
+        }
+      }
+      return { d, next, isPast, openClose, headerIso: nextDeadline || next || openClose || nextShow };
     });
 
-    for (const { d, headerIso } of rows) {
+    for (const { d, isPast, openClose, headerIso } of rows) {
       const li = d.closest('li');
       // Past events are always shown (in their own section below), so visibility
       // is just whether the row matches the active filters.
@@ -384,6 +401,15 @@ function initGroups() {
         if (round) round.textContent = pick(occEl.dataset.round, occEl.dataset.roundEn); // which round
         cd.dataset.iso = headerIso;
         when.setAttribute('datetime', headerIso);
+      } else if (!isPast && headerIso) {
+        // Upcoming but no round date anchors the header: a sale still open (count
+        // down to its close), else just the upcoming show.
+        const isOpen = headerIso === openClose;
+        badge.className = 'next-badge ' + (isOpen ? 'opens' : 'event');
+        badge.textContent = isOpen ? t('open_badge') : t('show_badge');
+        if (round) round.textContent = '';
+        cd.dataset.iso = headerIso;
+        when.setAttribute('datetime', headerIso);
       } else {
         badge.className = 'next-badge'; badge.textContent = t('past_badge');
         if (round) round.textContent = '';
@@ -392,14 +418,14 @@ function initGroups() {
       }
     }
 
-    // Split into Upcoming (has a next deadline, soonest first) and a separate
-    // Past section (no upcoming deadline). Hidden rows stay put.
+    // Split into Upcoming (show still to come, soonest first) and a separate Past
+    // section (last performance over). Hidden rows stay put.
     const shown = rows.filter((r) => !r.d.closest('li').hidden);
     shown
-      .filter((r) => r.next)
+      .filter((r) => !r.isPast)
       .sort((a, b) => a.headerIso.localeCompare(b.headerIso))
       .forEach((r) => container.appendChild(r.d.closest('li')));
-    const past = shown.filter((r) => !r.next);
+    const past = shown.filter((r) => r.isPast);
     past.forEach((r) => pastContainer.appendChild(r.d.closest('li')));
     if (pastHead) pastHead.hidden = past.length === 0;
 
@@ -428,8 +454,11 @@ function initActiveLotteries() {
   const container = document.getElementById('active-groups');
   if (!section || !container) return;
   const cards = [...container.querySelectorAll(':scope > li')];
+  // Sort by when each card's opportunity *closes* (a deadline, or the show day for
+  // an open-ended first-come sale), not the surfaced row's date — so a long-open
+  // sale doesn't sort ahead of a lottery closing tomorrow.
   const earliest = (li) => [...li.querySelectorAll('.occ:not([hidden])')]
-    .map((o) => o.dataset.iso).sort()[0] || '9999';
+    .map((o) => o.dataset.rclose || o.dataset.iso).sort()[0] || '9999';
   const refresh = () => {
     const now = new Date();
     const f = readFilters();

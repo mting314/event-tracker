@@ -75,6 +75,24 @@ def test_first_come_close_falls_to_each_shows_own_date():
     assert closes == ["2026-08-01", "2026-09-09"]
 
 
+def test_shows_lists_every_performance_day_end_of_day():
+    # `shows` is authoritative for past vs upcoming — one end-of-day JST instant per
+    # performance date, sorted, so the client can check "is the last show over?".
+    ev = Event.model_validate(
+        {
+            "id": "ev",
+            "name": "E",
+            "kind": "concert",
+            "performances": [
+                {"date": "2026-08-02", "venue": "V"},
+                {"date": "2026-08-01", "venue": "V"},
+            ],
+        }
+    )
+    shows = build_index_groups([ev])[0]["shows"]
+    assert shows == ["2026-08-01T23:59:59+09:00", "2026-08-02T23:59:59+09:00"]
+
+
 def test_windows_omit_rounds_with_no_application_window():
     # A round with neither apply_open nor apply_deadline contributes no window
     # (it can't be "open" by date), but a results_date keeps it a valid round.

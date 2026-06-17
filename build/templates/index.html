@@ -8,7 +8,8 @@
       data-haystack="{{ (g.name ~ ' ' ~ g.name_en ~ ' ' ~ (g.artist or '') ~ ' ' ~ (g.series|join(' ')) ~ ' ' ~ (g.series|map('series_ja')|join(' ')) ~ ' ' ~ (g.venues|join(' ')) ~ ' ' ~ (g.performers|join(' ')))|lower }}"
       data-kind="{{ g.kind or '' }}"
       data-series="{{ g.series|join('|') }}"
-      data-windows="{{ g.windows|join(',') }}">
+      data-windows="{{ g.windows|join(',') }}"
+      data-shows="{{ g.shows|join(',') }}">
     <details class="evgroup"{% if is_open %} open{% endif %}>
       <summary>
         <span class="next-badge"></span>

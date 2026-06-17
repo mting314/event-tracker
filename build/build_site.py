@@ -38,6 +38,12 @@ DATE_TYPES = {
 }
 
 
+def _end_of_day(d) -> str:
+    """A date's last instant as JST ISO — used to bound 'open'/'past' by the show day
+    (an event is live through the end of its performance day, not from midnight)."""
+    return datetime(d.year, d.month, d.day, 23, 59, 59, tzinfo=JST).isoformat()
+
+
 def _effective_close(rnd, perf_date) -> str:
     """When a round stops being "open" (ISO): its apply_deadline, or — for a
     deadline-less first-come sale — the end of the show day, since a sale can't be
@@ -46,9 +52,7 @@ def _effective_close(rnd, perf_date) -> str:
     if rnd.apply_deadline:
         return rnd.apply_deadline.isoformat()
     if perf_date:
-        return datetime(
-            perf_date.year, perf_date.month, perf_date.day, 23, 59, 59, tzinfo=JST
-        ).isoformat()
+        return _end_of_day(perf_date)
     return ""
 
 
@@ -130,6 +134,10 @@ def build_index_groups(events) -> list[dict]:
                 # drives the index "has open round" filter, so a deadline-less
                 # first-come sale counts as open while live but ages out after the show.
                 "windows": windows,
+                # Show days (end-of-day JST) — authoritative for past vs upcoming: an
+                # event is past only once its last performance is over, regardless of
+                # whether any lottery rounds remain.
+                "shows": [_end_of_day(d) for d in ev.event_dates],
                 "performances": perfs,
                 "occurrences": all_occ,
             }
