@@ -38,13 +38,34 @@ DATE_TYPES = {
 }
 
 
-def _round_occurrences(rnd) -> list[dict]:
+def _end_of_day(d) -> str:
+    """A date's last instant as JST ISO — used to bound 'open'/'past' by the show day
+    (an event is live through the end of its performance day, not from midnight)."""
+    return datetime(d.year, d.month, d.day, 23, 59, 59, tzinfo=JST).isoformat()
+
+
+def _effective_close(rnd, perf_date) -> str:
+    """When a round stops being "open" (ISO): its apply_deadline, or — for a
+    deadline-less first-come sale — the end of the show day, since a sale can't be
+    open after the performance. Empty when neither is known (an open-ended round
+    with no associated show date)."""
+    if rnd.apply_deadline:
+        return rnd.apply_deadline.isoformat()
+    if perf_date:
+        return _end_of_day(perf_date)
+    return ""
+
+
+def _round_occurrences(rnd, perf_date=None) -> list[dict]:
     """The dated actions (opens/deadline/results/payment) for one round."""
     leg = f" · {rnd.leg}" if rnd.leg else ""
     round_en = (rnd.name_en or rnd.name) + leg
     # The round's application window, so the "Open now" view can tell if it's live.
+    # r_close is the effective end of "open" (real deadline, or the show day for a
+    # deadline-less first-come sale) so such a sale ages out instead of staying open.
     r_open = rnd.apply_open.isoformat() if rnd.apply_open else ""
     r_deadline = rnd.apply_deadline.isoformat() if rnd.apply_deadline else ""
+    r_close = _effective_close(rnd, perf_date)
     out = []
     for field, meta in DATE_TYPES.items():
         dt = getattr(rnd, field)
@@ -60,6 +81,7 @@ def _round_occurrences(rnd) -> list[dict]:
                 "round_en": round_en,
                 "r_open": r_open,
                 "r_deadline": r_deadline,
+                "r_close": r_close,
                 "apply_url": rnd.apply_url,
             }
         )
@@ -73,11 +95,16 @@ def build_index_groups(events) -> list[dict]:
     """
     groups = []
     for ev in events:
-        perfs, all_occ = [], []
+        perfs, all_occ, windows = [], [], []
         for p in ev.performances:
             occ = []
             for rnd in p.rounds:
-                occ.extend(_round_occurrences(rnd))
+                occ.extend(_round_occurrences(rnd, p.date))
+                # "open~close" for the "has open round" filter; close is the real
+                # deadline or, for a deadline-less first-come sale, the show day.
+                if rnd.apply_open or rnd.apply_deadline:
+                    r_open = rnd.apply_open.isoformat() if rnd.apply_open else ""
+                    windows.append(f"{r_open}~{_effective_close(rnd, p.date)}")
             occ.sort(key=lambda o: o["iso"])
             all_occ.extend(occ)
             perfs.append(
@@ -103,10 +130,14 @@ def build_index_groups(events) -> list[dict]:
                 "franchise": ev.franchise,
                 "venues": ev.venues,
                 "performers": ev.performers,
-                # apply deadlines (ISO) — drives the index "has open round" filter
-                "deadlines": [
-                    r.apply_deadline.isoformat() for r in ev.all_rounds if r.apply_deadline
-                ],
+                # Each round's application window "open~close" (open may be empty) —
+                # drives the index "has open round" filter, so a deadline-less
+                # first-come sale counts as open while live but ages out after the show.
+                "windows": windows,
+                # Show days (end-of-day JST) — authoritative for past vs upcoming: an
+                # event is past only once its last performance is over, regardless of
+                # whether any lottery rounds remain.
+                "shows": [_end_of_day(d) for d in ev.event_dates],
                 "performances": perfs,
                 "occurrences": all_occ,
             }

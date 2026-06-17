@@ -8,7 +8,8 @@
       data-haystack="{{ (g.name ~ ' ' ~ g.name_en ~ ' ' ~ (g.artist or '') ~ ' ' ~ (g.series|join(' ')) ~ ' ' ~ (g.series|map('series_ja')|join(' ')) ~ ' ' ~ (g.venues|join(' ')) ~ ' ' ~ (g.performers|join(' ')))|lower }}"
       data-kind="{{ g.kind or '' }}"
       data-series="{{ g.series|join('|') }}"
-      data-deadlines="{{ g.deadlines|join(',') }}">
+      data-windows="{{ g.windows|join(',') }}"
+      data-shows="{{ g.shows|join(',') }}">
     <details class="evgroup"{% if is_open %} open{% endif %}>
       <summary>
         <span class="next-badge"></span>
@@ -42,7 +43,7 @@
               <tbody>
                 {% for o in p.occurrences %}
                 <tr class="occ" data-iso="{{ o.iso }}" data-css="{{ o.css }}" data-round="{{ o.round }}" data-round-en="{{ o.round_en }}"
-                    data-ropen="{{ o.r_open }}" data-rdeadline="{{ o.r_deadline }}" data-perf="{{ pidx }}-{{ p.date }}">
+                    data-ropen="{{ o.r_open }}" data-rdeadline="{{ o.r_deadline }}" data-rclose="{{ o.r_close }}" data-perf="{{ pidx }}-{{ p.date }}">
                   <td><span class="badge i18n-field {{ o.css }}" data-ja="{{ o.label_ja }}" data-en="{{ o.label_en }}">{{ o.label_ja }}</span></td>
                   <td class="occ-round i18n-field" data-ja="{{ o.round }}" data-en="{{ o.round_en }}">{{ o.round }}</td>
                   <td><time class="dt" datetime="{{ o.iso }}">{{ o.iso|jst_fmt }}</time>
