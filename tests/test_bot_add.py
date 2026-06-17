@@ -266,6 +266,51 @@ def test_merge_dedupes_performances_despite_venue_and_label_drift():
     assert n_r == 1  # the new round still merges in
 
 
+def test_merge_dedupes_across_language_label_drift_when_times_match():
+    # the tutoliella case: an event stored with JA labels (昼公演/夜公演) gets re-added
+    # from another source whose LLM parse labels the shows in EN (Matinee/Evening).
+    # Same date+venue+start ⇒ same show; the label language must NOT split them.
+    existing = {
+        "id": "2026-liella-2026",
+        "name": "Liella!",
+        "performances": [
+            {
+                "date": "2026-08-01",
+                "venue": "LaLa arena TOKYO-BAY",
+                "label": "昼公演",
+                "starts": "12:00",
+            },
+            {
+                "date": "2026-08-01",
+                "venue": "LaLa arena TOKYO-BAY",
+                "label": "夜公演",
+                "starts": "17:30",
+            },
+            {"date": "2026-08-02", "venue": "LaLa arena TOKYO-BAY", "starts": "16:00"},
+        ],
+        "rounds": [{"name": "r", "apply_deadline": "2026-06-28T23:59:00"}],
+    }
+    new = {
+        "performances": [
+            {
+                "date": "2026-08-01",
+                "venue": "LaLa arena TOKYO-BAY",
+                "label": "Matinee",
+                "starts": "12:00",
+            },
+            {
+                "date": "2026-08-01",
+                "venue": "LaLa arena TOKYO-BAY",
+                "label": "Evening Performance",
+                "starts": "17:30",
+            },
+            {"date": "2026-08-02", "venue": "LaLa arena TOKYO-BAY", "starts": "16:00"},
+        ],
+    }
+    merged, _, n_p = bm.merge_event_data(existing, new)
+    assert n_p == 0 and len(merged["performances"]) == 3  # no duplicates despite EN/JA labels
+
+
 def test_merge_keeps_distinct_time_slots():
     # noon vs evening at the same venue/date must stay separate.
     existing = {
