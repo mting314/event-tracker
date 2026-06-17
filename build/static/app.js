@@ -361,12 +361,10 @@ function initGroups() {
         const iso = o.dataset.iso;
         if (new Date(iso) > now && (!nextDeadline || iso < nextDeadline)) nextDeadline = iso;
       }
-      // Past vs upcoming is authoritative on the SHOW dates, not the round dates: an
-      // event is past only once its last performance is over (data-shows is sorted).
+      // The next upcoming SHOW (end-of-day, data-shows is sorted) keeps an event
+      // upcoming until it has actually happened, even after its lottery rounds end.
       const shows = (li.dataset.shows || '').split(',').filter(Boolean);
-      const lastShow = shows[shows.length - 1] || null;
       const nextShow = shows.find((s) => new Date(s) > now) || null;
-      const isPast = lastShow ? new Date(lastShow) < now : !next;
       // Soonest close among rounds open right now — lets the summary show "open now"
       // (e.g. a first-come sale live until the show) when no round date anchors it.
       let openClose = null;
@@ -377,6 +375,9 @@ function initGroups() {
           openClose = close;
         }
       }
+      // Past only when nothing is left ahead — no upcoming show, no future round
+      // date, and nothing open now. So headerIso is always set for a non-past row.
+      const isPast = !(next || openClose || nextShow);
       return { d, next, isPast, openClose, headerIso: nextDeadline || next || openClose || nextShow };
     });
 
@@ -404,8 +405,9 @@ function initGroups() {
       } else if (!isPast && headerIso) {
         // Upcoming but no round date anchors the header: a sale still open (count
         // down to its close), else just the upcoming show.
-        const isOpen = headerIso === openClose;
-        badge.className = 'next-badge ' + (isOpen ? 'opens' : 'event');
+        const isOpen = !!openClose && headerIso === openClose;
+        // include `badge` — the colour rules are .badge.opens / .badge.event
+        badge.className = 'next-badge badge ' + (isOpen ? 'opens' : 'event');
         badge.textContent = isOpen ? t('open_badge') : t('show_badge');
         if (round) round.textContent = '';
         cd.dataset.iso = headerIso;
