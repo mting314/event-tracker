@@ -261,14 +261,15 @@ function readFilters() {
 function anyFilterActive(f) {
   return !!(f.term || f.kind || f.series || f.openOnly || (f.frCount && f.frOn.size < f.frCount));
 }
-/* Whether a round (given its apply_open/deadline ISO strings) is still actionable:
-   `open` now, or `upcoming` (not opened yet). Shared by the "has open round" filter
-   and the "Open & upcoming" section. A first-come sale (apply_open, no deadline) is
-   open from its open time on; a round with only a deadline is open until that date. */
-function roundActionable(openIso, dlIso, now) {
+/* Whether a round is still actionable: `open` now, or `upcoming` (not opened yet).
+   Shared by the "has open round" filter and the "Open & upcoming" section. `closeIso`
+   is the round's effective close — its real deadline, or the show day for a
+   deadline-less first-come sale — so such a sale is open from its open time until the
+   show, then ages out (rather than staying open forever). */
+function roundActionable(openIso, closeIso, now) {
   const openD = openIso ? new Date(openIso) : null;
-  const dlD = dlIso ? new Date(dlIso) : null;
-  const open = (dlD ? dlD > now : !!openD) && (!openD || openD <= now);
+  const closeD = closeIso ? new Date(closeIso) : null;
+  const open = (closeD ? closeD > now : !!openD) && (!openD || openD <= now);
   const upcoming = !!openD && openD > now;
   return { open, upcoming };
 }
@@ -279,8 +280,8 @@ function passesFilters(li, f, now) {
   if (f.frCount && !f.frOn.has(li.dataset.franchise)) return false;
   if (f.openOnly && !(li.dataset.windows || '').split(',').some((w) => {
     if (!w) return false;
-    const [o, d] = w.split('~');
-    const s = roundActionable(o, d, now);
+    const [open, close] = w.split('~');
+    const s = roundActionable(open, close, now);
     return s.open || s.upcoming;
   })) return false;
   return true;
@@ -440,7 +441,10 @@ function initActiveLotteries() {
         li.querySelectorAll('.occ').forEach((occ) => {
           const ro = occ.dataset.ropen;
           const rd = occ.dataset.rdeadline;
-          const { open: roundOpen, upcoming: roundUpcoming } = roundActionable(ro, rd, now);
+          // Open-state is bounded by the effective close (real deadline, or the show
+          // day for a deadline-less sale); rd still drives which row to surface.
+          const { open: roundOpen, upcoming: roundUpcoming } =
+            roundActionable(ro, occ.dataset.rclose, now);
           // Open round -> its deadline row to act on (or, for a deadline-less
           // first-come sale, its opens row); upcoming round -> its opens row (a
           // heads-up). Both shown only on cards that have at least one open round.
