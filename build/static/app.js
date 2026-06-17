@@ -476,11 +476,13 @@ function initActiveLotteries() {
           // day for a deadline-less sale); rd still drives which row to surface.
           const { open: roundOpen, upcoming: roundUpcoming } =
             roundActionable(ro, occ.dataset.rclose, now);
-          // Open round -> its deadline row to act on (or, for a deadline-less
-          // first-come sale, its opens row); upcoming round -> its opens row (a
-          // heads-up). Both shown only on cards that have at least one open round.
+          // The strip only surfaces FUTURE-dated, actionable rows: an open round's
+          // deadline (act before it closes), or an upcoming round's opens (heads-up).
+          // A deadline-less first-come sale has only a past "opens" row, which isn't
+          // actionable — don't surface it here (the event still reads as open in the
+          // main list). Both shown only on cards with at least one open round.
           let visible = false;
-          if (roundOpen && occ.dataset.css === (rd ? 'deadline' : 'opens')) { visible = true; hasOpen++; }
+          if (roundOpen && rd && occ.dataset.css === 'deadline') { visible = true; hasOpen++; }
           else if (roundUpcoming && occ.dataset.css === 'opens') { visible = true; }
           occ.hidden = !visible;
         });
