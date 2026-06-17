@@ -271,16 +271,19 @@ def _loose_eq(a, b) -> bool:
 
 def _perf_same(a: dict, b: dict) -> bool:
     """Whether two performances are the same show. Requires same date + compatible
-    venue. Then distinct iff they have *different* explicit start times (noon vs
-    evening). Start times are often announced only later, so when they're missing we
-    fall back to the label to tell apart multiple same-day/venue shows."""
+    venue. When *both* sides carry an explicit start time, that time is conclusive
+    (same date+venue+start ⇒ same show; different start ⇒ noon vs evening). The label
+    is only a tiebreaker when a start time is missing — it must NOT veto an otherwise
+    matching show, because the same show is often labelled differently across sources
+    (e.g. JA '昼公演' stored vs EN 'Matinee' from a later LLM re-parse), which would
+    otherwise duplicate the performance on merge."""
     if _norm_date(a.get("date")) != _norm_date(b.get("date")):
         return False
     if not _loose_eq(a.get("venue"), b.get("venue")):
         return False
     sa, sb = a.get("starts") or "", b.get("starts") or ""
-    if sa and sb and sa != sb:
-        return False
+    if sa and sb:
+        return sa == sb
     return _loose_eq(a.get("label"), b.get("label"))
 
 
