@@ -48,6 +48,15 @@ FIXTURES = [
         "url": "https://lovelive-anime.jp/nijigasaki/live/live_detail.php?p=8thlive#ticket",
     },
     {
+        # Single-venue 体育祭 page: flat ■日程／■会場 layout, no ＜City公演＞ blocks.
+        # The golden encodes the day-line → performance fallback so a regression
+        # (rounds parsed but 0 performances → YAML render crash) fails the build.
+        "name": "official_yuigaoka_taiikusai",
+        "kind": "html",
+        "adapter": "official",
+        "url": "https://www.lovelive-anime.jp/yuigaoka/live/live_detail.php?p=taiikusai",
+    },
+    {
         "name": "generic_lustqueen",
         "kind": "html",
         "adapter": "generic",

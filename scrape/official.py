@@ -159,7 +159,66 @@ def parse_performances(lines: list[str]) -> list[dict]:
             if key not in seen or richness(perf) > richness(seen[key]):
                 seen[key] = perf
         i = j
-    return sorted(seen.values(), key=lambda p: (p["date"].isoformat(), p["city"]))
+    perfs = sorted(seen.values(), key=lambda p: (p["date"].isoformat(), p["city"]))
+    # Single-venue pages (体育祭 etc.) have no ＜City公演＞ blocks; fall back to the
+    # flat ■日程／■会場 layout so rounds still have shows to attach to.
+    return perfs or _single_venue_perfs(lines)
+
+
+def _single_venue_perfs(lines: list[str]) -> list[dict]:
+    """Fallback for official pages with one venue and no ＜City公演＞ wrapper.
+
+    These list each show as a labelled day-line under ■日程 with a single shared
+    ■会場::
+
+        ■日程
+        1日目 昼の部：2026年9月5日（土）13:00開場／14:00開演
+        1日目 夜の部：2026年9月5日（土）17:30開場／18:30開演
+        ■会場
+        東京・東京体育館　メインアリーナ
+
+    One performance per dated 開場/開演 line. ``city`` is left None so tour-wide
+    rounds (leg=None) attach to every show. The session prefix before the
+    full-width '：' (e.g. '1日目 昼の部') becomes the ``label``.
+    """
+    venue = None
+    for i, ln in enumerate(lines):
+        marker = next((m for m in ("■会場", "【会場】") if ln.startswith(m)), None)
+        if not marker:
+            continue
+        rest = ln[len(marker) :].lstrip("：】: 　").strip()
+        venue = rest or next((x for x in lines[i + 1 : i + 3] if x), None)
+        break
+
+    seen: dict[tuple, dict] = {}
+    for ln in lines:
+        # Require real show times so sale-window day-lines aren't mistaken for shows.
+        if "開場" not in ln and "開演" not in ln:
+            continue
+        d = parse_date(ln)
+        if not d:
+            continue
+        # The session label sits before the full-width '：'; HH:MM times use the
+        # half-width ':' so they don't get mistaken for a label. Skip a "label"
+        # that is really the date itself (date-first lines have no full-width '：').
+        label = None
+        if "：" in ln:
+            cand = ln.split("：", 1)[0].strip()
+            if cand and "年" not in cand and "開" not in cand:
+                label = cand
+        doors = _DOORS_RE.search(ln)
+        starts = _STARTS_RE.search(ln)
+        key = (d, label)
+        if key not in seen:
+            seen[key] = {
+                "date": d,
+                "city": None,
+                "venue": venue,
+                "label": label,
+                "doors": doors.group(1) if doors else None,
+                "starts": starts.group(1) if starts else None,
+            }
+    return sorted(seen.values(), key=lambda p: (p["date"].isoformat(), p.get("label") or ""))
 
 
 _DATE_FIELDS = ("apply_open", "apply_deadline", "results_date", "payment_deadline")

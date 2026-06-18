@@ -1,0 +1,79 @@
+{
+  "name": "ラブライブ！スーパースター!! Liella! 結女体育祭",
+  "official_url": "https://www.lovelive-anime.jp/yuigaoka/live/live_detail.php?p=taiikusai",
+  "performances": [
+    {
+      "city": null,
+      "date": "2026-09-05",
+      "doors": "17:30",
+      "label": "1日目 夜の部",
+      "starts": "18:30",
+      "venue": "東京・東京体育館　メインアリーナ"
+    },
+    {
+      "city": null,
+      "date": "2026-09-05",
+      "doors": "13:00",
+      "label": "1日目 昼の部",
+      "starts": "14:00",
+      "venue": "東京・東京体育館　メインアリーナ"
+    },
+    {
+      "city": null,
+      "date": "2026-09-06",
+      "doors": "17:30",
+      "label": "2日目 夜の部",
+      "starts": "18:30",
+      "venue": "東京・東京体育館　メインアリーナ"
+    },
+    {
+      "city": null,
+      "date": "2026-09-06",
+      "doors": "13:00",
+      "label": "2日目 昼の部",
+      "starts": "14:00",
+      "venue": "東京・東京体育館　メインアリーナ"
+    }
+  ],
+  "rounds": [
+    {
+      "apply_deadline": "2026-06-01T18:00:00",
+      "apply_open": "2026-05-16T12:00:00",
+      "ended": false,
+      "leg": null,
+      "name": "Liella! CLUB先行（最速先行）",
+      "payment_deadline": "2026-06-09T21:00:00",
+      "results_date": "2026-06-06T13:00:00",
+      "type": "fanclub"
+    },
+    {
+      "apply_deadline": "2026-06-14T23:59:00",
+      "apply_open": "2026-06-01T18:00:00",
+      "ended": true,
+      "leg": null,
+      "name": "オフィシャル先行抽選",
+      "payment_deadline": "2026-06-21T21:00:00",
+      "results_date": "2026-06-18T13:00:00",
+      "type": "presale"
+    },
+    {
+      "apply_deadline": "2026-07-05T23:59:00",
+      "apply_open": "2026-06-24T12:00:00",
+      "ended": false,
+      "leg": null,
+      "name": "1次抽選",
+      "payment_deadline": "2026-07-14T21:00:00",
+      "results_date": "2026-07-11T13:00:00",
+      "type": "presale"
+    },
+    {
+      "apply_deadline": "2026-07-20T23:59:00",
+      "apply_open": "2026-07-11T12:00:00",
+      "ended": false,
+      "leg": null,
+      "name": "2次抽選",
+      "results_date": "2026-07-25T13:00:00",
+      "type": "presale"
+    }
+  ]
+}
