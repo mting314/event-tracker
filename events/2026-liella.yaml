@@ -1,0 +1,136 @@
+name: "ラブライブ！スーパースター!! Liella! 結女体育祭"
+name_en: "Love Live! Superstar!! Liella! Yui Girls' Sports Festival"
+performances:
+  - date: 2026-09-05
+    label: 1日目 夜の部
+    venue: 東京・東京体育館　メインアリーナ
+    doors: "17:30"
+    starts: "18:30"
+    rounds:
+      - name: "Liella! CLUB先行（最速先行）"
+        name_en: "Liella! CLUB Advance Lottery (Fastest)"
+        type: fanclub
+        apply_open: 2026-05-16T12:00:00
+        apply_deadline: 2026-06-01T18:00:00
+        results_date: 2026-06-06T13:00:00
+        payment_deadline: 2026-06-09T21:00:00
+      - name: オフィシャル先行抽選
+        name_en: Official Advance Lottery
+        type: presale
+        apply_open: 2026-06-01T18:00:00
+        apply_deadline: 2026-06-14T23:59:00
+        results_date: 2026-06-18T13:00:00
+        payment_deadline: 2026-06-21T21:00:00
+      - name: 1次抽選
+        name_en: First Lottery Round
+        type: presale
+        apply_open: 2026-06-24T12:00:00
+        apply_deadline: 2026-07-05T23:59:00
+        results_date: 2026-07-11T13:00:00
+        payment_deadline: 2026-07-14T21:00:00
+      - name: 2次抽選
+        name_en: Second Lottery Round
+        type: presale
+        apply_open: 2026-07-11T12:00:00
+        apply_deadline: 2026-07-20T23:59:00
+        results_date: 2026-07-25T13:00:00
+  - date: 2026-09-05
+    label: 1日目 昼の部
+    venue: 東京・東京体育館　メインアリーナ
+    doors: "13:00"
+    starts: "14:00"
+    rounds:
+      - name: "Liella! CLUB先行（最速先行）"
+        name_en: "Liella! CLUB Advance Lottery (Fastest)"
+        type: fanclub
+        apply_open: 2026-05-16T12:00:00
+        apply_deadline: 2026-06-01T18:00:00
+        results_date: 2026-06-06T13:00:00
+        payment_deadline: 2026-06-09T21:00:00
+      - name: オフィシャル先行抽選
+        name_en: Official Advance Lottery
+        type: presale
+        apply_open: 2026-06-01T18:00:00
+        apply_deadline: 2026-06-14T23:59:00
+        results_date: 2026-06-18T13:00:00
+        payment_deadline: 2026-06-21T21:00:00
+      - name: 1次抽選
+        name_en: First Lottery Round
+        type: presale
+        apply_open: 2026-06-24T12:00:00
+        apply_deadline: 2026-07-05T23:59:00
+        results_date: 2026-07-11T13:00:00
+        payment_deadline: 2026-07-14T21:00:00
+      - name: 2次抽選
+        name_en: Second Lottery Round
+        type: presale
+        apply_open: 2026-07-11T12:00:00
+        apply_deadline: 2026-07-20T23:59:00
+        results_date: 2026-07-25T13:00:00
+  - date: 2026-09-06
+    label: 2日目 夜の部
+    venue: 東京・東京体育館　メインアリーナ
+    doors: "17:30"
+    starts: "18:30"
+    rounds:
+      - name: "Liella! CLUB先行（最速先行）"
+        name_en: "Liella! CLUB Advance Lottery (Fastest)"
+        type: fanclub
+        apply_open: 2026-05-16T12:00:00
+        apply_deadline: 2026-06-01T18:00:00
+        results_date: 2026-06-06T13:00:00
+        payment_deadline: 2026-06-09T21:00:00
+      - name: オフィシャル先行抽選
+        name_en: Official Advance Lottery
+        type: presale
+        apply_open: 2026-06-01T18:00:00
+        apply_deadline: 2026-06-14T23:59:00
+        results_date: 2026-06-18T13:00:00
+        payment_deadline: 2026-06-21T21:00:00
+      - name: 1次抽選
+        name_en: First Lottery Round
+        type: presale
+        apply_open: 2026-06-24T12:00:00
+        apply_deadline: 2026-07-05T23:59:00
+        results_date: 2026-07-11T13:00:00
+        payment_deadline: 2026-07-14T21:00:00
+      - name: 2次抽選
+        name_en: Second Lottery Round
+        type: presale
+        apply_open: 2026-07-11T12:00:00
+        apply_deadline: 2026-07-20T23:59:00
+        results_date: 2026-07-25T13:00:00
+  - date: 2026-09-06
+    label: 2日目 昼の部
+    venue: 東京・東京体育館　メインアリーナ
+    doors: "13:00"
+    starts: "14:00"
+    rounds:
+      - name: "Liella! CLUB先行（最速先行）"
+        name_en: "Liella! CLUB Advance Lottery (Fastest)"
+        type: fanclub
+        apply_open: 2026-05-16T12:00:00
+        apply_deadline: 2026-06-01T18:00:00
+        results_date: 2026-06-06T13:00:00
+        payment_deadline: 2026-06-09T21:00:00
+      - name: オフィシャル先行抽選
+        name_en: Official Advance Lottery
+        type: presale
+        apply_open: 2026-06-01T18:00:00
+        apply_deadline: 2026-06-14T23:59:00
+        results_date: 2026-06-18T13:00:00
+        payment_deadline: 2026-06-21T21:00:00
+      - name: 1次抽選
+        name_en: First Lottery Round
+        type: presale
+        apply_open: 2026-06-24T12:00:00
+        apply_deadline: 2026-07-05T23:59:00
+        results_date: 2026-07-11T13:00:00
+        payment_deadline: 2026-07-14T21:00:00
+      - name: 2次抽選
+        name_en: Second Lottery Round
+        type: presale
+        apply_open: 2026-07-11T12:00:00
+        apply_deadline: 2026-07-20T23:59:00
+        results_date: 2026-07-25T13:00:00
+official_url: https://www.lovelive-anime.jp/yuigaoka/live/live_detail.php?p=taiikusai
