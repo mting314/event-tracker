@@ -1,0 +1,110 @@
+name: プロジェクトセカイ 6th Anniversary 感謝祭
+name_en: Project Sekai 6th Anniversary Thanks Festival
+artist: プロジェクトセカイ
+kind: festival
+series:
+  - Project Sekai
+performances:
+  - date: 2026-10-03
+    label: 6th Anniversary 感謝祭
+    venue: 東京体育館
+    venue_address: 東京都渋谷区千駄ケ谷１丁目１７−１
+    rounds:
+      - name: アプリ内先行
+        name_en: In-app presale
+        type: presale
+        apply_open: 2026-06-25T21:00:00
+        apply_deadline: 2026-06-29T23:59:00
+        notes: "src: アプリ内先行
+6月25日（木） 21:00 〜 6月29日（月） 23:59"
+      - name: オフィシャル抽選先行
+        name_en: Official lottery presale
+        type: lottery
+        apply_open: 2026-07-11T10:00:00
+        apply_deadline: 2026-07-20T23:59:00
+        notes: "src: オフィシャル抽選先行
+7月11日（土）10:00 〜 7月20日（月）23:59"
+      - name: プレイガイド先行
+        name_en: Playguide presale
+        type: presale
+        apply_open: 2026-08-08T10:00:00
+        apply_deadline: 2026-08-24T23:59:00
+        notes: "src: プレイガイド先行
+8月8日（土）10:00 〜 8月24日（月）23:59"
+      - name: 一般販売
+        name_en: General sale
+        type: general
+        apply_open: 2026-09-20T10:00:00
+        apply_deadline: 2026-10-02T23:59:00
+        notes: "src: 一般販売
+9月20日（日） 10:00 〜
+※締め切りについては、各公演前日23:59まで。"
+  - date: 2026-10-04
+    label: 6th Anniversary 感謝祭
+    venue: 東京体育館
+    venue_address: 東京都渋谷区千駄ケ谷１丁目１７−１
+    rounds:
+      - name: アプリ内先行
+        name_en: In-app presale
+        type: presale
+        apply_open: 2026-06-25T21:00:00
+        apply_deadline: 2026-06-29T23:59:00
+        notes: "src: アプリ内先行
+6月25日（木） 21:00 〜 6月29日（月） 23:59"
+      - name: オフィシャル抽選先行
+        name_en: Official lottery presale
+        type: lottery
+        apply_open: 2026-07-11T10:00:00
+        apply_deadline: 2026-07-20T23:59:00
+        notes: "src: オフィシャル抽選先行
+7月11日（土）10:00 〜 7月20日（月）23:59"
+      - name: プレイガイド先行
+        name_en: Playguide presale
+        type: presale
+        apply_open: 2026-08-08T10:00:00
+        apply_deadline: 2026-08-24T23:59:00
+        notes: "src: プレイガイド先行
+8月8日（土）10:00 〜 8月24日（月）23:59"
+      - name: 一般販売
+        name_en: General sale
+        type: general
+        apply_open: 2026-09-20T10:00:00
+        apply_deadline: 2026-10-03T23:59:00
+        notes: "src: 一般販売
+9月20日（日） 10:00 〜
+※締め切りについては、各公演前日23:59まで。"
+  - date: 2026-10-03
+    label: Championship2026
+    venue: 東京体育館
+    venue_address: 東京都渋谷区千駄ケ谷１丁目１７−１
+    rounds:
+      - name: アプリ内先行
+        name_en: In-app presale
+        type: presale
+        apply_open: 2026-06-25T21:00:00
+        apply_deadline: 2026-06-29T23:59:00
+        notes: "src: アプリ内先行
+6月25日（木） 21:00 〜 6月29日（月） 23:59"
+      - name: オフィシャル抽選先行
+        name_en: Official lottery presale
+        type: lottery
+        apply_open: 2026-07-11T10:00:00
+        apply_deadline: 2026-07-20T23:59:00
+        notes: "src: オフィシャル抽選先行
+7月11日（土）10:00 〜 7月20日（月）23:59"
+      - name: プレイガイド先行
+        name_en: Playguide presale
+        type: presale
+        apply_open: 2026-08-08T10:00:00
+        apply_deadline: 2026-08-24T23:59:00
+        notes: "src: プレイガイド先行
+8月8日（土）10:00 〜 8月24日（月）23:59"
+      - name: 一般販売
+        name_en: General sale
+        type: general
+        apply_open: 2026-09-20T10:00:00
+        apply_deadline: 2026-10-02T23:59:00
+        notes: "src: 一般販売
+9月20日（日） 10:00 〜
+※締め切りについては、各公演前日23:59まで。"
+source_url: https://pjsekai.sega.jp/6thanniversarythanksfestival/ticket/index.html
