@@ -31,7 +31,7 @@
     .topbar .spacer { margin-left: auto; }
     main { max-width: 760px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
     h1 { font-size: 1.4rem; }
-    h2 { font-size: 1.05rem; margin: 1.75rem 0 .5rem; }
+    h2 { font-size: 1.05rem; margin: 1.5rem 0 .35rem; }
     .muted, .hint { color: var(--muted); font-size: .9rem; }
     .card {
       background: var(--panel); border: 1px solid #2c2f55; border-radius: 10px;
@@ -44,24 +44,40 @@
       background: var(--panel-2); color: var(--text); padding: .5rem .9rem;
     }
     button.primary, .btn.primary { background: var(--accent); border-color: var(--accent); color: #1a0a13; font-weight: 600; }
-    button:disabled { opacity: .5; cursor: default; }
+    button:disabled { opacity: .55; cursor: default; }
     .discord-btn { background: #5865F2; border-color: #5865F2; color: #fff; font-weight: 600; font-size: 1rem; padding: .7rem 1.2rem; }
-    ul.subs { list-style: none; padding: 0; margin: 0; }
-    ul.subs li {
-      display: flex; align-items: center; gap: .5rem; justify-content: space-between;
-      padding: .55rem .75rem; border: 1px solid #2c2f55; border-radius: 8px; margin: .4rem 0;
-      background: var(--panel-2);
-    }
-    ul.subs li .tag { border-left: 4px solid var(--event); padding-left: .6rem; }
-    ul.subs li.series .tag { border-left-color: var(--opens); }
-    .rm { background: transparent; border: none; color: var(--deadline); font-size: 1.1rem; padding: .2rem .4rem; }
     .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin-top: .5rem; }
     input[type=text], select {
       font: inherit; background: var(--bg); color: var(--text); border: 1px solid #2c2f55;
-      border-radius: 8px; padding: .5rem .7rem; min-width: 16rem; flex: 1;
+      border-radius: 8px; padding: .5rem .7rem;
     }
     label.inline { display: flex; align-items: center; gap: .5rem; }
-    .empty { color: var(--muted); padding: 1rem 0; }
+
+    /* Browse + filter list */
+    .filter {
+      width: 100%; font: inherit; background: var(--bg); color: var(--text);
+      border: 1px solid #2c2f55; border-radius: 8px; padding: .55rem .8rem; margin: .1rem 0 .4rem;
+    }
+    .count { color: var(--muted); font-size: .8rem; margin: 0 0 .4rem; }
+    ul.browse {
+      list-style: none; padding: 0; margin: 0; max-height: 21rem; overflow-y: auto;
+      border: 1px solid #2c2f55; border-radius: 10px; background: var(--panel);
+    }
+    ul.browse li {
+      display: flex; align-items: center; gap: .75rem; justify-content: space-between;
+      padding: .55rem .8rem; border-bottom: 1px solid #23264a;
+    }
+    ul.browse li:last-child { border-bottom: none; }
+    ul.browse li.sub-on { background: rgba(95, 168, 255, .09); }
+    .row-main { display: flex; flex-direction: column; min-width: 0; }
+    .row-name { font-weight: 600; overflow-wrap: anywhere; }
+    .row-name .badge-sub { color: var(--opens); font-size: .72rem; font-weight: 600; margin-left: .4rem; }
+    .row-sub { color: var(--muted); font-size: .78rem; overflow-wrap: anywhere; }
+    .toggle { white-space: nowrap; flex: none; min-width: 6.5rem; text-align: center; }
+    .toggle.on { background: transparent; border-color: var(--opens); color: var(--opens); }
+    .toggle.on:hover:not(:disabled) { border-color: var(--deadline); color: var(--deadline); }
+    .empty { color: var(--muted); padding: 1rem .8rem; }
+
     #toast {
       position: fixed; bottom: 1.25rem; left: 50%; transform: translateX(-50%);
       background: var(--panel-2); border: 1px solid #2c2f55; border-radius: 8px;
@@ -101,33 +117,25 @@
 
     <!-- Logged-in view -->
     <section id="logged-in" class="hidden">
-      <h2>Add a subscription</h2>
-      <div class="card">
-        <p class="hint">Subscribe to a single event, or a whole series (you'll also get
-          reminders for future events added to that series).</p>
-        <div class="row">
-          <select id="add-kind">
-            <option value="event">Event</option>
-            <option value="series">Series</option>
-          </select>
-          <input type="text" id="add-target" list="target-list" placeholder="Start typing…" autocomplete="off">
-          <datalist id="target-list"></datalist>
-          <button class="primary" id="add-btn">Add</button>
-        </div>
-      </div>
+      <p class="hint">Toggle any event or series to subscribe. A <strong>series</strong>
+        subscription also covers future events added to it. Changes sync instantly with the bot.</p>
 
-      <h2>Events you follow</h2>
-      <ul class="subs" id="sub-events"></ul>
+      <h2>Events</h2>
+      <input type="text" class="filter" id="filter-events" placeholder="🔍 Filter events by name or series…" autocomplete="off">
+      <p class="count" id="count-events"></p>
+      <ul class="browse" id="list-events"></ul>
 
-      <h2>Series you follow</h2>
-      <ul class="subs" id="sub-series"></ul>
+      <h2>Series</h2>
+      <input type="text" class="filter" id="filter-series" placeholder="🔍 Filter series…" autocomplete="off">
+      <p class="count" id="count-series"></p>
+      <ul class="browse" id="list-series"></ul>
 
       <h2>Reminder settings</h2>
       <div class="card">
         <div class="row">
           <label class="inline" style="flex:1">
             Lead times&nbsp;
-            <input type="text" id="lead-times" placeholder="3d,1d,2h">
+            <input type="text" id="lead-times" placeholder="3d,1d,2h" style="flex:1; min-width:10rem">
           </label>
         </div>
         <p class="hint">Comma-separated, before each date. Use <code>d</code> / <code>h</code> / <code>m</code> (e.g. <code>3d,1d,2h</code>).</p>
@@ -144,7 +152,11 @@
 
   <script>
     const $ = (id) => document.getElementById(id);
+
+    // ---- state ----
     let CATALOG = { events: [], series: [] };
+    const sub = { event: new Set(), series: new Set() };  // subscribed keys (event ids / series names)
+    const filters = { event: "", series: "" };
 
     function toast(msg) {
       const t = $("toast");
@@ -153,7 +165,7 @@
     }
 
     async function api(method, path, body) {
-      const opts = { method, headers: {} , credentials: "same-origin" };
+      const opts = { method, headers: {}, credentials: "same-origin" };
       if (body !== undefined) { opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(body); }
       const r = await fetch(path, opts);
       const data = await r.json().catch(() => ({}));
@@ -182,60 +194,98 @@
       return out;
     }
 
-    // name -> event id, so the picker can show the human-readable name while we
-    // still submit the id the API expects. The slug is never shown to the user.
-    let eventIdByName = {};
-
-    function renderCatalog() {
-      const kind = $("add-kind").value;
-      const dl = $("target-list");
-      dl.innerHTML = "";
-      let items;
-      if (kind === "event") {
-        eventIdByName = {};
-        items = CATALOG.events.map(e => {
-          eventIdByName[e.name] = e.id;
-          // secondary hint: English name if different, else the series tag(s)
-          const hint = (e.name_en && e.name_en !== e.name)
-            ? e.name_en : (e.series || []).join(", ");
-          return { value: e.name, label: hint };
-        });
-      } else {
-        items = CATALOG.series.map(s => ({ value: s, label: "" }));
-      }
-      for (const it of items) {
-        const o = document.createElement("option");
-        o.value = it.value;
-        if (it.label && it.label !== it.value) o.label = it.label;
-        dl.appendChild(o);
-      }
-      $("add-target").placeholder = kind === "event" ? "Event name — start typing…" : "Series name…";
+    // ---- browse lists ----
+    // Each item: {key, name, sub} where key = event id / series name; `name` is what we
+    // show (readable — never the slug), `hay` is the lowercased searchable text.
+    function eventItems() {
+      return CATALOG.events
+        .map(e => {
+          const hint = (e.name_en && e.name_en !== e.name) ? e.name_en : (e.series || []).join(", ");
+          return { key: e.id, name: e.name, hint, hay: (e.name + " " + (e.name_en || "") + " " + (e.series || []).join(" ")).toLowerCase() };
+        })
+        .sort((a, b) => a.name.localeCompare(b.name, "ja"));
+    }
+    function seriesItems() {
+      return CATALOG.series
+        .map(s => ({ key: s, name: s, hint: "", hay: s.toLowerCase() }))
+        .sort((a, b) => a.name.localeCompare(b.name, "ja"));
     }
 
-    async function loadSubs() {
-      const subs = await api("GET", "/api/subscriptions");
-      const ev = $("sub-events"), se = $("sub-series");
-      ev.innerHTML = ""; se.innerHTML = "";
-      if (!subs.events.length) ev.innerHTML = '<li class="empty">No event subscriptions yet.</li>';
-      for (const s of subs.events) ev.appendChild(subLi("event", s.target, s.name));
-      if (!subs.series.length) se.innerHTML = '<li class="empty">No series subscriptions yet.</li>';
-      for (const s of subs.series) se.appendChild(subLi("series", s.target, s.target));
+    function renderList(kind) {
+      const items = kind === "event" ? eventItems() : seriesItems();
+      const ul = $(kind === "event" ? "list-events" : "list-series");
+      ul.innerHTML = "";
+      if (!items.length) { ul.innerHTML = '<li class="empty">Nothing to show yet.</li>'; }
+      for (const it of items) ul.appendChild(rowLi(kind, it));
+      applyFilter(kind);
     }
 
-    function subLi(kind, target, label) {
+    function rowLi(kind, it) {
+      const on = sub[kind].has(it.key);
       const li = document.createElement("li");
-      li.className = kind;
-      const tag = document.createElement("span");
-      tag.className = "tag";
-      tag.textContent = label;
-      const rm = document.createElement("button");
-      rm.className = "rm"; rm.title = "Remove"; rm.textContent = "✕";
-      rm.onclick = async () => {
-        try { await api("DELETE", "/api/subscriptions", { kind, target }); await loadSubs(); toast("Removed."); }
-        catch (e) { toast(e.message); }
-      };
-      li.append(tag, rm);
+      li.dataset.hay = it.hay;
+      if (on) li.classList.add("sub-on");
+
+      const main = document.createElement("span");
+      main.className = "row-main";
+      const name = document.createElement("span");
+      name.className = "row-name";
+      name.textContent = it.name;
+      if (on) { const b = document.createElement("span"); b.className = "badge-sub"; b.textContent = "● subscribed"; name.appendChild(b); }
+      main.appendChild(name);
+      if (it.hint) { const sub2 = document.createElement("span"); sub2.className = "row-sub"; sub2.textContent = it.hint; main.appendChild(sub2); }
+
+      const btn = document.createElement("button");
+      btn.className = "toggle" + (on ? " on" : "");
+      btn.textContent = on ? "✓ Subscribed" : "+ Subscribe";
+      btn.title = on ? "Click to unsubscribe" : "Click to subscribe";
+      btn.onclick = () => toggle(kind, it.key, on, btn);
+
+      li.append(main, btn);
       return li;
+    }
+
+    async function toggle(kind, key, currentlyOn, btn) {
+      btn.disabled = true;
+      try {
+        if (currentlyOn) {
+          await api("DELETE", "/api/subscriptions", { kind, target: key });
+          sub[kind].delete(key);
+          toast("Unsubscribed.");
+        } else {
+          await api("POST", "/api/subscriptions", { kind, target: key });
+          sub[kind].add(key);
+          toast(kind === "series" ? "Subscribed to series." : "Subscribed!");
+        }
+        renderList(kind);          // rebuild so highlight/label/badge update
+        updateCount(kind);
+      } catch (e) {
+        toast(e.message);
+        btn.disabled = false;
+      }
+    }
+
+    function applyFilter(kind) {
+      const q = filters[kind].trim().toLowerCase();
+      const ul = $(kind === "event" ? "list-events" : "list-series");
+      let shown = 0;
+      for (const li of ul.querySelectorAll("li")) {
+        if (!li.dataset.hay) continue;                 // skip the "empty" placeholder
+        const match = !q || li.dataset.hay.includes(q);
+        li.hidden = !match;
+        if (match) shown++;
+      }
+      updateCount(kind, shown);
+    }
+
+    function updateCount(kind, shown) {
+      const total = kind === "event" ? CATALOG.events.length : CATALOG.series.length;
+      const subbed = sub[kind].size;
+      const el = $(kind === "event" ? "count-events" : "count-series");
+      const noun = kind === "event" ? "event" : "series";
+      const q = filters[kind].trim();
+      const base = `${subbed} subscribed · ${total} ${total === 1 ? noun : (kind === "event" ? "events" : "series")}`;
+      el.textContent = q && shown !== undefined ? `${shown} shown · ${base}` : base;
     }
 
     async function loadSettings() {
@@ -260,27 +310,19 @@
         '<span class="userbox"><img src="' + me.avatar_url + '" alt=""><form method="post" action="/auth/logout" style="display:inline">' +
         '<button>Log out</button></form></span>';
 
+      // Load catalog + current subscriptions, then render both browse lists.
       try { CATALOG = await api("GET", "/api/events"); } catch { CATALOG = { events: [], series: [] }; }
-      renderCatalog();
-      $("add-kind").onchange = renderCatalog;
+      try {
+        const subs = await api("GET", "/api/subscriptions");
+        (subs.events || []).forEach(s => sub.event.add(s.target));
+        (subs.series || []).forEach(s => sub.series.add(s.target));
+      } catch { /* stay empty */ }
 
-      $("add-btn").onclick = async () => {
-        const kind = $("add-kind").value;
-        const typed = $("add-target").value.trim();
-        if (!typed) return toast("Pick something to subscribe to.");
-        // For events the field holds the readable name; resolve it to the id.
-        let target = typed;
-        if (kind === "event") {
-          target = eventIdByName[typed];
-          if (!target) return toast("Pick an event from the list.");
-        }
-        try {
-          const r = await api("POST", "/api/subscriptions", { kind, target });
-          $("add-target").value = "";
-          await loadSubs();
-          toast(r.added ? "Subscribed!" : "Already subscribed.");
-        } catch (e) { toast(e.message); }
-      };
+      renderList("event");
+      renderList("series");
+
+      $("filter-events").oninput = (e) => { filters.event = e.target.value; applyFilter("event"); };
+      $("filter-series").oninput = (e) => { filters.series = e.target.value; applyFilter("series"); };
 
       $("save-settings").onclick = async () => {
         let lead_times;
@@ -293,7 +335,6 @@
         } catch (e) { toast(e.message); }
       };
 
-      await loadSubs();
       await loadSettings();
     }
 
