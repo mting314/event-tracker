@@ -413,6 +413,10 @@ def _render_page(request: web.Request) -> str:
     return _PAGE_TEMPLATE.replace("{{SITE_URL}}", site)
 
 
+async def favicon(request: web.Request) -> web.Response:
+    return web.FileResponse(os.path.join(STATIC_DIR, "favicon.ico"))
+
+
 async def healthz(request: web.Request) -> web.Response:
     return web.json_response({"ok": True})
 
@@ -445,6 +449,7 @@ def create_app(
     app.add_routes(
         [
             web.get("/", page_index),
+            web.get("/favicon.ico", favicon),
             web.get("/healthz", healthz),
             web.get("/auth/login", auth_login),
             web.get("/auth/callback", auth_callback),

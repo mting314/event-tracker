@@ -228,6 +228,13 @@ async def test_settings_get_and_put(app):
 # ---------------- page ----------------
 
 
+async def test_favicon_served(app):
+    async with TestClient(TestServer(app)) as client:
+        resp = await client.get("/favicon.ico")
+        assert resp.status == 200
+        assert (await resp.read())[:4] == b"\x00\x00\x01\x00"  # ICONDIR magic
+
+
 async def test_index_page_renders_and_bakes_site_url(app):
     async with TestClient(TestServer(app)) as client:
         resp = await client.get("/")

@@ -181,6 +181,8 @@ def main() -> None:
         json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     shutil.copytree(STATIC_DIR, DIST_DIR / "static")
+    # Browsers auto-request /favicon.ico at the site root, so copy it there too.
+    shutil.copy(STATIC_DIR / "favicon.ico", DIST_DIR / "favicon.ico")
 
     # 3. Render pages.
     env = Environment(
