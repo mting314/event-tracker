@@ -13,5 +13,7 @@ venv/
 
 # bot runtime
 bot/*.db
+bot/*.db-wal
+bot/*.db-shm
 bot/*.sqlite3
 .env
