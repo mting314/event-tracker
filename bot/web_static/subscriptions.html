@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Subscriptions · LL Lottery Tracker</title>
+  <!-- Site stylesheet (cross-origin, no creds needed). Inline CSS below is the
+       self-contained fallback so the page looks right even if SITE_URL is unset. -->
+  <link rel="stylesheet" href="{{SITE_URL}}/static/style.css">
+  <style>
+    :root {
+      --bg: #0f1020; --panel: #1a1c33; --panel-2: #23264a; --text: #e7e8f5;
+      --muted: #9aa0c0; --accent: #ff5fa2; --event: #5fa8ff; --opens: #43c59e;
+      --deadline: #ff5f6d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      background: var(--bg); color: var(--text);
+    }
+    a { color: var(--accent); text-decoration: none; }
+    .topbar {
+      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+      padding: .75rem 1.25rem; background: var(--panel); border-bottom: 1px solid #2c2f55;
+    }
+    .brand { font-weight: 700; color: var(--text); }
+    .topbar nav { display: flex; gap: 1rem; }
+    .topbar .spacer { margin-left: auto; }
+    main { max-width: 760px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+    h1 { font-size: 1.4rem; }
+    h2 { font-size: 1.05rem; margin: 1.75rem 0 .5rem; }
+    .muted, .hint { color: var(--muted); font-size: .9rem; }
+    .card {
+      background: var(--panel); border: 1px solid #2c2f55; border-radius: 10px;
+      padding: 1rem 1.25rem; margin: .75rem 0;
+    }
+    .userbox { display: flex; align-items: center; gap: .75rem; }
+    .userbox img { width: 40px; height: 40px; border-radius: 50%; }
+    button, .btn {
+      font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid #2c2f55;
+      background: var(--panel-2); color: var(--text); padding: .5rem .9rem;
+    }
+    button.primary, .btn.primary { background: var(--accent); border-color: var(--accent); color: #1a0a13; font-weight: 600; }
+    button:disabled { opacity: .5; cursor: default; }
+    .discord-btn { background: #5865F2; border-color: #5865F2; color: #fff; font-weight: 600; font-size: 1rem; padding: .7rem 1.2rem; }
+    ul.subs { list-style: none; padding: 0; margin: 0; }
+    ul.subs li {
+      display: flex; align-items: center; gap: .5rem; justify-content: space-between;
+      padding: .55rem .75rem; border: 1px solid #2c2f55; border-radius: 8px; margin: .4rem 0;
+      background: var(--panel-2);
+    }
+    ul.subs li .tag { border-left: 4px solid var(--event); padding-left: .6rem; }
+    ul.subs li.series .tag { border-left-color: var(--opens); }
+    .rm { background: transparent; border: none; color: var(--deadline); font-size: 1.1rem; padding: .2rem .4rem; }
+    .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin-top: .5rem; }
+    input[type=text], select {
+      font: inherit; background: var(--bg); color: var(--text); border: 1px solid #2c2f55;
+      border-radius: 8px; padding: .5rem .7rem; min-width: 16rem; flex: 1;
+    }
+    label.inline { display: flex; align-items: center; gap: .5rem; }
+    .empty { color: var(--muted); padding: 1rem 0; }
+    #toast {
+      position: fixed; bottom: 1.25rem; left: 50%; transform: translateX(-50%);
+      background: var(--panel-2); border: 1px solid #2c2f55; border-radius: 8px;
+      padding: .6rem 1rem; opacity: 0; transition: opacity .2s; pointer-events: none;
+    }
+    #toast.show { opacity: 1; }
+    .hidden { display: none !important; }
+    footer { color: var(--muted); font-size: .8rem; text-align: center; padding: 2rem; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{SITE_URL}}/index.html">🎫 LL Lottery Tracker</a>
+    <nav>
+      <a href="{{SITE_URL}}/index.html">Events</a>
+      <a href="{{SITE_URL}}/calendar.html">Calendar</a>
+      <a href="/">My Subscriptions</a>
+    </nav>
+    <div class="spacer"></div>
+    <div id="nav-user"></div>
+  </header>
+
+  <main>
+    <h1>My Subscriptions</h1>
+
+    <!-- Logged-out view -->
+    <section id="logged-out" class="hidden">
+      <div class="card">
+        <p>Sign in with Discord to see and edit the events &amp; series you follow.
+           These are the <em>same</em> subscriptions the bot reminds you about — logging
+           in here just gives you a place to manage them without slash commands.</p>
+        <p class="row">
+          <a class="btn discord-btn" href="/auth/login">Log in with Discord</a>
+        </p>
+      </div>
+    </section>
+
+    <!-- Logged-in view -->
+    <section id="logged-in" class="hidden">
+      <h2>Add a subscription</h2>
+      <div class="card">
+        <p class="hint">Subscribe to a single event, or a whole series (you'll also get
+          reminders for future events added to that series).</p>
+        <div class="row">
+          <select id="add-kind">
+            <option value="event">Event</option>
+            <option value="series">Series</option>
+          </select>
+          <input type="text" id="add-target" list="target-list" placeholder="Start typing…" autocomplete="off">
+          <datalist id="target-list"></datalist>
+          <button class="primary" id="add-btn">Add</button>
+        </div>
+      </div>
+
+      <h2>Events you follow</h2>
+      <ul class="subs" id="sub-events"></ul>
+
+      <h2>Series you follow</h2>
+      <ul class="subs" id="sub-series"></ul>
+
+      <h2>Reminder settings</h2>
+      <div class="card">
+        <div class="row">
+          <label class="inline" style="flex:1">
+            Lead times&nbsp;
+            <input type="text" id="lead-times" placeholder="3d,1d,2h">
+          </label>
+        </div>
+        <p class="hint">Comma-separated, before each date. Use <code>d</code> / <code>h</code> / <code>m</code> (e.g. <code>3d,1d,2h</code>).</p>
+        <div class="row">
+          <label class="inline"><input type="checkbox" id="dm-enabled"> DM me reminders</label>
+          <button class="primary" id="save-settings" style="margin-left:auto">Save settings</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>All times JST unless noted · <a href="{{SITE_URL}}/index.html">back to the tracker</a></footer>
+  <div id="toast"></div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let CATALOG = { events: [], series: [] };
+
+    function toast(msg) {
+      const t = $("toast");
+      t.textContent = msg; t.classList.add("show");
+      clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2200);
+    }
+
+    async function api(method, path, body) {
+      const opts = { method, headers: {} , credentials: "same-origin" };
+      if (body !== undefined) { opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(body); }
+      const r = await fetch(path, opts);
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || (r.status + " " + r.statusText));
+      return data;
+    }
+
+    // ---- lead-time formatting (mirrors the bot's /settings parser) ----
+    function fmtLead(sec) {
+      if (sec % 86400 === 0) return (sec / 86400) + "d";
+      if (sec % 3600 === 0) return (sec / 3600) + "h";
+      if (sec % 60 === 0) return (sec / 60) + "m";
+      return sec + "s";
+    }
+    function parseLead(str) {
+      const out = [];
+      for (let tok of str.split(",")) {
+        tok = tok.trim().toLowerCase();
+        if (!tok) continue;
+        const m = tok.match(/^(\d+)\s*([dhms]?)$/);
+        if (!m) throw new Error("bad lead time: " + tok);
+        const n = parseInt(m[1], 10);
+        const mult = { d: 86400, h: 3600, m: 60, s: 1, "": 60 }[m[2]];
+        out.push(n * mult);
+      }
+      return out;
+    }
+
+    function renderCatalog() {
+      const kind = $("add-kind").value;
+      const dl = $("target-list");
+      dl.innerHTML = "";
+      const items = kind === "event"
+        ? CATALOG.events.map(e => ({ value: e.id, label: e.name }))
+        : CATALOG.series.map(s => ({ value: s, label: s }));
+      for (const it of items) {
+        const o = document.createElement("option");
+        o.value = it.value;
+        if (it.label && it.label !== it.value) o.label = it.label;
+        dl.appendChild(o);
+      }
+      $("add-target").placeholder = kind === "event" ? "Event id — start typing…" : "Series name…";
+    }
+
+    async function loadSubs() {
+      const subs = await api("GET", "/api/subscriptions");
+      const ev = $("sub-events"), se = $("sub-series");
+      ev.innerHTML = ""; se.innerHTML = "";
+      if (!subs.events.length) ev.innerHTML = '<li class="empty">No event subscriptions yet.</li>';
+      for (const s of subs.events) ev.appendChild(subLi("event", s.target, s.name));
+      if (!subs.series.length) se.innerHTML = '<li class="empty">No series subscriptions yet.</li>';
+      for (const s of subs.series) se.appendChild(subLi("series", s.target, s.target));
+    }
+
+    function subLi(kind, target, label) {
+      const li = document.createElement("li");
+      li.className = kind;
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = label;
+      const rm = document.createElement("button");
+      rm.className = "rm"; rm.title = "Remove"; rm.textContent = "✕";
+      rm.onclick = async () => {
+        try { await api("DELETE", "/api/subscriptions", { kind, target }); await loadSubs(); toast("Removed."); }
+        catch (e) { toast(e.message); }
+      };
+      li.append(tag, rm);
+      return li;
+    }
+
+    async function loadSettings() {
+      const s = await api("GET", "/api/settings");
+      $("lead-times").value = (s.lead_times || []).map(fmtLead).join(",");
+      $("dm-enabled").checked = !!s.dm_enabled;
+    }
+
+    async function init() {
+      let me;
+      try { me = await api("GET", "/api/me"); }
+      catch { me = { logged_in: false }; }
+
+      if (!me.logged_in) {
+        $("logged-out").classList.remove("hidden");
+        $("nav-user").innerHTML = '<a class="btn discord-btn" href="/auth/login">Log in</a>';
+        return;
+      }
+
+      $("logged-in").classList.remove("hidden");
+      $("nav-user").innerHTML =
+        '<span class="userbox"><img src="' + me.avatar_url + '" alt=""><form method="post" action="/auth/logout" style="display:inline">' +
+        '<button>Log out</button></form></span>';
+
+      try { CATALOG = await api("GET", "/api/events"); } catch { CATALOG = { events: [], series: [] }; }
+      renderCatalog();
+      $("add-kind").onchange = renderCatalog;
+
+      $("add-btn").onclick = async () => {
+        const kind = $("add-kind").value;
+        const target = $("add-target").value.trim();
+        if (!target) return toast("Pick something to subscribe to.");
+        try {
+          const r = await api("POST", "/api/subscriptions", { kind, target });
+          $("add-target").value = "";
+          await loadSubs();
+          toast(r.added ? "Subscribed!" : "Already subscribed.");
+        } catch (e) { toast(e.message); }
+      };
+
+      $("save-settings").onclick = async () => {
+        let lead_times;
+        try { lead_times = parseLead($("lead-times").value); }
+        catch (e) { return toast(e.message); }
+        try {
+          await api("PUT", "/api/settings", { lead_times, dm_enabled: $("dm-enabled").checked });
+          await loadSettings();
+          toast("Settings saved.");
+        } catch (e) { toast(e.message); }
+      };
+
+      await loadSubs();
+      await loadSettings();
+    }
+
+    init();
+  </script>
+</body>
+</html>

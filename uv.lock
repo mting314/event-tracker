@@ -550,9 +550,14 @@ dev = [
 llm = [
     { name = "pydantic-ai-slim", extra = ["google"] },
 ]
+web = [
+    { name = "aiohttp" },
+    { name = "python-dotenv" },
+]
 
 [package.metadata]
 requires-dist = [
+    { name = "aiohttp", marker = "extra == 'web'", specifier = ">=3.9" },
     { name = "beautifulsoup4", specifier = ">=4.12" },
     { name = "certifi", marker = "extra == 'bot'", specifier = ">=2024.0" },
     { name = "discord-py", marker = "extra == 'bot'", specifier = ">=2.3" },
@@ -563,12 +568,13 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23" },
     { name = "python-dotenv", marker = "extra == 'bot'", specifier = ">=1.0" },
+    { name = "python-dotenv", marker = "extra == 'web'", specifier = ">=1.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "requests", specifier = ">=2.31" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9" },
     { name = "truststore", marker = "extra == 'bot'", specifier = ">=0.9" },
 ]
-provides-extras = ["bot", "llm", "dev"]
+provides-extras = ["bot", "llm", "web", "dev"]
 
 [[package]]
 name = "filelock"

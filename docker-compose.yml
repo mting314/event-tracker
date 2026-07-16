@@ -9,5 +9,22 @@ services:
     volumes:
       - tracker-data:/data # persists bot/tracker.db (DB_PATH=/data/tracker.db)
 
+  # Website login + subscription manager (Discord OAuth). Shares the same SQLite
+  # volume as the bot, so the subscriptions edited here are the ones the bot reminds
+  # against. Put it behind a TLS reverse proxy (Caddy/nginx) that terminates HTTPS
+  # at WEB_BASE_URL and forwards to this container's port 8080.
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    command:
+      ["uv", "run", "--no-sync", "--extra", "bot", "python", "-m", "bot.web"]
+    environment:
+      DB_PATH: /data/tracker.db
+    volumes:
+      - tracker-data:/data # SAME volume as the bot — one source of truth
+    ports:
+      - "8080:8080" # host:container — front this with your HTTPS proxy
+
 volumes:
   tracker-data:

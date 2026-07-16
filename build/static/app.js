@@ -20,7 +20,7 @@ function fmtLocal(iso) {
    badges) uses .i18n-field elements carrying data-ja / data-en. --- */
 const I18N = {
   en: {
-    nav_events: 'Events', nav_calendar: 'Calendar', nav_past: 'Past', nav_add: '+ Add',
+    nav_events: 'Events', nav_calendar: 'Calendar', nav_past: 'Past', nav_add: '+ Add', nav_subs: 'My Subs',
     tz_local: 'Show local time',
     idx_title: 'Upcoming',
     idx_hint: 'One row per event, showing its next deadline. Click to expand rounds & shows.',
@@ -75,7 +75,7 @@ const I18N = {
     btn_remove_round: '✕ remove round',
   },
   ja: {
-    nav_events: 'イベント', nav_calendar: 'カレンダー', nav_past: '過去', nav_add: '＋追加',
+    nav_events: 'イベント', nav_calendar: 'カレンダー', nav_past: '過去', nav_add: '＋追加', nav_subs: '登録管理',
     tz_local: '現地時間で表示',
     idx_title: '開催予定',
     idx_hint: 'イベントごとに次の締切を表示。クリックで申込回・公演を展開。',

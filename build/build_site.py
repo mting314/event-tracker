@@ -195,6 +195,9 @@ def main() -> None:
     # The edit API URL (public Cloud Function) is baked into the add page so the
     # editor only ever enters the admin secret. Override via EDIT_API_URL.
     edit_api = os.environ.get("EDIT_API_URL", "https://ll-commit-g6hnlr7cca-uc.a.run.app")
+    # Public URL of the Discord-login subscription manager (bot/web.py). Baked into the
+    # nav so "My Subscriptions" links out to it. Empty -> the nav link is hidden.
+    subs_url = os.environ.get("SUBS_URL", "").rstrip("/")
     # Series dropdown options for the add/edit form: the canonical SERIES vocabulary
     # plus any other tag already used in events/ (so curated tags stay suggestible).
     series_options = sorted(set(SERIES) | {s for e in events for s in e.series})
@@ -207,6 +210,7 @@ def main() -> None:
         "event_count": len(events),
         "base": "",
         "edit_api": edit_api,
+        "subs_url": subs_url,
         "series_options": series_options,
         "kind_options": kind_options,
         "kind_labels": KIND_LABELS,
@@ -233,6 +237,7 @@ def main() -> None:
             event_count=len(events),
             base="../",
             kind_labels=KIND_LABELS,
+            subs_url=subs_url,
         ).dump(str(event_dir / f"{ev.id}.html"))
 
     print(f"Built {len(events)} events -> {DIST_DIR}")

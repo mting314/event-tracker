@@ -118,6 +118,49 @@ gcloud functions deploy ll-commit --gen2 --region us-central1 --runtime python31
 ALLOW_ORIGIN=https://<owner>.github.io,GITHUB_TOKEN=<pat>,ADMIN_SECRET=<secret>
 ```
 
+### Website login & subscription manager
+
+The site's **My Subscriptions** page lets anyone **log in with Discord** and see /
+edit the events & series they follow — the *same* subscriptions the bot reminds
+them about (one SQLite source of truth, shared with the bot). No slash commands
+needed; add/remove subscriptions and change reminder lead-times / DM toggle right
+in the browser.
+
+It's a small **aiohttp** app (`bot/web.py`) that runs as a second `docker compose`
+service on the **same volume** as the bot, so both read/write the one `tracker.db`.
+Login is Discord **OAuth2** (`identify` scope only — just the user id); the session
+is a stateless HMAC-signed cookie (no server session store). Endpoints:
+
+| Route | What |
+|-------|------|
+| `GET /` | The subscription-manager page (login button when logged out). |
+| `GET /auth/login` → `GET /auth/callback` | Discord OAuth2 code flow → sets the session cookie. |
+| `POST /auth/logout` | Clears the session. |
+| `GET /api/me` | Current user (or `{logged_in:false}`). |
+| `GET /api/events` | Event + series catalog for the pickers. |
+| `GET/POST/DELETE /api/subscriptions` | List / add / remove your subscriptions. |
+| `GET/PUT /api/settings` | Reminder lead-times + DM toggle. |
+
+Run it locally (no Discord gateway needed — OAuth is plain HTTPS):
+
+```bash
+uv run --extra bot python -m bot.web      # serves on WEB_PORT (default 8080)
+```
+
+Config (see `.env.example`): `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`,
+`WEB_BASE_URL`, `OAUTH_REDIRECT_URI` (defaults to `WEB_BASE_URL/auth/callback`),
+`SESSION_SECRET` (set in prod so logins survive restarts), `SITE_URL`,
+`EVENTS_SOURCE`, `DB_PATH`. Front it with an HTTPS reverse proxy that terminates
+TLS at `WEB_BASE_URL` and forwards to the container's port 8080. Bake the public
+URL into the site nav with `SUBS_URL=https://<host>` at build time (the **My Subs**
+nav link only appears when set).
+
+**Discord app setup** (one-time, in the [Developer Portal](https://discord.com/developers/applications)):
+1. Open your app → **OAuth2** → copy the **Client ID** and **Client Secret** into
+   `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET`.
+2. **OAuth2 → Redirects → Add** the exact `OAUTH_REDIRECT_URI`
+   (e.g. `https://subs.example.com/auth/callback`) — it must match verbatim.
+
 ## Discord bot
 
 A `discord.py` bot lets you search events, subscribe to specific events or whole

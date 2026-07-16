@@ -47,6 +47,11 @@ class DB:
     def __init__(self, path: str | Path = DEFAULT_DB):
         self.conn = sqlite3.connect(str(path))
         self.conn.row_factory = sqlite3.Row
+        # The bot and the web app are two processes sharing this one file (Docker
+        # volume). WAL lets readers and a writer coexist, and busy_timeout makes a
+        # concurrent write wait for the lock instead of erroring "database is locked".
+        self.conn.execute("PRAGMA journal_mode=WAL")
+        self.conn.execute("PRAGMA busy_timeout=5000")
         self.conn.executescript(SCHEMA)
         self.conn.commit()
 

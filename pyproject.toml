@@ -23,6 +23,12 @@ llm = [
     # add pydantic-ai-slim[anthropic] / [openai] to use those providers via LLM_MODEL.
     "pydantic-ai-slim[google]>=1.0",
 ]
+web = [
+    # Website Discord-login + subscription manager (bot/web.py). aiohttp also ships
+    # with the `bot` extra (discord.py depends on it); listed here for web-only installs.
+    "aiohttp>=3.9",
+    "python-dotenv>=1.0",
+]
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
@@ -47,6 +53,9 @@ ignore = ["E501"]  # line length is handled by the formatter; long prompts/strin
 
 [tool.setuptools]
 packages = ["schema", "build", "scrape", "bot"]
+
+[tool.setuptools.package-data]
+bot = ["web_static/*.html"]
 
 [build-system]
 requires = ["setuptools>=68"]
