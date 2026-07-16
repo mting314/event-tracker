@@ -15,13 +15,13 @@ dependencies = [
 bot = [
     "discord.py>=2.3",
     "python-dotenv>=1.0",  # load config from .env for local runs
-    "certifi>=2024.0",     # fallback CA bundle
+    "certifi>=2026.6.17",     # fallback CA bundle
     "truststore>=0.9",     # verify TLS via the OS trust store (handles corporate proxies)
 ]
 llm = [
     # Provider-swappable LLM fallback. [google] pulls the Vertex AI (Gemini) backend;
     # add pydantic-ai-slim[anthropic] / [openai] to use those providers via LLM_MODEL.
-    "pydantic-ai-slim[google]>=1.0",
+    "pydantic-ai-slim[google]>=2.11.0",
 ]
 web = [
     # Website Discord-login + subscription manager (bot/web.py). aiohttp also ships
@@ -30,9 +30,9 @@ web = [
     "python-dotenv>=1.0",
 ]
 dev = [
-    "pytest>=8.0",
+    "pytest>=9.1.1",
     "pytest-asyncio>=0.23",
-    "ruff>=0.9",
+    "ruff>=0.15.21",
     "pre-commit>=3.5",
 ]
 
@@ -58,5 +58,5 @@ packages = ["schema", "build", "scrape", "bot"]
 bot = ["web_static/*.html"]
 
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=83.0.0"]
 build-backend = "setuptools.build_meta"
