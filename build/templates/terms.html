@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Terms of Service · LL Lottery Tracker{% endblock %}
+{% block content %}
+<article class="legal">
+  <h1>Terms of Service</h1>
+  <p class="hint">Last updated: {{ generated_at|jst_date }}</p>
+
+  <p>These terms govern your use of LL Lottery Tracker (the “Service”) — a free,
+    non-commercial fan project comprising this website, an optional “Log in with Discord”
+    subscription manager, and a Discord reminder bot. By using the Service you agree to these
+    terms. If you do not agree, please do not use it.</p>
+
+  <h2>Not affiliated</h2>
+  <p>This is an unofficial fan-made project. It is <strong>not affiliated with, endorsed by, or
+    sponsored by</strong> Discord Inc., Bandai Namco, Sunrise, the Love&nbsp;Live! franchise, any
+    record label, ticketing agency, artist, or fan club. All trademarks and event information
+    belong to their respective owners.</p>
+
+  <h2>What the Service does</h2>
+  <p>It aggregates publicly available information about Love&nbsp;Live!&nbsp;/ seiyuu events and
+    their lottery application rounds, and — if you opt in with Discord — lets you subscribe to
+    events/series and receive reminders before application deadlines.</p>
+
+  <h2>No warranty — verify with official sources</h2>
+  <p>Event dates, venues, and lottery deadlines are hand-curated and best-effort, and may be
+    incomplete, delayed, or wrong. The Service is provided <strong>“as is,” without warranty of
+    any kind</strong>. <strong>Always confirm details with the official event/ticket pages
+    before applying or making plans.</strong> The maintainer is not liable for missed lotteries,
+    incorrect information, missed or late reminders, or any loss arising from use of the Service.</p>
+
+  <h2>Acceptable use</h2>
+  <ul>
+    <li>Don’t abuse, overload, scrape aggressively, disrupt, or attempt to gain unauthorized
+      access to the Service or its infrastructure.</li>
+    <li>Don’t use the Service to violate Discord’s
+      <a href="https://discord.com/terms" target="_blank" rel="noopener">Terms of Service</a> or
+      any applicable law.</li>
+    <li>Use the “Log in with Discord” feature only with your own Discord account.</li>
+  </ul>
+
+  <h2>Your data</h2>
+  <p>Handling of any data associated with your Discord login and subscriptions is described in
+    the <a href="{{ base|default('') }}privacy.html">Privacy Policy</a>.</p>
+
+  <h2>Availability &amp; changes</h2>
+  <p>The Service is offered for free and may be changed, suspended, or discontinued at any time
+    without notice. These terms may be updated; the “Last updated” date above reflects the
+    current version, and continued use means you accept the changes.</p>
+
+  <h2>Contact</h2>
+  <p>Open an issue at
+    <a href="https://github.com/mting314/event-tracker" target="_blank" rel="noopener">github.com/mting314/event-tracker</a>.</p>
+</article>
+{% endblock %}

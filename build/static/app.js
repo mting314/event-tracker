@@ -46,7 +46,7 @@ const I18N = {
     detail_perfs: 'Performances & deadlines', th_round: 'Round',
     no_rounds_show: 'No lottery rounds recorded for this show yet.',
     footer_a: 'Tracking', footer_b: 'events · all times JST unless toggled · curated from',
-    footer_c: 'official sources',
+    footer_c: 'official sources', footer_terms: 'Terms', footer_privacy: 'Privacy',
     past_hint_a: 'Archive of past Love Live! events from',
     past_hint_b: '— reference only (no lottery rounds).', past_hint_c: 'events.',
     // add / edit form
@@ -101,7 +101,7 @@ const I18N = {
     detail_perfs: '公演・締切', th_round: '抽選回',
     no_rounds_show: 'この公演の抽選回はまだ登録されていません。',
     footer_a: '追跡中:', footer_b: '件 · 時刻は特記なき限りJST · 出典:',
-    footer_c: '公式情報',
+    footer_c: '公式情報', footer_terms: '利用規約', footer_privacy: 'プライバシー',
     past_hint_a: '過去のラブライブ！イベント（出典:',
     past_hint_b: '）参考用・抽選情報なし。', past_hint_c: '件',
     // add / edit form

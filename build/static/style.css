@@ -50,6 +50,12 @@ h1 { font-size: 1.5rem; }
 .empty { color: var(--muted); padding: 2rem; text-align: center; }
 footer { color: var(--muted); font-size: .8rem; text-align: center; padding: 2rem; }
 
+/* Legal pages (Terms / Privacy) — narrower measure + comfortable reading. */
+.legal { max-width: 46rem; line-height: 1.6; }
+.legal h2 { font-size: 1.05rem; margin: 1.6rem 0 .4rem; }
+.legal ul { padding-left: 1.2rem; }
+.legal li { margin: .3rem 0; }
+
 .tag {
   display: inline-block; background: var(--panel-2); color: var(--text);
   border-radius: 999px; padding: .05rem .55rem; font-size: .75rem; margin: 0 .2rem .2rem 0;

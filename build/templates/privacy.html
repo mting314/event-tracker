@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Privacy Policy · LL Lottery Tracker{% endblock %}
+{% block content %}
+<article class="legal">
+  <h1>Privacy Policy</h1>
+  <p class="hint">Last updated: {{ generated_at|jst_date }}</p>
+
+  <p>LL Lottery Tracker (the “Service”) is a free, non-commercial hobby project that
+    tracks Love&nbsp;Live!&nbsp;/ seiyuu events and their lottery (抽選 / 先行) application
+    rounds. It consists of this website, an optional “Log in with Discord” subscription
+    manager, and a Discord bot that sends reminders. This policy explains what data the
+    Service handles when you choose to log in or subscribe. If you only browse the public
+    event pages, no account data is collected.</p>
+
+  <h2>What we collect</h2>
+  <ul>
+    <li><strong>Discord account identifiers.</strong> When you click “Log in with Discord,”
+      we use Discord OAuth2 with the <code>identify</code> scope <em>only</em>. From that we
+      receive your <strong>Discord user ID</strong>, username/display name, and avatar. We do
+      <strong>not</strong> request or receive your email address, your servers/guilds, your
+      messages, your friends, or any other Discord data.</li>
+    <li><strong>Your subscriptions and reminder settings.</strong> The events and series you
+      subscribe to, and your reminder preferences (lead times, whether to receive DMs), stored
+      against your Discord user ID.</li>
+    <li><strong>A login session cookie.</strong> A single cookie holding a signed token with
+      your Discord user ID, display name, and avatar so you stay logged in. It is not used for
+      advertising or cross-site tracking.</li>
+  </ul>
+
+  <h2>How we use it</h2>
+  <ul>
+    <li>To authenticate you and let you view and manage your subscriptions on the website.</li>
+    <li>To send you the reminders you asked for, via Discord direct message and/or a server
+      channel you configured.</li>
+  </ul>
+
+  <h2>How it’s stored &amp; shared</h2>
+  <ul>
+    <li>Data is stored in a private database on a server controlled by the maintainer. It is
+      <strong>not sold, rented, or shared</strong> with third parties.</li>
+    <li>The only external service your data is sent to is <strong>Discord</strong> (to
+      authenticate you and deliver reminders), governed by
+      <a href="https://discord.com/privacy" target="_blank" rel="noopener">Discord’s Privacy Policy</a>.</li>
+    <li>Event/lottery information shown on the site is public information curated from official
+      and fan sources; it is not personal data about you.</li>
+  </ul>
+
+  <h2>Your choices &amp; deletion</h2>
+  <ul>
+    <li>You can add or remove any subscription at any time — on the website or with the bot’s
+      <code>/unsubscribe</code> command — which deletes that record.</li>
+    <li>Logging out clears your session cookie.</li>
+    <li>To have <strong>all</strong> of your data deleted, remove your subscriptions and/or
+      contact the maintainer (below) and it will be erased from the database.</li>
+  </ul>
+
+  <h2>Children</h2>
+  <p>The Service is not directed at children under 13, and we do not knowingly collect their
+    data. Use of Discord is also subject to Discord’s own minimum age requirements.</p>
+
+  <h2>Changes</h2>
+  <p>This policy may be updated from time to time; the “Last updated” date above will change
+    accordingly. Continued use after an update means you accept the revised policy.</p>
+
+  <h2>Contact</h2>
+  <p>This is a personal project. Questions or deletion requests: open an issue at
+    <a href="https://github.com/mting314/event-tracker" target="_blank" rel="noopener">github.com/mting314/event-tracker</a>.</p>
+</article>
+{% endblock %}

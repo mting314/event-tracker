@@ -31,6 +31,8 @@
   <footer>
     <p><span data-i18n="footer_a">Tracking</span> {{ event_count }} <span data-i18n="footer_b">events · all times JST unless toggled · curated from</span>
       <a href="https://www.eventernote.com/">eventernote</a> &amp; <span data-i18n="footer_c">official sources</span></p>
+    <p><a href="{{ base|default('') }}terms.html" data-i18n="footer_terms">Terms</a> ·
+      <a href="{{ base|default('') }}privacy.html" data-i18n="footer_privacy">Privacy</a></p>
   </footer>
   <script src="{{ base|default('') }}static/app.js"></script>
   {% block scripts %}{% endblock %}
