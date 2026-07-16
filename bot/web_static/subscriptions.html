@@ -182,20 +182,34 @@
       return out;
     }
 
+    // name -> event id, so the picker can show the human-readable name while we
+    // still submit the id the API expects. The slug is never shown to the user.
+    let eventIdByName = {};
+
     function renderCatalog() {
       const kind = $("add-kind").value;
       const dl = $("target-list");
       dl.innerHTML = "";
-      const items = kind === "event"
-        ? CATALOG.events.map(e => ({ value: e.id, label: e.name }))
-        : CATALOG.series.map(s => ({ value: s, label: s }));
+      let items;
+      if (kind === "event") {
+        eventIdByName = {};
+        items = CATALOG.events.map(e => {
+          eventIdByName[e.name] = e.id;
+          // secondary hint: English name if different, else the series tag(s)
+          const hint = (e.name_en && e.name_en !== e.name)
+            ? e.name_en : (e.series || []).join(", ");
+          return { value: e.name, label: hint };
+        });
+      } else {
+        items = CATALOG.series.map(s => ({ value: s, label: "" }));
+      }
       for (const it of items) {
         const o = document.createElement("option");
         o.value = it.value;
         if (it.label && it.label !== it.value) o.label = it.label;
         dl.appendChild(o);
       }
-      $("add-target").placeholder = kind === "event" ? "Event id — start typing…" : "Series name…";
+      $("add-target").placeholder = kind === "event" ? "Event name — start typing…" : "Series name…";
     }
 
     async function loadSubs() {
@@ -252,8 +266,14 @@
 
       $("add-btn").onclick = async () => {
         const kind = $("add-kind").value;
-        const target = $("add-target").value.trim();
-        if (!target) return toast("Pick something to subscribe to.");
+        const typed = $("add-target").value.trim();
+        if (!typed) return toast("Pick something to subscribe to.");
+        // For events the field holds the readable name; resolve it to the id.
+        let target = typed;
+        if (kind === "event") {
+          target = eventIdByName[typed];
+          if (!target) return toast("Pick an event from the list.");
+        }
         try {
           const r = await api("POST", "/api/subscriptions", { kind, target });
           $("add-target").value = "";
