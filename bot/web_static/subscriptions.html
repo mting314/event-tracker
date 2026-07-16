@@ -78,6 +78,21 @@
     .toggle.on:hover:not(:disabled) { border-color: var(--deadline); color: var(--deadline); }
     .empty { color: var(--muted); padding: 1rem .8rem; }
 
+    /* Reminder lead-times: preset toggles + custom chips */
+    .lead-presets { display: flex; flex-wrap: wrap; gap: .5rem .6rem; margin: .3rem 0 .7rem; }
+    .preset {
+      display: flex; align-items: center; gap: .4rem; cursor: pointer; user-select: none;
+      background: var(--panel-2); border: 1px solid #2c2f55; border-radius: 8px; padding: .35rem .7rem;
+    }
+    .preset:has(input:checked) { border-color: var(--opens); color: var(--opens); }
+    .chips { display: flex; flex-wrap: wrap; gap: .4rem; margin: .6rem 0 0; }
+    .chip {
+      display: inline-flex; align-items: center; gap: .4rem; font-size: .85rem;
+      background: var(--panel-2); border: 1px solid var(--opens); color: var(--opens);
+      border-radius: 999px; padding: .2rem .3rem .2rem .7rem;
+    }
+    .chip button { background: transparent; border: none; color: inherit; padding: 0 .15rem; font-size: 1rem; line-height: 1; cursor: pointer; }
+
     #toast {
       position: fixed; bottom: 1.25rem; left: 50%; transform: translateX(-50%);
       background: var(--panel-2); border: 1px solid #2c2f55; border-radius: 8px;
@@ -132,14 +147,15 @@
 
       <h2>Reminder settings</h2>
       <div class="card">
+        <p class="hint" style="margin-top:0">Remind me before each date — pick any:</p>
+        <div class="lead-presets" id="lead-presets"></div>
         <div class="row">
-          <label class="inline" style="flex:1">
-            Lead times&nbsp;
-            <input type="text" id="lead-times" placeholder="3d,1d,2h" style="flex:1; min-width:10rem">
-          </label>
+          <input type="text" id="lead-custom" placeholder="Add custom, e.g. 5d or 90m" autocomplete="off" style="min-width:12rem">
+          <button id="lead-add">Add</button>
         </div>
-        <p class="hint">Comma-separated, before each date. Use <code>d</code> / <code>h</code> / <code>m</code> (e.g. <code>3d,1d,2h</code>).</p>
-        <div class="row">
+        <p class="hint">Custom values use <code>d</code> days / <code>h</code> hours / <code>m</code> minutes (a bare number = minutes).</p>
+        <div class="chips" id="lead-chips"></div>
+        <div class="row" style="margin-top:1.1rem; border-top:1px solid #2c2f55; padding-top:1rem">
           <label class="inline"><input type="checkbox" id="dm-enabled"> DM me reminders</label>
           <button class="primary" id="save-settings" style="margin-left:auto">Save settings</button>
         </div>
@@ -173,25 +189,74 @@
       return data;
     }
 
-    // ---- lead-time formatting (mirrors the bot's /settings parser) ----
-    function fmtLead(sec) {
-      if (sec % 86400 === 0) return (sec / 86400) + "d";
-      if (sec % 3600 === 0) return (sec / 3600) + "h";
-      if (sec % 60 === 0) return (sec / 60) + "m";
-      return sec + "s";
-    }
-    function parseLead(str) {
-      const out = [];
-      for (let tok of str.split(",")) {
-        tok = tok.trim().toLowerCase();
-        if (!tok) continue;
-        const m = tok.match(/^(\d+)\s*([dhms]?)$/);
-        if (!m) throw new Error("bad lead time: " + tok);
-        const n = parseInt(m[1], 10);
-        const mult = { d: 86400, h: 3600, m: 60, s: 1, "": 60 }[m[2]];
-        out.push(n * mult);
+    // ---- reminder lead times ----
+    // Common presets shown as toggles; anything else the user adds shows as a chip.
+    const PRESETS = [
+      { sec: 604800, label: "1 week" },
+      { sec: 259200, label: "3 days" },
+      { sec: 86400, label: "1 day" },
+      { sec: 43200, label: "12 hours" },
+      { sec: 7200, label: "2 hours" },
+      { sec: 3600, label: "1 hour" },
+      { sec: 1800, label: "30 min" },
+    ];
+    const PRESET_SECS = new Set(PRESETS.map(p => p.sec));
+    const leadSet = new Set();   // selected lead times, in seconds
+
+    function humanLead(sec) {
+      const units = [[604800, "week"], [86400, "day"], [3600, "hour"], [60, "min"], [1, "sec"]];
+      for (const [u, name] of units) {
+        if (sec % u === 0) { const n = sec / u; return n + " " + name + (n !== 1 && name !== "min" ? "s" : ""); }
       }
-      return out;
+      return sec + " sec";
+    }
+    // Parse a single custom token like "5d" / "90m" / "12h" / "45" (bare = minutes).
+    function parseOneLead(str) {
+      const m = str.trim().toLowerCase().match(/^(\d+)\s*([dhm]?)$/);
+      if (!m) throw new Error("Use a number + d/h/m, e.g. 5d or 90m");
+      const n = parseInt(m[1], 10);
+      if (n <= 0) throw new Error("Enter a value greater than 0");
+      return n * ({ d: 86400, h: 3600, m: 60, "": 60 })[m[2]];
+    }
+
+    function renderLeads() {
+      // Preset toggles
+      const wrap = $("lead-presets");
+      wrap.innerHTML = "";
+      for (const p of PRESETS) {
+        const lbl = document.createElement("label");
+        lbl.className = "preset";
+        const cb = document.createElement("input");
+        cb.type = "checkbox"; cb.checked = leadSet.has(p.sec);
+        cb.onchange = () => { cb.checked ? leadSet.add(p.sec) : leadSet.delete(p.sec); };
+        lbl.append(cb, document.createTextNode(" " + p.label));
+        wrap.appendChild(lbl);
+      }
+      // Custom chips = selected values that aren't presets
+      const chips = $("lead-chips");
+      chips.innerHTML = "";
+      const custom = [...leadSet].filter(s => !PRESET_SECS.has(s)).sort((a, b) => b - a);
+      for (const sec of custom) {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.append(document.createTextNode(humanLead(sec)));
+        const x = document.createElement("button");
+        x.type = "button"; x.title = "Remove"; x.textContent = "✕";
+        x.onclick = () => { leadSet.delete(sec); renderLeads(); };
+        chip.appendChild(x);
+        chips.appendChild(chip);
+      }
+    }
+
+    function addCustomLead() {
+      const inp = $("lead-custom");
+      let sec;
+      try { sec = parseOneLead(inp.value); }
+      catch (e) { return toast(e.message); }
+      if (leadSet.has(sec)) { inp.value = ""; return toast("Already added: " + humanLead(sec)); }
+      leadSet.add(sec);
+      inp.value = "";
+      renderLeads();
     }
 
     // ---- browse lists ----
@@ -290,7 +355,9 @@
 
     async function loadSettings() {
       const s = await api("GET", "/api/settings");
-      $("lead-times").value = (s.lead_times || []).map(fmtLead).join(",");
+      leadSet.clear();
+      (s.lead_times || []).forEach(sec => leadSet.add(sec));
+      renderLeads();
       $("dm-enabled").checked = !!s.dm_enabled;
     }
 
@@ -324,10 +391,12 @@
       $("filter-events").oninput = (e) => { filters.event = e.target.value; applyFilter("event"); };
       $("filter-series").oninput = (e) => { filters.series = e.target.value; applyFilter("series"); };
 
+      $("lead-add").onclick = addCustomLead;
+      $("lead-custom").onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); addCustomLead(); } };
+
       $("save-settings").onclick = async () => {
-        let lead_times;
-        try { lead_times = parseLead($("lead-times").value); }
-        catch (e) { return toast(e.message); }
+        const lead_times = [...leadSet].sort((a, b) => b - a);
+        if (!lead_times.length) return toast("Pick at least one reminder time.");
         try {
           await api("PUT", "/api/settings", { lead_times, dm_enabled: $("dm-enabled").checked });
           await loadSettings();
