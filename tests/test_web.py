@@ -80,6 +80,27 @@ def test_avatar_url_default_and_custom():
     assert "embed/avatars" in web._avatar_url("123", None)
 
 
+def test_verify_token_never_raises_on_garbage():
+    # A stale/garbage cookie must be treated as logged-out, not raise (would 500).
+    for bad in ["", "a", "a.a", "....", "not.base64!!", "x." + "y" * 3]:
+        assert web.verify_token(bad, SECRET) is None
+
+
+def test_safe_next_blocks_open_redirects():
+    assert web.safe_next("/events") == "/events"
+    assert web.safe_next("/") == "/"
+    for evil in [
+        "//evil.com",
+        "/\\evil.com",
+        "https://evil.com",
+        "http://x",
+        "javascript:1",
+        None,
+        "",
+    ]:
+        assert web.safe_next(evil) == "/"
+
+
 # ---------------- auth ----------------
 
 
@@ -91,6 +112,18 @@ async def test_login_redirects_to_discord(app):
         assert loc.startswith("https://discord.com/oauth2/authorize")
         assert "client_id=cid" in loc
         assert "scope=identify" in loc
+        assert "prompt=none" not in loc  # would break first-time authorizations
+        # state must be bound to the browser via a cookie
+        assert web.STATE_COOKIE in resp.headers.get("Set-Cookie", "")
+
+
+async def test_callback_rejects_state_without_matching_cookie(app):
+    # A validly-signed state whose nonce isn't echoed by a cookie must be rejected
+    # (login-CSRF protection), even though the signature checks out.
+    state = web.sign_token({"n": "attacker-nonce", "next": "/", "exp": 9999999999}, SECRET)
+    async with TestClient(TestServer(app)) as client:
+        resp = await client.get(f"/auth/callback?code=x&state={state}", allow_redirects=False)
+        assert resp.status == 400
 
 
 async def test_login_unconfigured_returns_503(tmp_path):
@@ -222,6 +255,18 @@ async def test_settings_get_and_put(app):
 
         # bad lead times rejected
         r = await client.put("/api/settings", json={"lead_times": [-5]}, cookies=cookies)
+        assert r.status == 400
+
+        # bools must not slip through as 1-second leads (bool ⊂ int)
+        r = await client.put("/api/settings", json={"lead_times": [True]}, cookies=cookies)
+        assert r.status == 400
+
+        # absurd values / oversized lists rejected
+        r = await client.put("/api/settings", json={"lead_times": [10**12]}, cookies=cookies)
+        assert r.status == 400
+        r = await client.put(
+            "/api/settings", json={"lead_times": list(range(1, 25))}, cookies=cookies
+        )
         assert r.status == 400
 
 

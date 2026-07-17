@@ -70,8 +70,19 @@ USER_URL = f"{DISCORD_API}/users/@me"
 OAUTH_SCOPE = "identify"
 
 SESSION_COOKIE = "ll_session"
+STATE_COOKIE = "ll_oauth_state"  # binds the OAuth `state` to the initiating browser
 SESSION_TTL = 30 * 24 * 3600  # 30 days
 STATE_TTL = 600  # 10 minutes to complete the OAuth round-trip
+
+
+def safe_next(nxt: str | None) -> str:
+    """A same-app relative redirect target, or '/'. Rejects absolute URLs and the
+    protocol-relative (`//host`) / backslash tricks that would otherwise let
+    `?next=` become an open redirect off-site after login."""
+    if not nxt or not nxt.startswith("/") or nxt.startswith(("//", "/\\")):
+        return "/"
+    return nxt
+
 
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "web_static")
 
@@ -106,19 +117,20 @@ def sign_token(payload: dict, secret: str) -> str:
 
 
 def verify_token(token: str, secret: str) -> dict | None:
-    """Return the payload iff the signature checks out and it hasn't expired."""
+    """Return the payload iff the signature checks out and it hasn't expired.
+
+    Any malformed input (bad base64, wrong shape, non-JSON) returns None rather
+    than raising, so a stale/garbage cookie is treated as logged-out, not a 500.
+    """
     try:
         body, sig = token.split(".", 1)
-    except (ValueError, AttributeError):
-        return None
-    expected = hmac.new(secret.encode(), body.encode(), hashlib.sha256).digest()
-    if not hmac.compare_digest(_b64d(sig), expected):
-        return None
-    try:
+        expected = hmac.new(secret.encode(), body.encode(), hashlib.sha256).digest()
+        if not hmac.compare_digest(_b64d(sig), expected):  # binascii.Error ⊂ ValueError
+            return None
         payload = json.loads(_b64d(body))
-    except (ValueError, json.JSONDecodeError):
+    except (ValueError, AttributeError, TypeError):
         return None
-    if payload.get("exp", 0) < time.time():
+    if not isinstance(payload, dict) or payload.get("exp", 0) < time.time():
         return None
     return payload
 
@@ -203,11 +215,13 @@ async def auth_login(request: web.Request) -> web.Response:
     client_id = request.app[K_CLIENT_ID]
     if not client_id:
         return web.Response(status=503, text="Discord login is not configured.")
-    nxt = request.query.get("next", "/")
-    if not nxt.startswith("/"):  # only allow same-app relative redirects
-        nxt = "/"
+    nxt = safe_next(request.query.get("next"))
+    # A random nonce ties the signed `state` to THIS browser: it's echoed in a
+    # short-lived cookie and must match on callback, so an attacker can't feed a
+    # victim a valid state paired with their own code (login CSRF).
+    nonce = secrets.token_urlsafe(16)
     state = sign_token(
-        {"n": secrets.token_urlsafe(8), "next": nxt, "exp": int(time.time()) + STATE_TTL},
+        {"n": nonce, "next": nxt, "exp": int(time.time()) + STATE_TTL},
         request.app[K_SECRET],
     )
     params = {
@@ -216,9 +230,19 @@ async def auth_login(request: web.Request) -> web.Response:
         "response_type": "code",
         "scope": OAUTH_SCOPE,
         "state": state,
-        "prompt": "none",  # don't re-prompt a user who already authorized
+        # No prompt=none: Discord already skips consent for returning users, and
+        # prompt=none would error out first-time users who haven't authorized yet.
     }
-    raise web.HTTPFound(f"{AUTHORIZE_URL}?{urlencode(params)}")
+    resp = web.HTTPFound(f"{AUTHORIZE_URL}?{urlencode(params)}")
+    resp.set_cookie(
+        STATE_COOKIE,
+        nonce,
+        max_age=STATE_TTL,
+        httponly=True,
+        secure=request.app[K_COOKIE_SECURE],
+        samesite="Lax",
+    )
+    raise resp
 
 
 async def auth_callback(request: web.Request) -> web.Response:
@@ -226,10 +250,12 @@ async def auth_callback(request: web.Request) -> web.Response:
     if err:
         return web.Response(status=400, text=f"Discord login failed: {err}")
     code = request.query.get("code")
-    state = request.query.get("state", "")
-    if not code or not verify_token(state, request.app[K_SECRET]):
+    payload = verify_token(request.query.get("state", ""), request.app[K_SECRET])
+    # The signed state must be valid AND its nonce must match the cookie set at
+    # /auth/login on this same browser.
+    if not code or not payload or payload.get("n") != request.cookies.get(STATE_COOKIE):
         return web.Response(status=400, text="Invalid or expired login state. Try again.")
-    nxt = verify_token(state, request.app[K_SECRET]).get("next", "/")
+    nxt = safe_next(payload.get("next"))
 
     data = {
         "client_id": request.app[K_CLIENT_ID],
@@ -264,6 +290,7 @@ async def auth_callback(request: web.Request) -> web.Response:
 
     resp = web.HTTPFound(nxt)
     _set_session(resp, request, user)
+    resp.del_cookie(STATE_COOKIE)  # single-use
     raise resp
 
 
@@ -379,11 +406,19 @@ async def api_settings_put(request: web.Request) -> web.Response:
     lead_times = body.get("lead_times")
     dm_enabled = body.get("dm_enabled")
     if lead_times is not None:
-        if not isinstance(lead_times, list) or not all(
-            isinstance(x, int) and x > 0 for x in lead_times
+        # `type(x) is int` excludes bool (a subclass of int) so [true] can't slip
+        # through as a 1-second lead. Cap the count and the max lead (365d) so a
+        # crafted request can't store absurd values.
+        max_lead = 365 * 86400
+        if (
+            not isinstance(lead_times, list)
+            or len(lead_times) > 20
+            or not all(type(x) is int and 0 < x <= max_lead for x in lead_times)
         ):
             raise web.HTTPBadRequest(
-                text=json.dumps({"error": "lead_times must be a list of positive seconds"}),
+                text=json.dumps(
+                    {"error": "lead_times must be a list of positive seconds (<=365d, <=20 items)"}
+                ),
                 content_type="application/json",
             )
         lead_times = sorted(set(lead_times), reverse=True)
