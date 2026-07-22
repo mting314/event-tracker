@@ -26,8 +26,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6.0.3
-      - uses: astral-sh/setup-uv@v8.2.0
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v9.0.0
         with:
           enable-cache: true
       # `uv run` provisions the env from uv.lock. build_site.py validates every
