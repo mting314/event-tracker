@@ -1,0 +1,7 @@
+rounds:
+  - name: 一般発売（抽選）
+    type: general
+    apply_open: 2026-08-01T12:00:00
+    apply_deadline: 2026-08-23T23:59:00
+    results_date: 2026-08-29T13:00:00
+    payment_deadline: 2026-09-01T21:00:00
