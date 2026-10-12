@@ -1,0 +1,23 @@
+rounds:
+  - name: 一般抽選（2次抽選）
+    type: general
+    apply_open: 2026-07-25T12:00:00
+    apply_deadline: 2026-08-16T23:59:00
+    results_date: 2026-08-21T13:00:00
+  - name: 一般抽選
+    type: general
+    apply_open: 2026-06-19T21:00:00
+    apply_deadline: 2026-07-12T23:59:00
+    results_date: 2026-07-18T13:00:00
+    payment_deadline: 2026-07-21T21:00:00
+  - name: 1次抽選
+    type: presale
+    apply_open: 2026-06-24T12:00:00
+    apply_deadline: 2026-07-05T23:59:00
+    results_date: 2026-07-11T13:00:00
+    payment_deadline: 2026-07-14T21:00:00
+  - name: 2次抽選
+    type: presale
+    apply_open: 2026-07-11T12:00:00
+    apply_deadline: 2026-07-20T23:59:00
+    results_date: 2026-07-25T13:00:00
